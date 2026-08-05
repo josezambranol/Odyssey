@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Mapa Interactivo — ODYXS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" th:href="@{/css/odyxs-travela.css}">
+    <style>
+        #mapa { height:580px; border-radius:16px; box-shadow:0 8px 32px rgba(11,45,107,.18); z-index:1; }
+        .mapa-filtros { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:20px; }
+        .mapa-btn { font-family:'DM Sans',sans-serif; font-size:.8rem; font-weight:700; padding:8px 18px; border-radius:40px; border:1.5px solid rgba(11,45,107,.2); color:var(--azul); background:#fff; cursor:pointer; transition:.25s; }
+        .mapa-btn:hover, .mapa-btn.active { background:var(--azul); color:#fff; border-color:var(--azul); }
+        .lugar-panel { border-radius:14px; overflow:hidden; box-shadow:0 4px 20px rgba(11,45,107,.1); background:#fff; transition:.3s; cursor:pointer; margin-bottom:12px; }
+        .lugar-panel:hover { box-shadow:0 8px 28px rgba(11,45,107,.2); transform:translateX(4px); border-left:3px solid var(--gold); }
+        .lugar-panel-img { width:70px; height:70px; object-fit:cover; flex-shrink:0; }
+        .panel-scroll { max-height:580px; overflow-y:auto; padding-right:4px; }
+        .panel-scroll::-webkit-scrollbar { width:4px; }
+        .panel-scroll::-webkit-scrollbar-thumb { background:var(--gold-pale); border-radius:4px; }
+    </style>
+    <!-- Favicon ODYXS -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+</head>
+<body>
+<div th:replace="fragments :: topbar"></div>
+<div th:replace="fragments :: navbar-interno"></div>
+<div class="page-breadcrumb-hero">
+    <div style="position:relative;z-index:1;">
+        <h1 style="font-style:italic;">Mapa Interactivo</h1>
+        <div class="gold-line"></div>
+        <p>Explora Cartagena y todos sus puntos turísticos</p>
+    </div>
+</div>
+<div class="container py-5">
+    <div class="mapa-filtros">
+        <button class="mapa-btn active" onclick="filtrarMapa('todos', this)">🌟 Todos</button>
+        <button class="mapa-btn" onclick="filtrarMapa('historia', this)">🏰 Historia</button>
+        <button class="mapa-btn" onclick="filtrarMapa('playa', this)">🏖️ Playas</button>
+        <button class="mapa-btn" onclick="filtrarMapa('cultura', this)">🎨 Cultura</button>
+        <button class="mapa-btn" onclick="filtrarMapa('gastronomia', this)">🍽️ Gastronomía</button>
+        <button class="mapa-btn" onclick="filtrarMapa('hotel', this)">🏨 Hoteles</button>
+    </div>
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div id="mapa"></div>
+        </div>
+        <div class="col-lg-4">
+            <h6 class="fw-bold mb-3" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.1rem;">📍 Puntos turísticos</h6>
+            <div class="panel-scroll" id="listaLugares"></div>
+        </div>
+    </div>
+</div>
+<div th:replace="fragments :: footer-interno"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+const puntos = [
+    {nombre:"Castillo San Felipe de Barajas",lat:10.4231,lng:-75.5397,tipo:"historia",icon:"🏰",desc:"La fortaleza más grande de América española. Siglo XVII."},
+    {nombre:"Ciudad Amurallada",lat:10.4236,lng:-75.5494,tipo:"historia",icon:"🧱",desc:"Centro histórico Patrimonio UNESCO 1984. 11 km de murallas."},
+    {nombre:"Torre del Reloj (Puerta del Reloj)",lat:10.4244,lng:-75.5479,tipo:"historia",icon:"🕐",desc:"Entrada principal al Centro Histórico. Construida en 1631."},
+    {nombre:"Palacio de la Inquisición",lat:10.4246,lng:-75.5497,tipo:"historia",icon:"⚖️",desc:"Sede del Tribunal del Santo Oficio. Museo histórico hoy."},
+    {nombre:"Playa de Bocagrande",lat:10.3972,lng:-75.5558,tipo:"playa",icon:"🏖️",desc:"La playa más accesible de Cartagena. Restaurantes y ambiente caribeño."},
+    {nombre:"Barrio Getsemaní",lat:10.4218,lng:-75.5500,tipo:"cultura",icon:"🎨",desc:"El barrio bohemio de Cartagena. Murales, champeta y vida nocturna."},
+    {nombre:"Mercado de Bazurto",lat:10.4097,lng:-75.5327,tipo:"gastronomia",icon:"🛒",desc:"El mercado popular más auténtico. Frutas tropicales y mariscos frescos."},
+    {nombre:"Plaza Santo Domingo",lat:10.4249,lng:-75.5499,tipo:"cultura",icon:"⛪",desc:"La plaza más animada del centro histórico. Restaurantes y música en vivo."},
+    {nombre:"Café del Mar",lat:10.4265,lng:-75.5519,tipo:"gastronomia",icon:"🌅",desc:"El mejor lugar para ver el atardecer sobre las murallas. Cocteles caribeños."},
+    {nombre:"Sofitel Legend Santa Clara",lat:10.4254,lng:-75.5514,tipo:"hotel",icon:"🏨",desc:"El hotel más icónico de Cartagena. Convento del siglo XVII."},
+    {nombre:"Muelle de la Bodeguita",lat:10.4268,lng:-75.5503,tipo:"historia",icon:"⛵",desc:"Puerto de donde salen las lanchas a las Islas del Rosario."},
+    {nombre:"Las Bóvedas",lat:10.4274,lng:-75.5481,tipo:"cultura",icon:"🏺",desc:"23 bóvedas coloniales del siglo XVIII. Mercado de artesanías."},
+];
+
+const map = L.map('mapa').setView([10.4236, -75.5490], 14);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'© OpenStreetMap', maxZoom:19
+}).addTo(map);
+
+let marcadores = [];
+
+function crearIcono(emoji) {
+    return L.divIcon({
+        html: `<div style="background:var(--azul,#0B2D6B);color:white;width:36px;height:36px;border-radius:50% 50% 50% 0;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 3px 12px rgba(0,0,0,.3);border:2px solid white;transform:rotate(-45deg);"><span style="transform:rotate(45deg);">${emoji}</span></div>`,
+        iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-36], className:''
+    });
+}
+
+function renderLista(pts) {
+    const lista = document.getElementById('listaLugares');
+    lista.innerHTML = pts.map((p,i) => `
+        <div class="lugar-panel" onclick="focusMap(${i})">
+            <div class="d-flex align-items-center gap-0">
+                <img src="${p.img}" class="lugar-panel-img" onerror="this.style.display='none'">
+                <div class="p-3">
+                    <div style="font-size:1.1rem; margin-bottom:2px;">${p.icon}</div>
+                    <h6 class="mb-1 fw-bold" style="color:#0B2D6B; font-size:.88rem; font-family:'Cormorant Garamond',serif;">${p.nombre}</h6>
+                    <p class="mb-0 text-muted" style="font-size:.72rem; line-height:1.4;">${p.desc.substring(0,60)}...</p>
+                </div>
+            </div>
+        </div>`).join('');
+}
+
+let puntosActivos = [...puntos];
+
+puntos.forEach((p,i) => {
+    const m = L.marker([p.lat,p.lng], {icon: crearIcono(p.icon)})
+        .bindPopup(`<div style="min-width:180px;"><img src="${p.img}" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;" onerror="this.style.display='none'"><strong style="color:#0B2D6B;font-family:'Cormorant Garamond',serif;">${p.nombre}</strong><p style="font-size:.82rem;color:#666;margin:4px 0 0;">${p.desc}</p></div>`)
+        .addTo(map);
+    marcadores.push({marcador:m, tipo:p.tipo, idx:i});
+});
+renderLista(puntos);
+
+function filtrarMapa(tipo, btn) {
+    document.querySelectorAll('.mapa-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    puntosActivos = tipo === 'todos' ? [...puntos] : puntos.filter(p=>p.tipo===tipo);
+    marcadores.forEach(({marcador, tipo:t}) => {
+        if(tipo === 'todos' || t === tipo) { map.addLayer(marcador); }
+        else { map.removeLayer(marcador); }
+    });
+    renderLista(puntosActivos);
+}
+
+function focusMap(idx) {
+    const p = puntosActivos[idx];
+    const real = puntos.findIndex(x=>x.nombre===p.nombre);
+    map.setView([p.lat, p.lng], 16);
+    marcadores[real].marcador.openPopup();
+}
+</script>
+</body>
+</html>

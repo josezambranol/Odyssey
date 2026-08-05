@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Mi Panel — ODYXS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/odyxs-travela.css}">
+    <!-- Favicon ODYXS -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+</head>
+<body>
+<div th:replace="fragments :: topbar"></div>
+<div th:replace="fragments :: navbar-interno"></div>
+
+<!-- Hero personalizado -->
+<div class="page-breadcrumb-hero" style="min-height:200px; background:linear-gradient(135deg,var(--azul-dark) 0%,var(--azul-mid) 60%, rgba(200,150,62,.3) 100%);">
+    <div style="position:relative; z-index:1; text-align:center;">
+        <h1 style="font-style:italic;" th:text="'¡Hola, ' + ${nombre} + '! 👋'">¡Hola!</h1>
+        <div class="gold-line"></div>
+        <p style="color:rgba(255,255,255,.8);">¿Qué quieres explorar hoy en <strong>Cartagena de Indias</strong>?</p>
+    </div>
+</div>
+
+<div class="container py-5">
+
+    <!-- Acceso rápido buscador -->
+    <form action="/buscar" method="get" class="mb-5">
+        <div class="d-flex gap-3 justify-content-center">
+            <div class="input-group" style="max-width:560px;">
+                <span class="input-group-text" style="background:var(--azul); border:none; color:var(--gold); border-radius:40px 0 0 40px;">
+                    <i class="fa fa-search"></i>
+                </span>
+                <input name="q" class="form-control" style="border-color:rgba(11,45,107,.2); padding:12px 18px;" placeholder="Buscar en Cartagena...">
+            </div>
+            <button type="submit" class="btn btn-primary rounded-pill px-4">Buscar</button>
+        </div>
+    </form>
+
+    <!-- Tarjetas de navegación -->
+    <div class="row g-4">
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/lugares?categoriaId=1" class="menu-card"
+               style="background-image:url('/img/hero-playa-blanca.jpg')">
+                <div class="menu-card-body">
+                    <p class="menu-card-title">Playas</p>
+                    <p class="menu-card-sub">Top 6 · Cartagena</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/eventos" class="menu-card"
+               style="background-image:url('/img/pf-eventos.jpg')">
+                <div class="menu-card-body">
+                    <p class="menu-card-title">Eventos</p>
+                    <p class="menu-card-sub">Hay Festival · FICCI · Fiestas</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/actividades" class="menu-card"
+               style="background-image:url('/img/pf-actividades.jpg')">
+                <div class="menu-card-body">
+                    <p class="menu-card-title">Actividades</p>
+                    <p class="menu-card-sub">Tours · Buceo · Kayak</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/transporte" class="menu-card"
+               style="background-image:url('/img/pf-transporte.jpg')">
+                <div class="menu-card-body">
+                    <p class="menu-card-title">Transporte</p>
+                    <p class="menu-card-sub">Transcaribe · Taxi · Yate</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/guia" class="menu-card"
+               style="background-image:url('/img/pf-guia.jpg')">
+                <div class="menu-card-body">
+                    <p class="menu-card-title">Guía Turística</p>
+                    <p class="menu-card-sub">Historia · Clima · Consejos</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/mapa" class="menu-card"
+               style="background-image:url('/img/pf-mapa.jpg')">
+                <div class="menu-card-body">
+                    <p class="menu-card-title">Mapa Interactivo</p>
+                    <p class="menu-card-sub">Puntos turísticos Leaflet</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="#" onclick="toggleChat();return false;" class="menu-card"
+               style="background-image:url('/img/pf-chatbot.jpg')">
+                <div class="menu-card-body">
+                    <p class="menu-card-title" style="color:rgb(255, 255, 255)!important;">Chatbot ODYX</p>
+                    <p class="menu-card-sub" style="color:rgba(255, 255, 255, 0.804)!important;">Asistente 24/7</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/proponer-lugar" class="menu-card"
+               style="background-image:url('/img/pf-proponer-lugar.jpg')">
+                <div class="menu-card-body">
+                    <p class="menu-card-title">Proponer Lugar</p>
+                    <p class="menu-card-sub">Comparte un sitio</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/proponer-evento" class="menu-card"
+               style="background-image:url('/img/pf-proponer-evento.jpg')">
+                <div class="menu-card-body">
+                    <p class="menu-card-title">Proponer Evento</p>
+                    <p class="menu-card-sub">Eres organizador de eventos? compartelo aqui</p>
+                </div>
+            </a>
+        </div>
+        <div class="col-6 col-md-4 col-lg-3">
+            <a href="/proponer-actividad" class="menu-card"
+               style="background-image:url('/img/pf-proponer-actividad.jpg')">
+                <div class="menu-card-body">
+                    <p class="menu-card-title">Proponer actividad</p>
+                    <p class="menu-card-sub">Comparte aqui actividades interesantes</p>
+                </div>
+            </a>
+        </div>
+    
+        <!-- Panel admin solo para admins -->
+        <div class="col-6 col-md-4 col-lg-3" th:if="${session.usuarioRol == 'ADMIN'}">
+            <a href="/admin" class="menu-card"
+               style="background:linear-gradient(135deg,#b71c1c 0%,#c62828 100%);">
+                <div class="menu-card-body">
+                    <div class="menu-card-icon">⚙️</div>
+                    <p class="menu-card-title">Panel Admin</p>
+                    <p class="menu-card-sub">Gestión completa</p>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Tip del día -->
+    <div class="mt-5 p-4 rounded-3 d-flex align-items-center gap-4" style="background:var(--cream); border:1px solid rgba(200,150,62,.25);">
+        <div style="font-size:2.5rem; flex-shrink:0;">💡</div>
+        <div>
+            <h6 class="fw-bold mb-1" style="color:var(--azul);">Consejo del día</h6>
+            <p class="text-muted mb-0 small">El mejor momento para visitar el Castillo San Felipe es al amanecer o al atardecer: evitas el calor y disfrutas de vistas espectaculares de la bahía con la luz dorada del Caribe.</p>
+        </div>
+        <a href="/guia" class="btn btn-outline-primary rounded-pill px-4 flex-shrink-0" style="white-space:nowrap;">Leer guía</a>
+    </div>
+</div>
+
+<div th:replace="fragments :: footer-interno"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

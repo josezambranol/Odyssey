@@ -1,0 +1,951 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{page.title}">ODYXS — Guía Turística de Cartagena de Indias</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=Jost:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/odyxs-travela.css}">
+    <!-- Favicon ODYXS -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+</head>
+<body>
+
+<!-- Spinner -->
+<div id="spinner" class="show bg-white position-fixed translate-middle w-100 vh-100 top-50 start-50 d-flex align-items-center justify-content-center">
+    <div class="spinner-border text-primary" style="width:3rem;height:3rem;" role="status"></div>
+</div>
+
+<!-- ── TOPBAR ── -->
+<div th:replace="fragments :: topbar"></div>
+
+<!-- ── NAVBAR + HERO ── -->
+<div class="container-fluid position-relative p-0">
+    <nav class="navbar navbar-expand-lg navbar-light px-4 px-lg-5 py-3 py-lg-0">
+        <a href="/" class="navbar-brand p-0 text-decoration-none" style="line-height:1;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fa fa-anchor" style="color:var(--gold); font-size:1.6rem;"></i>
+                <div style="display:flex; gap:8px; align-items:stretch;">
+                    <div style="line-height:1.1;">
+                        <div style="font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:700; color:var(--azul); letter-spacing:.5px;">ODYXS</div>
+                        <div style="font-family:'DM Sans',sans-serif; font-size:.72rem; font-weight:600; color:var(--gold); letter-spacing:.3px;">cartagena.com.co</div>
+                    </div>
+                    <div style="width:2px; background:var(--gold); border-radius:2px; margin:1px 0;"></div>
+                    <div style="font-family:'DM Sans',sans-serif; font-size:.6rem; font-weight:700; color:var(--azul); text-transform:uppercase; letter-spacing:1px; line-height:1.25; display:flex; align-items:center;">TU<br>GUÍA</div>
+                </div>
+            </div>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse">
+            <span class="fa fa-bars"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+            <div class="navbar-nav ms-auto py-0">
+                <a href="/" class="nav-item nav-link active" th:text="#{nav.inicio}">Inicio</a>
+                <a href="/guia" class="nav-item nav-link" th:text="#{nav.guia}">Guía</a>
+                <a href="/eventos" class="nav-item nav-link" th:text="#{nav.eventos}">Eventos</a>
+                <a href="/actividades" class="nav-item nav-link" th:text="#{nav.actividades}"><span th:text="#{acts.tag}">Actividades</span></a>
+                <div class="nav-item dropdown">
+                    <a href="#" class="nav-link dropdown-toggle" data-bs-toggle="dropdown" th:text="#{nav.explorar}"><span th:text="#{footer.explore}">Explorar</span></a>
+                    <div class="dropdown-menu m-0">
+                        <a th:each="cat : ${categorias}"
+                           th:href="@{/lugares(categoriaId=${cat.id})}"
+                           th:text="${#messages.msg('cat.' + cat.nombreClave)}"
+                           class="dropdown-item">Categoría</a>
+                        <div class="dropdown-divider" style="border-color:rgba(255,255,255,.1);"></div>
+                        <a href="/transporte" class="dropdown-item">🚌 Transporte</a>
+                        <a href="/mapa" class="dropdown-item">🗺️ Mapa Interactivo</a>
+                    </div>
+                </div>
+            </div>
+            <th:block th:if="${session.usuarioId == null}">
+                <a href="/login" class="btn btn-primary rounded-pill py-2 px-4 ms-lg-4" th:text="#{nav.iniciarSesion}">Iniciar sesión</a>
+            </th:block>
+            <th:block th:if="${session.usuarioId != null}">
+                <a href="/menu" class="btn btn-primary rounded-pill py-2 px-4 ms-lg-4">
+                    <i class="fa fa-compass me-2"></i><span th:text="#{nav.miPanel}">Mi Panel</span>
+                </a>
+            </th:block>
+        </div>
+    </nav>
+
+    <!-- CAROUSEL HERO -->
+    <div class="carousel-header">
+        <div id="carouselId" class="carousel slide" data-bs-ride="carousel">
+            <ol class="carousel-indicators">
+                <li data-bs-target="#carouselId" data-bs-slide-to="0" class="active"></li>
+                <li data-bs-target="#carouselId" data-bs-slide-to="1"></li>
+                <li data-bs-target="#carouselId" data-bs-slide-to="2"></li>
+                <li data-bs-target="#carouselId" data-bs-slide-to="3"></li>
+            </ol>
+            <div class="carousel-inner" role="listbox">
+                <div class="carousel-item active">
+                    <img src="/img/hero-murallas.jpg" class="img-fluid w-100" alt="Murallas de Cartagena">
+                    <div class="carousel-caption">
+                        <div class="p-3" style="max-width:860px;">
+                            <h4 class="text-uppercase fw-bold mb-3" style="letter-spacing:4px;"><span th:text="#{hero.slide1.badge}">🇨🇴 Patrimonio UNESCO</span></h4>
+                            <h1 class="display-2 text-white mb-3" style="font-style:italic;"><span th:text="#{hero.slide1.title}">La Ciudad Heroica</span></h1>
+                            <p class="mb-5 fs-5" style="color:rgba(255,255,255,.85); font-weight:300;"><span th:text="#{hero.slide1.sub}">Cartagena de Indias...</span></p>
+                            <a class="btn btn-primary rounded-pill py-3 px-5 me-3" href="#destinos"><span th:text="#{hero.slide1.btn1}">Explorar ahora</span></a>
+                            <a class="btn btn-outline-light rounded-pill py-3 px-5" href="/guia"><span th:text="#{hero.slide1.btn2}">Leer la Guía</span></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="/img/hero-playa-blanca.jpg" class="img-fluid w-100" alt="Playa Blanca Barú">
+                    <div class="carousel-caption">
+                        <div class="p-3" style="max-width:860px;">
+                            <h4 class="text-uppercase fw-bold mb-3" style="letter-spacing:4px;"><span th:text="#{hero.slide2.badge}">🏖️ Isla de Barú</span></h4>
+                            <h1 class="display-2 text-white mb-3" style="font-style:italic;"><span th:text="#{hero.slide2.title}">Playa Blanca</span></h1>
+                            <p class="mb-5 fs-5" style="color:rgba(255,255,255,.85); font-weight:300;"><span th:text="#{hero.slide2.sub}">Aguas turquesa...</span></p>
+                            <a class="btn btn-primary rounded-pill py-3 px-5" href="/lugares?categoriaId=1"><span th:text="#{hero.slide2.btn}">Ver playas</span></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="/img/hero-castillo.jpg" class="img-fluid w-100" alt="Castillo San Felipe">
+                    <div class="carousel-caption">
+                        <div class="p-3" style="max-width:860px;">
+                            <h4 class="text-uppercase fw-bold mb-3" style="letter-spacing:4px;"><span th:text="#{hero.slide3.badge}">🏰 Siglo XVII</span></h4>
+                            <h1 class="display-2 text-white mb-3" style="font-style:italic;"><span th:text="#{hero.slide3.title}">Castillo San Felipe</span></h1>
+                            <p class="mb-5 fs-5" style="color:rgba(255,255,255,.85); font-weight:300;"><span th:text="#{hero.slide3.sub}">La fortaleza...</span></p>
+                            <a class="btn btn-primary rounded-pill py-3 px-5" href="/guia"><span th:text="#{hero.slide3.btn}">Conocer historia</span></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-item">
+                    <img src="/img/hero-getsemani.jpg" class="img-fluid w-100" alt="Getsemaní">
+                    <div class="carousel-caption">
+                        <div class="p-3" style="max-width:860px;">
+                            <h4 class="text-uppercase fw-bold mb-3" style="letter-spacing:4px;"><span th:text="#{hero.slide4.badge}">🎨 Arte & Bohemia</span></h4>
+                            <h1 class="display-2 text-white mb-3" style="font-style:italic;"><span th:text="#{hero.slide4.title}">Barrio Getsemaní</span></h1>
+                            <p class="mb-5 fs-5" style="color:rgba(255,255,255,.85); font-weight:300;"><span th:text="#{hero.slide4.sub}">Murales vibrantes...</span></p>
+                            <a class="btn btn-primary rounded-pill py-3 px-5" href="/actividades"><span th:text="#{hero.slide4.btn}">Ver actividades</span></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselId" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon btn bg-primary" aria-hidden="false"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselId" data-bs-slide="next">
+                <span class="carousel-control-next-icon btn bg-primary" aria-hidden="false"></span>
+            </button>
+        </div>
+    </div>
+</div>
+
+        </form>
+    </div>
+</div>
+
+<!-- ── ABOUT ── -->
+<div class="container-fluid about py-5">
+    <div class="container py-5">
+        <div class="row g-5 align-items-center">
+            <div class="col-lg-5">
+                <div class="about-frame" style="padding:0 20px 20px 0;">
+                    <img src="/img/about-torre-reloj.jpg"
+                         class="img-fluid w-100" style="object-fit:cover; aspect-ratio:4/3;" alt="Puerta del Reloj">
+                    <div class="about-badge">
+                        <span>490</span>
+                        <span>años de historia</span>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-7">
+                <h5 class="section-about-title pe-3"><span th:text="#{about.tag}">Sobre ODYXS</span></h5>
+                <h1 class="mb-4" style="font-size:3rem; line-height:1.15;"><span th:utext="#{about.title}">Bienvenido a Cartagena</span></h1>
+                <p class="mb-3 text-muted" style="font-size:1.05rem; line-height:1.8;"><span th:text="#{about.p1}">ODYXS es tu guía...</span></p>
+                <p class="mb-4 text-muted" style="line-height:1.8;"><span th:text="#{about.p2}">Sus calles...</span></p>
+                <div class="row gy-3 gx-4 mb-4">
+                    <div class="col-sm-6"><p class="mb-0"><i class="fa fa-check-circle me-2" style="color:var(--gold);"></i><span th:text="#{about.check1}">Lugares turísticos verificados</span></p></div>
+                    <div class="col-sm-6"><p class="mb-0"><i class="fa fa-check-circle me-2" style="color:var(--gold);"></i><span th:text="#{about.check2}">Hoteles Top 6</span></p></div>
+                    <div class="col-sm-6"><p class="mb-0"><i class="fa fa-check-circle me-2" style="color:var(--gold);"></i><span th:text="#{about.check3}">Playas y sitios históricos</span></p></div>
+                    <div class="col-sm-6"><p class="mb-0"><i class="fa fa-check-circle me-2" style="color:var(--gold);"></i><span th:text="#{about.check4}">Mapa interactivo</span></p></div>
+                    <div class="col-sm-6"><p class="mb-0"><i class="fa fa-check-circle me-2" style="color:var(--gold);"></i><span th:text="#{about.check5}">Chatbot ODYX 24/7</span></p></div>
+                    <div class="col-sm-6"><p class="mb-0"><i class="fa fa-check-circle me-2" style="color:var(--gold);"></i><span th:text="#{about.check6}">Eventos y festivales</span></p></div>
+                </div>
+                <a class="btn btn-primary rounded-pill py-3 px-5 mt-2" href="/guia">Leer la Guía Completa</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── SERVICIOS ── -->
+<div class="container-fluid py-5" style="background:var(--cream);">
+    <div class="container py-5">
+        <div class="mx-auto text-center mb-5" style="max-width:700px;">
+            <h5 class="section-title px-3"><span th:text="#{services.tag}">Servicios</span></h5>
+            <h1 class="mt-3 mb-3" style="font-size:2.8rem;"><span th:text="#{services.title}">¿Qué ofrece ODYXS?</span></h1>
+            <p class="text-muted"><span th:text="#{services.sub}">Todo lo que necesitas...</span></p>
+        </div>
+        <div class="row g-4">
+            <div class="col-lg-6">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="service-content-inner d-flex align-items-center bg-white border border-primary rounded-4 p-4 pe-0">
+                            <div class="service-content text-end">
+                                <h5 class="mb-3"><span th:text="#{services.s1.title}">Guía de Lugares</span></h5>
+                                <p class="mb-0 text-muted small"><span th:text="#{services.s1.desc}">Explora lugares...</span></p>
+                            </div>
+                            <div class="service-icon p-4 ms-3"><i class="fa fa-map-marker-alt fa-3x"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="service-content-inner d-flex align-items-center bg-white border border-primary rounded-4 p-4 pe-0">
+                            <div class="service-content text-end">
+                                <h5 class="mb-3"><span th:text="#{services.s2.title}">Información de Hoteles</span></h5>
+                                <p class="mb-0 text-muted small"><span th:text="#{services.s2.desc}">Consulta...</span></p>
+                            </div>
+                            <div class="service-icon p-4 ms-3"><i class="fa fa-hotel fa-3x"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="service-content-inner d-flex align-items-center bg-white border border-primary rounded-4 p-4 pe-0">
+                            <div class="service-content text-end">
+                                <h5 class="mb-3"><span th:text="#{services.s3.title}">Guía de Viaje Completa</span></h5>
+                                <p class="mb-0 text-muted small"><span th:text="#{services.s3.desc}">Historia...</span></p>
+                            </div>
+                            <div class="service-icon p-4 ms-3"><i class="fa fa-book-open fa-3x"></i></div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="service-content-inner d-flex align-items-center bg-white border border-primary rounded-4 p-4 pe-0">
+                            <div class="service-content text-end">
+                                <h5 class="mb-3"><span th:text="#{services.s4.title}"><span th:text="#{cta.tag}">Chatbot ODYX</span></span></h5>
+                                <p class="mb-0 text-muted small"><span th:text="#{services.s4.desc}">Resuelve...</span></p>
+                            </div>
+                            <div class="service-icon p-4 ms-3"><i class="fa fa-robot fa-3x"></i></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="row g-4">
+                    <div class="col-12">
+                        <div class="service-content-inner d-flex align-items-center bg-white border border-primary rounded-4 p-4 ps-0">
+                            <div class="service-icon p-4 me-3"><i class="fa fa-calendar-alt fa-3x"></i></div>
+                            <div class="service-content">
+                                <h5 class="mb-3"><span th:text="#{services.s5.title}">Eventos y Festivales</span></h5>
+                                <p class="mb-0 text-muted small"><span th:text="#{services.s5.desc}">Hay Festival...</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="service-content-inner d-flex align-items-center bg-white border border-primary rounded-4 p-4 ps-0">
+                            <div class="service-icon p-4 me-3"><i class="fa fa-bus fa-3x"></i></div>
+                            <div class="service-content">
+                                <h5 class="mb-3"><span th:text="#{services.s6.title}">Guía de Transporte</span></h5>
+                                <p class="mb-0 text-muted small"><span th:text="#{services.s6.desc}">Transcaribe...</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="service-content-inner d-flex align-items-center bg-white border border-primary rounded-4 p-4 ps-0">
+                            <div class="service-icon p-4 me-3"><i class="fa fa-globe fa-3x"></i></div>
+                            <div class="service-content">
+                                <h5 class="mb-3"><span th:text="#{services.s7.title}">Mapa Interactivo</span></h5>
+                                <p class="mb-0 text-muted small"><span th:text="#{services.s7.desc}">Explora la ciudad...</span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-12">
+                        <div class="service-content-inner d-flex align-items-center bg-white border border-primary rounded-4 p-4 ps-0">
+                            <div class="service-icon p-4 me-3"><i class="fa fa-star fa-3x"></i></div>
+                            <div class="service-content">
+                                <h5 class="mb-3"><span th:text="#{services.s8.title}">Reseñas de Viajeros</span></h5>
+                                <p class="mb-0 text-muted small"><span th:text="#{services.s8.desc}">Lee y publica...</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── DESTINOS POR CATEGORÍA ── -->
+<div id="destinos" class="container-fluid py-5" style="background:#fff;">
+    <div class="container py-5">
+        <div class="mx-auto text-center mb-5" style="max-width:700px;">
+            <h5 class="section-title px-3" th:text="#{section.destinations.community}">Destinos recomendados por la comunidad</h5>
+            <h1 class="mt-3 mb-3" style="font-size:2.8rem;" th:text="#{section.explore}">Explora por Categoría</h1>
+            <p class="text-muted" th:text="#{section.explore.subtitle}">Desde las playas del Caribe hasta las fortalezas coloniales</p>
+        </div>
+        <div class="tab-class text-center">
+            <ul class="nav nav-pills d-inline-flex justify-content-center mb-5 flex-wrap gap-2">
+                <li class="nav-item">
+                    <a class="cat-pill-btn active" data-bs-toggle="pill" href="#tab-todos"
+                       th:text="#{section.filterAll}">🌟 All</a>
+                </li>
+                <li class="nav-item" th:each="cat : ${categorias}">
+                    <a class="cat-pill-btn" data-bs-toggle="pill"
+                       th:href="${'#tab-' + cat.id}"
+                       th:text="${#messages.msg('cat.' + cat.nombreClave)}">Categoría</a>
+                </li>
+            </ul>
+            <div class="tab-content">
+                <div id="tab-todos" class="tab-pane fade show p-0 active">
+                    <div class="row g-4">
+                        <div class="col-lg-4 col-md-6" th:each="lugar, iterStat : ${lugares}" th:if="${iterStat.index < 6}">
+                            <a th:href="@{/lugares/{id}(id=${lugar.id})}" class="lugar-card-travela text-decoration-none">
+                                <div class="lct-img">
+                                    <img th:if="${lugar.imagenUrl != null}" th:src="${lugar.imagenUrl}" th:alt="${lugar.nombre}"
+                                         onerror="this.src='/img/bocagrande.jpg'">
+                                    <img th:if="${lugar.imagenUrl == null}"
+                                         src="/img/bocagrande.jpg" alt="Lugar">
+                                    <span class="lct-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Cat</span>
+                                    <span class="lct-verified" th:if="${lugar.esOficial}">✓ <span th:text="#{lugares.verificado}">Verificado</span></span>
+                                </div>
+                                <div class="lct-body">
+                                    <h5 data-db th:text="${lugar.nombre}">Nombre</h5>
+                                    <p><i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i><span data-db th:text="${lugar.ubicacion}">Ubicación</span></p>
+                                    <span class="lct-ver-mas" th:text="#{lugares.verDetalles}">Ver detalles</span> <i class="fa fa-arrow-right ms-1"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="text-center mt-5">
+                        <a href="/lugares?categoriaId=0" class="btn btn-primary rounded-pill py-3 px-5" th:text="#{section.verTodosLugares}">Ver todos los lugares</a>
+                    </div>
+                </div>
+                <div th:each="cat : ${categorias}" th:id="${'tab-' + cat.id}" class="tab-pane fade show p-0">
+                    <div class="row g-4">
+                        <div class="col-lg-4 col-md-6" th:each="lugar : ${lugares}" th:if="${lugar.categoria.id == cat.id}">
+                            <a th:href="@{/lugares/{id}(id=${lugar.id})}" class="lugar-card-travela text-decoration-none">
+                                <div class="lct-img">
+                                    <img th:if="${lugar.imagenUrl != null}" th:src="${lugar.imagenUrl}" th:alt="${lugar.nombre}"
+                                         onerror="this.src='/img/bocagrande.jpg'">
+                                    <img th:if="${lugar.imagenUrl == null}"
+                                         src="/img/bocagrande.jpg" alt="Lugar">
+                                    <span class="lct-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Cat</span>
+                                </div>
+                                <div class="lct-body">
+                                    <h5 data-db th:text="${lugar.nombre}">Nombre</h5>
+                                    <p><i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i><span data-db th:text="${lugar.ubicacion}">Ubicación</span></p>
+                                    <span class="lct-ver-mas" th:text="#{lugares.verDetalles}">Ver detalles</span> <i class="fa fa-arrow-right ms-1"></i>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="text-center mt-5">
+                        <a th:href="@{/lugares(categoriaId=${cat.id})}" class="btn btn-primary rounded-pill py-3 px-5"
+                           th:text="${#messages.msg('section.viewAll') + ': ' + #messages.msg('cat.' + cat.nombreClave)}"><span th:text="#{events.viewAll}">Ver todos</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── DATOS DE INTERÉS ── -->
+<div class="container-fluid py-5" style="background:var(--cream);">
+    <div class="container py-5">
+        <div class="mx-auto text-center mb-5" style="max-width:700px;">
+            <h5 class="section-title px-3"><span th:text="#{info.tag}">Información</span></h5>
+            <h1 class="mt-3 mb-3" style="font-size:2.8rem;"><span th:text="#{info.title}">Lo que debes saber...</span></h1>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="info-card h-100 d-flex gap-3">
+                    <div class="info-icon"><i class="fa fa-sun"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-2" style="color:var(--azul);"><span th:text="#{info.clima.title}"><span th:text="#{clima.tag}">Clima</span></span></h6>
+                        <p class="text-muted small mb-0"><span th:text="#{info.clima.desc}">Tropical...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="info-card h-100 d-flex gap-3">
+                    <div class="info-icon"><i class="fa fa-plane"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-2" style="color:var(--azul);"><span th:text="#{info.llegada.title}">Cómo llegar</span></h6>
+                        <p class="text-muted small mb-0"><span th:text="#{info.llegada.desc}">Aeropuerto...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="info-card h-100 d-flex gap-3">
+                    <div class="info-icon"><i class="fa fa-money-bill-wave"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-2" style="color:var(--azul);">Moneda</h6>
+                        <p class="text-muted small mb-0">Peso colombiano (COP). Se aceptan tarjetas en la mayoría de hoteles y restaurantes. Hay cajeros en el Centro Histórico y Bocagrande.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="info-card h-100 d-flex gap-3">
+                    <div class="info-icon"><i class="fa fa-language"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-2" style="color:var(--azul);">Idioma</h6>
+                        <p class="text-muted small mb-0">Español. En hoteles y zonas turísticas del Centro Histórico y Bocagrande hay personal con inglés básico.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="info-card h-100 d-flex gap-3">
+                    <div class="info-icon"><i class="fa fa-shield-alt"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-2" style="color:var(--azul);">Seguridad</h6>
+                        <p class="text-muted small mb-0"><span th:text="#{info.seguridad.desc}">El Centro Histórico...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="info-card h-100 d-flex gap-3">
+                    <div class="info-icon"><i class="fa fa-clock"></i></div>
+                    <div>
+                        <h6 class="fw-bold mb-2" style="color:var(--azul);">Mejor época para visitar</h6>
+                        <p class="text-muted small mb-0"><span th:text="#{info.temporada.desc}">Diciembre a abril...</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── GASTRONOMÍA ── -->
+<div class="container-fluid py-5" style="background:#fff;">
+    <div class="container py-5">
+        <div class="mx-auto text-center mb-5" style="max-width:700px;">
+            <h5 class="section-title px-3"><span th:text="#{gastro.tag}">Gastronomía</span></h5>
+            <h1 class="mt-3 mb-3" style="font-size:2.8rem;"><span th:text="#{gastro.title}">Sabores del Caribe</span></h1>
+            <p class="text-muted"><span th:text="#{gastro.sub}">La cocina cartagenera...</span></p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="gastro-card" style="border-radius:14px;overflow:hidden;">
+                    <img src="/img/gastro-arepa.jpg" alt="Arepa de Huevo" style="width:100%;height:220px;object-fit:cover;">
+                    <div class="gastro-overlay">
+                        <span class="gastro-tag">Callejero</span>
+                        <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;"><span th:text="#{gastro.g1.name}">Arepa de Huevo</span></h5>
+                        <p class="text-white-75 small mb-0"><span th:text="#{gastro.g1.desc}">El snack...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="gastro-card" style="border-radius:14px;overflow:hidden;">
+                    <img src="/img/gastro-arroz-mariscos.jpg" alt="Arroz de Mariscos" style="width:100%;height:220px;object-fit:cover;">
+                    <div class="gastro-overlay">
+                        <span class="gastro-tag">Plato Típico</span>
+                        <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;"><span th:text="#{gastro.g2.name}">Arroz con Mariscos</span></h5>
+                        <p class="text-white-75 small mb-0"><span th:text="#{gastro.g2.desc}">Arroz cocinado...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="gastro-card" style="border-radius:14px;overflow:hidden;">
+                    <img src="/img/gastro-jugos.jpg" alt="Coctel de Frutas" style="width:100%;height:220px;object-fit:cover;">
+                    <div class="gastro-overlay">
+                        <span class="gastro-tag">Bebidas</span>
+                        <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;"><span th:text="#{gastro.g3.name}">Jugos Tropicales</span></h5>
+                        <p class="text-white-75 small mb-0"><span th:text="#{gastro.g3.desc}">Maracuyá...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="gastro-card" style="border-radius:14px;overflow:hidden;">
+                    <img src="/img/gastro-carimaniola.jpg" alt="Carimañola" style="width:100%;height:220px;object-fit:cover;">
+                    <div class="gastro-overlay">
+                        <span class="gastro-tag">Fritanga</span>
+                        <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;"><span th:text="#{gastro.g4.name}">Carimañola de Yuca</span></h5>
+                        <p class="text-white-75 small mb-0"><span th:text="#{gastro.g4.desc}">Masa de yuca...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="gastro-card" style="border-radius:14px;overflow:hidden;">
+                    <img src="/img/gastro-ceviche.jpg" alt="Ceviche" style="width:100%;height:220px;object-fit:cover;">
+                    <div class="gastro-overlay">
+                        <span class="gastro-tag">Mariscos</span>
+                        <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;"><span th:text="#{gastro.g5.name}">Ceviche Cartagenero</span></h5>
+                        <p class="text-white-75 small mb-0"><span th:text="#{gastro.g5.desc}">Camarones...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="gastro-card" style="border-radius:14px;overflow:hidden;">
+                    <img src="/img/gastro-ron.jpg" alt="Ron colombiano" style="width:100%;height:220px;object-fit:cover;">
+                    <div class="gastro-overlay">
+                        <span class="gastro-tag">Bebida</span>
+                        <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;"><span th:text="#{gastro.g6.name}">Ron & Chocolate</span></h5>
+                        <p class="text-white-75 small mb-0"><span th:text="#{gastro.g6.desc}">Degustación...</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a href="/actividades?cat=GASTRONOMIA" class="btn btn-primary rounded-pill py-3 px-5" th:text="#{gastro.cta.btn}">Ver experiencias gastronómicas</a>
+        </div>
+    </div>
+</div>
+
+<!-- ── CLIMA / MEJOR ÉPOCA ── -->
+<div class="container-fluid py-5" style="background:var(--cream);">
+    <div class="container py-5">
+        <div class="mx-auto text-center mb-5" style="max-width:700px;">
+            <h5 class="section-title px-3"><span th:text="#{clima.tag}">Clima</span></h5>
+            <h1 class="mt-3 mb-3" style="font-size:2.8rem;"><span th:text="#{clima.title}">¿Cuándo visitar?</span></h1>
+            <p class="text-muted"><span th:text="#{clima.sub}">Clima tropical...</span></p>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-6 col-lg-3">
+                <div class="clima-card">
+                    <div class="clima-icon">☀️</div>
+                    <div class="clima-meses">Dic — Abr</div>
+                    <div class="clima-temp">26–28°C</div>
+                    <h6 class="fw-bold mt-2 mb-2" style="color:var(--azul);"><span th:text="#{clima.q1.title}">Temporada Seca</span></h6>
+                    <p class="text-muted small mb-0"><span th:text="#{clima.q1.desc}">Época ideal...</span></p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="clima-card">
+                    <div class="clima-icon">🌤️</div>
+                    <div class="clima-meses">May — Jul</div>
+                    <div class="clima-temp">27–30°C</div>
+                    <h6 class="fw-bold mt-2 mb-2" style="color:var(--azul);"><span th:text="#{clima.q2.title}">Inicio de Lluvias</span></h6>
+                    <p class="text-muted small mb-0"><span th:text="#{clima.q2.desc}">Lluvia breve...</span></p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="clima-card">
+                    <div class="clima-icon">🌧️</div>
+                    <div class="clima-meses">Ago — Oct</div>
+                    <div class="clima-temp">27–31°C</div>
+                    <h6 class="fw-bold mt-2 mb-2" style="color:var(--azul);"><span th:text="#{clima.q3.title}">Temporada de Lluvias</span></h6>
+                    <p class="text-muted small mb-0"><span th:text="#{clima.q3.desc}">Aguaceros...</span></p>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="clima-card">
+                    <div class="clima-icon">🎊</div>
+                    <div class="clima-meses">Nov — Dic</div>
+                    <div class="clima-temp">26–28°C</div>
+                    <h6 class="fw-bold mt-2 mb-2" style="color:var(--azul);"><span th:text="#{clima.q4.title}">Fiestas y Eventos</span></h6>
+                    <p class="text-muted small mb-0"><span th:text="#{clima.q4.desc}">Fiestas...</span></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── TOP 6 HOTELES ── -->
+<div id="hoteles" class="container-fluid py-5" style="background:#fff;">
+    <div class="container py-5">
+        <div class="mx-auto text-center mb-5" style="max-width:700px;">
+            <h5 class="section-title px-3"><span th:text="#{hotels.tag}">Alojamiento</span></h5>
+            <h1 class="mt-3 mb-3" style="font-size:2.8rem;"><span th:text="#{hotels.title}">Top 6 Hoteles</span></h1>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="hotel-card-odyxs">
+                    <div class="hotel-card-img">
+                        <img src="/img/hotel-sofitel.jpg" alt="Sofitel Santa Clara">
+                        <span class="hotel-badge-info">⭐⭐⭐⭐⭐ Lujo</span>
+                    </div>
+                    <div class="p-4">
+                        <div class="hotel-stars mb-1">★★★★★</div>
+                        <h5 class="fw-bold mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.2rem;"><span th:text="#{hotels.h1.name}">Sofitel Legend Santa Clara</span></h5>
+                        <p class="text-muted small mb-2"><i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i><span th:text="#{hotels.h1.loc}">Centro Histórico, Cartagena</span></p>
+                        <p class="small text-muted"><span th:text="#{hotels.h1.desc}">Convento...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="hotel-card-odyxs">
+                    <div class="hotel-card-img">
+                        <img src="/img/hotel-charleston.jpg" alt="Charleston Santa Teresa">
+                        <span class="hotel-badge-info">⭐⭐⭐⭐⭐ Lujo</span>
+                    </div>
+                    <div class="p-4">
+                        <div class="hotel-stars mb-1">★★★★★</div>
+                        <h5 class="fw-bold mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.2rem;"><span th:text="#{hotels.h2.name}">Charleston Santa Teresa</span></h5>
+                        <p class="text-muted small mb-2"><i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i><span th:text="#{hotels.h2.loc}">Plaza Santa Teresa...</span></p>
+                        <p class="small text-muted"><span th:text="#{hotels.h2.desc}">Hotel boutique...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="hotel-card-odyxs">
+                    <div class="hotel-card-img">
+                        <img src="/img/hotel-bastion.jpg" alt="Bastión Luxury">
+                        <span class="hotel-badge-info">⭐⭐⭐⭐⭐ Lujo</span>
+                    </div>
+                    <div class="p-4">
+                        <div class="hotel-stars mb-1">★★★★★</div>
+                        <h5 class="fw-bold mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.2rem;"><span th:text="#{hotels.h3.name}">Bastión Luxury Hotel</span></h5>
+                        <p class="text-muted small mb-2"><i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i><span th:text="#{hotels.h3.loc}">Murallas, Centro Histórico</span></p>
+                        <p class="small text-muted"><span th:text="#{hotels.h3.desc}">Integrado...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="hotel-card-odyxs">
+                    <div class="hotel-card-img">
+                        <img src="/img/hotel-almirante.jpg" alt="Hotel Almirante">
+                        <span class="hotel-badge-info">⭐⭐⭐⭐ Confort</span>
+                    </div>
+                    <div class="p-4">
+                        <div class="hotel-stars mb-1" style="color:var(--gold);">★★★★</div>
+                        <h5 class="fw-bold mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.2rem;"><span th:text="#{hotels.h4.name}">Hotel Almirante Cartagena</span></h5>
+                        <p class="text-muted small mb-2"><i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i><span th:text="#{hotels.h4.loc}">Bocagrande, Cartagena</span></p>
+                        <p class="small text-muted"><span th:text="#{hotels.h4.desc}">Clásico hotel...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="hotel-card-odyxs">
+                    <div class="hotel-card-img">
+                        <img src="/img/hotel-capilla.jpg" alt="GHL Capilla del Mar">
+                        <span class="hotel-badge-info">⭐⭐⭐⭐ Confort</span>
+                    </div>
+                    <div class="p-4">
+                        <div class="hotel-stars mb-1" style="color:var(--gold);">★★★★</div>
+                        <h5 class="fw-bold mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.2rem;"><span th:text="#{hotels.h5.name}">GHL Hotel Capilla del Mar</span></h5>
+                        <p class="text-muted small mb-2"><i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i>Bocagrande, Cartagena</p>
+                        <p class="small text-muted"><span th:text="#{hotels.h5.desc}">Excelente ubicación...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="hotel-card-odyxs">
+                    <div class="hotel-card-img">
+                        <img src="/img/hotel-la-casona.jpg" alt="Hostal Getsemaní">
+                        <span class="hotel-badge-info">💰 Económico</span>
+                    </div>
+                    <div class="p-4">
+                        <div class="hotel-stars mb-1" style="color:#aaa;">★★★</div>
+                        <h5 class="fw-bold mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.2rem;"><span th:text="#{hotels.h6.name}">Hostal la casona</span></h5>
+                        <p class="text-muted small mb-2"><i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i><span th:text="#{hotels.h6.loc}">Barrio Getsemaní, Cartagena</span></p>
+                        <p class="small text-muted"><span th:text="#{hotels.h6.desc}">El barrio más auténtico...</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a href="/lugares?categoriaId=4" class="btn btn-primary rounded-pill py-3 px-5">
+                <i class="fa fa-hotel me-2"></i><span th:text="#{hotels.verTodos}">Ver todos los hoteles</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ── ACTIVIDADES ── -->
+<div class="container-fluid py-5" style="background:var(--cream);">
+    <div class="container py-5">
+        <div class="mx-auto text-center mb-5" style="max-width:700px;">
+            <h5 class="section-title px-3">Actividades</h5>
+            <h1 class="mt-3 mb-4" style="font-size:2.8rem;"><span th:text="#{acts.title}">Qué hacer en Cartagena</span></h1>
+            <p class="text-muted mb-0"><span th:text="#{acts.sub}">Tours, aventuras...</span></p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="national-item">
+                    <img src="/img/act-castillo-sanfelipe.jpg" class="img-fluid w-100" alt="Tour Castillo San Felipe">
+                    <div class="national-content">
+                        <div class="national-info">
+                            <h5 class="text-white text-uppercase mb-2" style="font-family:'Cormorant Garamond',serif; font-size:1.3rem;"><span th:text="#{acts.a1.title}">Tour Castillo San Felipe</span></h5>
+                            <a href="/actividades?cat=CULTURA" class="btn-hover text-white small">Ver actividades <i class="fa fa-arrow-right ms-2"></i></a>
+                        </div>
+                    </div>
+                    <div class="national-plus-icon">
+                        <a href="/actividades?cat=CULTURA" class="my-auto"><i class="fas fa-link fa-2x text-white"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="national-item">
+                    <img src="/img/act-islas-rosario.jpg" class="img-fluid w-100" alt="Islas del Rosario">
+                    <div class="national-content">
+                        <div class="national-info">
+                            <h5 class="text-white text-uppercase mb-2" style="font-family:'Cormorant Garamond',serif; font-size:1.3rem;"><span th:text="#{acts.a2.title}">Buceo — Islas del Rosario</span></h5>
+                            <a href="/actividades?cat=DEPORTE" class="btn-hover text-white small">Ver deportes <i class="fa fa-arrow-right ms-2"></i></a>
+                        </div>
+                    </div>
+                    <div class="tour-offer bg-info">¡Popular!</div>
+                    <div class="national-plus-icon">
+                        <a href="/actividades?cat=DEPORTE" class="my-auto"><i class="fas fa-link fa-2x text-white"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="national-item">
+                    <img src="/img/act-chiva-rumbera.jpg" class="img-fluid w-100" alt="Chiva Rumbera">
+                    <div class="national-content">
+                        <div class="national-info">
+                            <h5 class="text-white text-uppercase mb-2" style="font-family:'Cormorant Garamond',serif; font-size:1.3rem;"><span th:text="#{acts.a3.title}">Chiva Rumbera Nocturna</span></h5>
+                            <a href="/actividades?cat=TOUR" class="btn-hover text-white small">Ver tours <i class="fa fa-arrow-right ms-2"></i></a>
+                        </div>
+                    </div>
+                    <div class="tour-offer" style="background:var(--coral);">¡No te lo pierdas!</div>
+                    <div class="national-plus-icon">
+                        <a href="/actividades?cat=TOUR" class="my-auto"><i class="fas fa-link fa-2x text-white"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="national-item">
+                    <img src="/img/act-gastronomia.jpg" class="img-fluid w-100" alt="Gastronomía">
+                    <div class="national-content">
+                        <div class="national-info">
+                            <h5 class="text-white text-uppercase mb-2" style="font-family:'Cormorant Garamond',serif; font-size:1.3rem;"><span th:text="#{acts.a4.title}">Cocina Caribeña</span></h5>
+                            <a href="/actividades?cat=GASTRONOMIA" class="btn-hover text-white small">Ver gastronomía <i class="fa fa-arrow-right ms-2"></i></a>
+                        </div>
+                    </div>
+                    <div class="national-plus-icon">
+                        <a href="/actividades?cat=GASTRONOMIA" class="my-auto"><i class="fas fa-link fa-2x text-white"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="national-item">
+                    <img src="/img/act-kayak-manglares.jpg" class="img-fluid w-100" alt="Kayak Manglares">
+                    <div class="national-content">
+                        <div class="national-info">
+                            <h5 class="text-white text-uppercase mb-2" style="font-family:'Cormorant Garamond',serif; font-size:1.3rem;"><span th:text="#{acts.a5.title}">Kayak en los Manglares</span></h5>
+                            <a href="/actividades?cat=NATURALEZA" class="btn-hover text-white small">Ver naturaleza <i class="fa fa-arrow-right ms-2"></i></a>
+                        </div>
+                    </div>
+                    <div class="national-plus-icon">
+                        <a href="/actividades?cat=NATURALEZA" class="my-auto"><i class="fas fa-link fa-2x text-white"></i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="national-item">
+                    <img src="/img/act-getsemani.jpg" class="img-fluid w-100" alt="Tour Getsemaní">
+                    <div class="national-content">
+                        <div class="national-info">
+                            <h5 class="text-white text-uppercase mb-2" style="font-family:'Cormorant Garamond',serif; font-size:1.3rem;"><span th:text="#{acts.a6.title}">Tour Getsemaní a Pie</span></h5>
+                            <a href="/actividades?cat=TOUR" class="btn-hover text-white small">Ver tours <i class="fa fa-arrow-right ms-2"></i></a>
+                        </div>
+                    </div>
+                    <div class="national-plus-icon">
+                        <a href="/actividades?cat=TOUR" class="my-auto"><i class="fas fa-link fa-2x text-white"></i></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a href="/actividades" class="btn btn-primary rounded-pill py-3 px-5" th:text="#{acts.cta.btn}">Ver todas las actividades</a>
+        </div>
+    </div>
+</div>
+
+<!-- ── EVENTOS ── -->
+<div class="container-fluid py-5" style="background:#fff;">
+    <div class="container py-5">
+        <div class="mx-auto text-center mb-5" style="max-width:700px;">
+            <h5 class="section-title px-3"><span th:text="#{events.tag}">Agenda</span></h5>
+            <h1 class="mt-3 mb-0" style="font-size:2.8rem;"><span th:text="#{events.title}">Próximos Eventos</span></h1>
+        </div>
+        <div class="row g-4 justify-content-center">
+            <div class="col-lg-4 col-md-6" th:each="ev, iter : ${eventos}" th:if="${iter.index < 3}">
+                <div class="blog-item">
+                    <div class="blog-img">
+                        <div style="height:200px;overflow:hidden;">
+                            <img class="img-fluid w-100 h-100 rounded-top" style="object-fit:cover;"
+                                 th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/bocagrande.jpg'}"
+                                 th:alt="${ev.nombre}"
+                                 onerror="this.src='/img/bocagrande.jpg'">
+                        </div>
+                        <div class="d-flex align-items-center border border-start-0 border-end-0 bg-white">
+                            <small class="flex-fill text-center border-end py-2 text-muted">
+                                <i class="fa fa-calendar-alt me-2" style="color:var(--gold);"></i>
+                                <span th:text="${#temporals.format(ev.fecha,'dd MMM yyyy')}">Fecha</span>
+                            </small>
+                            <small class="flex-fill text-center py-2 text-muted">
+                                <i class="fa fa-map-marker-alt me-2" style="color:var(--gold);"></i>
+                                <span th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}">Lugar</span>
+                            </small>
+                        </div>
+                    </div>
+                    <div class="border border-top-0 rounded-bottom p-4 bg-white">
+                        <h5 data-db class="fw-bold mb-2" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.25rem;" th:text="${ev.nombre}">Nombre</h5>
+                        <p data-db class="my-3 text-muted small" th:text="${#strings.abbreviate(ev.descripcion,130)}">Descripción</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Fallback si no hay eventos -->
+        <div class="row g-4 justify-content-center" th:if="${#lists.isEmpty(eventos)}">
+            <div class="col-lg-4 col-md-6">
+                <div class="blog-item">
+                    <div style="height:200px;background:linear-gradient(135deg,var(--azul),var(--azul-mid));border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;">
+                        <span style="font-size:4rem;">🎭</span>
+                    </div>
+                    <div class="border border-top-0 rounded-bottom p-4 bg-white">
+                        <h5 class="fw-bold mb-2" style="color:var(--azul); font-family:'Cormorant Garamond',serif;"><span th:text="#{events.e1.title}">Hay Festival Cartagena</span></h5>
+                        <p class="my-3 text-muted small"><span th:text="#{events.e1.desc}">El festival...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="blog-item">
+                    <div style="height:200px;background:linear-gradient(135deg,var(--coral),#c0392b);border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;">
+                        <span style="font-size:4rem;">🎬</span>
+                    </div>
+                    <div class="border border-top-0 rounded-bottom p-4 bg-white">
+                        <h5 class="fw-bold mb-2" style="color:var(--azul); font-family:'Cormorant Garamond',serif;"><span th:text="#{events.e2.title}">FICCI — Festival de Cine</span></h5>
+                        <p class="my-3 text-muted small"><span th:text="#{events.e2.desc}">El Festival Internacional...</span></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-4 col-md-6">
+                <div class="blog-item">
+                    <div style="height:200px;background:linear-gradient(135deg,var(--gold),var(--gold-light));border-radius:14px 14px 0 0;display:flex;align-items:center;justify-content:center;">
+                        <span style="font-size:4rem;">🎆</span>
+                    </div>
+                    <div class="border border-top-0 rounded-bottom p-4 bg-white">
+                        <h5 class="fw-bold mb-2" style="color:var(--azul); font-family:'Cormorant Garamond',serif;"><span th:text="#{events.e3.title}">Fiestas de Independencia</span></h5>
+                        <p class="my-3 text-muted small"><span th:text="#{events.e3.desc}">Cada 11 de noviembre...</span></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="text-center mt-5">
+            <a href="/eventos" class="btn btn-primary rounded-pill py-3 px-5" th:text="#{events.cta.btn}">Ver todos los eventos</a>
+        </div>
+    </div>
+</div>
+
+<!-- ── TESTIMONIOS ── -->
+<div class="container-fluid py-5" style="background:var(--cream);">
+    <div class="container py-5">
+        <div class="mx-auto text-center mb-5" style="max-width:700px;">
+            <h5 class="section-title px-3"><span th:text="#{test.tag}">Viajeros</span></h5>
+            <h1 class="mt-3 mb-0" style="font-size:2.8rem;"><span th:text="#{test.title}">Lo que dicen nuestros usuarios</span></h1>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-6 col-lg-4">
+                <div class="testimonial-item">
+                    <div class="testimonial-comment p-4">
+                        <div style="color:var(--gold); font-size:.9rem; margin-bottom:12px;">★★★★★</div>
+                        <p class="text-muted mb-0" style="font-style:italic; line-height:1.8;"><span th:text="#{test.t1.quote}">...</span></p>
+                    </div>
+                    <div class="text-center pt-5 pb-4" style="position:relative;">
+                        <div class="testimonial-img">
+                            <img src="/img/resena-usuario-carlos.jpg" alt="Usuario">
+                        </div>
+                        <h6 class="mt-3 mb-0 fw-bold" style="color:var(--azul);"><span th:text="#{test.t1.name}">Carlos Mendoza</span></h6>
+                        <small class="text-muted">Bogotá, Colombia</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="testimonial-item">
+                    <div class="testimonial-comment p-4">
+                        <div style="color:var(--gold); font-size:.9rem; margin-bottom:12px;">★★★★★</div>
+                        <p class="text-muted mb-0" style="font-style:italic; line-height:1.8;"><span th:text="#{test.t2.quote}">...</span></p>
+                    </div>
+                    <div class="text-center pt-5 pb-4" style="position:relative;">
+                        <div class="testimonial-img">
+                            <img src="/img/resena-usuario-maria.jpg" alt="Usuario">
+                        </div>
+                        <h6 class="mt-3 mb-0 fw-bold" style="color:var(--azul);"><span th:text="#{test.t2.name}">María Fernández</span></h6>
+                        <small class="text-muted">Ciudad de México, México</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-4">
+                <div class="testimonial-item">
+                    <div class="testimonial-comment p-4">
+                        <div style="color:var(--gold); font-size:.9rem; margin-bottom:12px;">★★★★★</div>
+                        <p class="text-muted mb-0" style="font-style:italic; line-height:1.8;"><span th:text="#{test.t3.quote}">...</span></p>
+                    </div>
+                    <div class="text-center pt-5 pb-4" style="position:relative;">
+                        <div class="testimonial-img">
+                            <img src="/img/resena-usuario-james.jpg" alt="Usuario">
+                        </div>
+                        <h6 class="mt-3 mb-0 fw-bold" style="color:var(--azul);"><span th:text="#{test.t3.name}">James Rodriguez</span></h6>
+                        <small class="text-muted">Miami, Estados Unidos</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ── SUBSCRIBE / CHATBOT CTA ── -->
+<div class="container-fluid subscribe py-5">
+    <div class="container text-center py-5" style="position:relative; z-index:1;">
+        <div class="mx-auto text-center" style="max-width:760px;">
+            <h5 class="subscribe-title px-3" th:text="#{cta.tag}">Chatbot ODYXS</h5>
+            <h1 class="text-white mb-4 mt-3" style="font-size:3rem; font-style:italic;"><span th:text="#{cta.title}">¿Tienes preguntas?</span></h1>
+            <p class="mb-5" style="color:rgba(255,255,255,.8); font-size:1.1rem; font-weight:300;"><span th:text="#{cta.sub}">Habla con ODYX...</span></p>
+            <a href="#" onclick="toggleChat();return false;" class="btn btn-light text-primary rounded-pill py-3 px-5 fw-bold fs-6">
+                🤖 <span th:text="#{cta.btn}">Hablar con ODYX</span>
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- ── FOOTER ── -->
+<div class="container-fluid footer py-5">
+    <div class="container py-5">
+        <div class="row g-5">
+            <div class="col-md-6 col-lg-4">
+                <div class="footer-item d-flex flex-column">
+                    <h4 class="mb-4 text-white footer-brand"><i class="fa fa-anchor me-2" style="color:var(--gold);"></i>ODYXS</h4>
+                    <p class="mb-4" style="color:rgba(255,255,255,.55); font-size:.9rem; line-height:1.7;"><span th:text="#{footer.tagline}">Guía turística...</span></p>
+¿
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-2">
+                <div class="footer-item d-flex flex-column">
+                    <h5 class="mb-4 text-white"><span th:text="#{footer.explore}">Explorar</span></h5>
+                    <a th:each="cat : ${categorias}"
+                       th:href="@{/lugares(categoriaId=${cat.id})}"
+                       th:text="${#messages.msg('cat.' + cat.nombreClave)}">Cat</a>
+                    <a href="/transporte" th:text="#{nav.transporte}">Transporte</a>
+                    <a href="/mapa" th:text="#{nav.mapa}">Mapa</a>
+                </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="footer-item d-flex flex-column">
+                    <h5 class="mb-4 text-white"><span th:text="#{footer.guides}">Guías</span></h5>
+                    <a href="/guia" th:text="#{footer.link.guia}">Guía Turística</a>
+                    <a href="/eventos" th:text="#{footer.link.eventos}">Eventos y Festivales</a>
+                    <a href="/actividades">Actividades</a>
+                    <a href="#" onclick="toggleChat();return false;" th:text="#{footer.link.chatbot}">Chatbot ODYX</a>
+                    <a href="/proponer-lugar" th:text="#{footer.link.proponer}"> Proponer un lugar</a>
+                                    </div>
+            </div>
+            <div class="col-md-6 col-lg-3">
+                <div class="footer-item d-flex flex-column">
+                    <h5 class="mb-4 text-white"><span th:text="#{footer.contact}">Contacto</span></h5>
+                    <a href="#"><i class="fas fa-map-marker-alt me-2" style="color:var(--gold);"></i>Cartagena de Indias, Colombia</a>
+                    <a href="mailto:odyxsvirtualguide@gmail.com"><i class="fas fa-envelope me-2" style="color:var(--gold);"></i>odyxsvirtualguide@gmail.com</a>
+                    <hr class="footer-divider mt-3">
+                    <small style="color:rgba(255,255,255,.4); line-height:1.6;">Proyecto de aula<br>Ingeniería de Sistemas · 2026 By:<br> Carlos Mario Bechara Arias<br>Jose Daniel Zambrano Luna<br>Frida Martina Ariosa Arias<br>Rafael Eduardo Sarmiento Peña</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid copyright py-3">
+    <div class="container text-center">
+        <span th:text="#{footer.copy}">© 2026 ODYXS — Guía Turística de Cartagena de Indias · Todos los derechos reservados</span>
+    </div>
+</div>
+
+<!-- Chatbot FAB -->
+
+<!-- Back to top -->
+<a href="#" class="btn btn-primary btn-md-square back-to-top"><i class="fa fa-arrow-up"></i></a>
+
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.4/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script th:src="@{/js/main.js}"></script>
+
+<!-- ── CHATBOT POPUP FLOTANTE (abajo a la derecha) ── -->
+<div th:replace="fragments :: footer-chatbot-only"></div>
+
+</body>
+</html>

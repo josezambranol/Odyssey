@@ -1,0 +1,793 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ODYXS — Panel de Administración</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=Jost:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/odyxs-travela.css}">
+    <!-- Favicon ODYXS -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+</head>
+<body>
+<div th:replace="fragments :: topbar"></div>
+<div th:replace="fragments :: navbar-interno"></div>
+
+<!-- ═══ PAGE HEADER ═══ -->
+<header class="page-header">
+    <h1> Panel de Administración</h1>
+    <p>Gestiona lugares, categorías y solicitudes pendientes</p>
+</header>
+
+<!-- ═══ CONTENIDO ═══ -->
+<div class="container" style="padding-top: 48px; padding-bottom: 64px;">
+
+    <!-- LUGARES PENDIENTES -->
+    <div class="admin-section">
+        <h2>Lugares Pendientes de Aprobación</h2>
+
+        <div th:if="${#lists.isEmpty(pendientes)}" class="sin-datos">
+            No hay lugares pendientes por revisar.
+        </div>
+
+        <table th:unless="${#lists.isEmpty(pendientes)}" class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Ubicación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="lugar : ${pendientes}">
+                    <td th:text="${lugar.id}"></td>
+                    <td th:text="${lugar.nombre}"></td>
+                    <td>
+                        <span class="badge badge-pendiente" th:text="${lugar.categoria.nombre}"></span>
+                    </td>
+                    <td th:text="${lugar.ubicacion}"></td>
+                    <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <form th:action="@{/admin/lugares/{id}/aprobar(id=${lugar.id})}" method="post">
+                            <button type="submit" class="btn-primary"
+                                    style="padding:8px 16px; font-size:0.8rem;">✔ Aprobar</button>
+                        </form>
+                        <form th:action="@{/admin/lugares/{id}/rechazar(id=${lugar.id})}" method="post">
+                            <button type="submit" class="btn-primary"
+                                    style="padding:8px 16px; font-size:0.8rem; background:#e74c3c; border-color:#e74c3c; color:#fff;">✖ Rechazar</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- LUGARES APROBADOS -->
+    <div class="admin-section">
+        <h2>Lugares Aprobados</h2>
+
+        <div th:if="${#lists.isEmpty(lugares)}" class="sin-datos">
+            No hay lugares aprobados todavía.
+        </div>
+
+        <table th:unless="${#lists.isEmpty(lugares)}" class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Ubicación</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="lugar : ${lugares}">
+                    <td th:text="${lugar.id}"></td>
+                    <td>
+                        <img th:src="${lugar.imagenEfectiva}"
+                             th:alt="${lugar.nombre}"
+                             style="width:64px; height:48px; object-fit:cover; border-radius:6px; display:block;">
+                    </td>
+                    <td th:text="${lugar.nombre}"></td>
+                    <td>
+                        <span class="badge badge-aprobado" th:text="${lugar.categoria.nombre}"></span>
+                    </td>
+                    <td th:text="${lugar.ubicacion}"></td>
+                    <td style="white-space:nowrap;">
+                        <button type="button" class="btn-primary btn-editar-lugar"
+                                style="padding:7px 14px; font-size:0.8rem;"
+                                th:data-id="${lugar.id}"
+                                th:data-nombre="${lugar.nombre}"
+                                th:data-descripcion="${lugar.descripcion}"
+                                th:data-ubicacion="${lugar.ubicacion}"
+                                th:data-url-mapa="${lugar.urlMapa}"
+                                th:data-imagen-url="${lugar.imagenEfectiva}"
+                                th:data-categoria-id="${lugar.categoria.id}">
+                             Editar
+                        </button>
+                        <form th:action="@{/admin/lugares/{id}/eliminar(id=${lugar.id})}" method="post"
+                              onsubmit="return confirm('¿Seguro que quieres eliminar este lugar?');"
+                              style="display:inline;">
+                            <button type="submit" class="btn-primary"
+                                    style="padding:7px 14px; font-size:0.8rem; background:#e74c3c; border-color:#e74c3c; color:#fff;">
+                                 Eliminar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+
+    <!-- AGREGAR LUGAR -->
+    <div class="admin-section">
+        <h2>Agregar Nuevo Lugar</h2>
+
+        <div th:if="${mensajeLugar}" class="alerta-exito" th:text="${mensajeLugar}"></div>
+
+        <form th:action="@{/admin/lugares/agregar}" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label>Nombre del lugar</label>
+                <input type="text" name="nombre" required placeholder="Ej: Castillo San Felipe">
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea name="descripcion" required rows="3" placeholder="Describe el lugar..."></textarea>
+            </div>
+            <div class="form-group">
+                <label>Ubicación</label>
+                <input type="text" name="ubicacion" required placeholder="Ej: Centro Histórico, Cartagena">
+            </div>
+            <div class="form-group">
+                <label>URL del mapa (opcional)</label>
+                <input type="url" name="urlMapa" placeholder="https://maps.google.com/...">
+            </div>
+            <div class="form-group">
+                <label>Categoría</label>
+                <select name="categoriaId" required>
+                    <option value="">-- Seleccionar categoría --</option>
+                    <option th:each="cat : ${categorias}"
+                            th:value="${cat.id}"
+                            th:text="${cat.nombre}">Categoría</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Imagen — sube un archivo JPG/PNG</label>
+                <input type="file" name="imagen" accept="image/*">
+            </div>
+        
+            <button type="submit" class="btn-primary">✚ Crear Lugar</button>
+        </form>
+    </div>
+
+<header class="page-header">
+<h1> Gestion de eventos </h1>
+<p>Gestiona eventos, categorías y solicitudes pendientes</p>
+</header>
+
+
+    <!-- ═══ EVENTOS PENDIENTES DE APROBACIÓN ═══ -->
+    <div class="admin-section">
+        <h2>Eventos Pendientes de Aprobación</h2>
+
+        <div th:if="${#lists.isEmpty(eventosPendientes)}" class="sin-datos">
+            No hay eventos pendientes por revisar.
+        </div>
+
+        <table th:unless="${#lists.isEmpty(eventosPendientes)}" class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Fecha</th>
+                    <th>Lugar</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="ep : ${eventosPendientes}">
+                    <td th:text="${ep.id}"></td>
+                    <td>
+                        <img th:if="${ep.imagenUrl != null and ep.imagenUrl != ''}"
+                             th:src="${ep.imagenUrl}"
+                             th:alt="${ep.nombre}"
+                             style="width:64px; height:48px; object-fit:cover; border-radius:6px; display:block;">
+                        <span th:if="${ep.imagenUrl == null or ep.imagenUrl == ''}"
+                              style="font-size:1.5rem;"></span>
+                    </td>
+                    <td th:text="${ep.nombre}"></td>
+                    <td th:text="${ep.fecha}"></td>
+                    <td th:text="${ep.lugar}"></td>
+                    <td th:text="${ep.descripcion}"></td>
+                    <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <form th:action="@{/admin/eventos/{id}/aprobar(id=${ep.id})}" method="post">
+                            <button type="submit" class="btn-primary"
+                                    style="padding:8px 16px; font-size:0.8rem;">✔ Aprobar</button>
+                        </form>
+                        <form th:action="@{/admin/eventos/{id}/rechazar(id=${ep.id})}" method="post"
+                              onsubmit="return confirm('¿Rechazar y eliminar este evento?');">
+                            <button type="submit" class="btn-primary"
+                                    style="padding:8px 16px; font-size:0.8rem; background:#e74c3c; border-color:#e74c3c; color:#fff;">✖ Rechazar</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ═══ GESTIÓN DE EVENTOS ═══ -->
+    <div class="admin-section">
+        <h2>Gestión de Eventos</h2>
+
+        <!-- Formulario agregar evento -->
+        <form action="/admin/eventos/agregar" method="post" enctype="multipart/form-data" style="margin-bottom:32px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div class="form-group" style="margin:0;">
+                    <label>Nombre del evento</label>
+                    <input type="text" name="nombre" required placeholder="Ej: Hay Festival 2027">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Fecha</label>
+                    <input type="date" name="fecha" required min="2026-01-01" max="2030-12-31" oninput="validarAnio(this)">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Lugar / Sede</label>
+                    <input type="text" name="lugar" placeholder="Ej: Centro Histórico, Cartagena">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Imagen del evento (JPG/PNG)</label>
+                    <input type="file" name="imagen" accept="image/jpeg,image/png,image/jpg">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <input type="text" name="descripcion" placeholder="Breve descripción del evento">
+            </div>
+            <button type="submit" class="btn-primary">+ Agregar evento</button>
+        </form>
+
+        <!-- Listado de eventos existentes -->
+        <div th:if="${#lists.isEmpty(eventos)}" class="sin-datos">
+            No hay eventos registrados todavía.
+        </div>
+
+        <table th:unless="${#lists.isEmpty(eventos)}" class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Fecha</th>
+                    <th>Lugar</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="evento : ${eventos}">
+                    <td th:text="${evento.id}"></td>
+                    <td>
+                        <img th:if="${evento.imagenUrl != null and evento.imagenUrl != ''}"
+                             th:src="${evento.imagenUrl}"
+                             th:alt="${evento.nombre}"
+                             style="width:64px; height:48px; object-fit:cover; border-radius:6px; display:block;">
+                        <span th:if="${evento.imagenUrl == null or evento.imagenUrl == ''}"
+                              style="font-size:1.5rem;"></span>
+                    </td>
+                    <td th:text="${evento.nombre}"></td>
+                    <td th:text="${evento.fecha}"></td>
+                    <td th:text="${evento.lugar}"></td>
+                    <td th:text="${evento.descripcion}"></td>
+                    <td style="white-space:nowrap;">
+                        <button type="button" class="btn-primary btn-editar-evento"
+                                style="padding:7px 14px; font-size:0.8rem;"
+                                th:data-id="${evento.id}"
+                                th:data-nombre="${evento.nombre}"
+                                th:data-fecha="${evento.fecha}"
+                                th:data-lugar="${evento.lugar}"
+                                th:data-descripcion="${evento.descripcion}">
+                            Editar
+                        </button>
+                            <form th:action="@{/admin/eventos/{id}/eliminar(id=${evento.id})}" method="post"
+                            onsubmit="return confirm('¿Seguro que quieres eliminar este evento?');"
+                            style="display:inline;">
+                            <button type="submit" class="btn-primary"
+                                    style="padding:7px 14px; font-size:0.8rem; background:#e74c3c; border-color:#e74c3c; color:#fff;">
+                                Eliminar
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p style="margin-top:16px; color:var(--gris); font-size:.9rem;">
+            Para ver y filtrar eventos: <a href="/eventos" style="color:var(--azul-claro);">Ver página de eventos</a>
+        </p>
+    </div>
+
+<header class="page-header">
+<h1> Gestion de actividades </h1>
+<p>Gestiona las actividades, categorías y solicitudes pendientes</p>
+</header>
+
+    <!-- ═══ ACTIVIDADES PENDIENTES DE APROBACIÓN ═══ -->
+    <div class="admin-section">
+        <h2>Actividades Pendientes de Aprobación</h2>
+
+        <div th:if="${#lists.isEmpty(actividadesPendientes)}" class="sin-datos">
+            No hay actividades pendientes por revisar.
+        </div>
+
+        <table th:unless="${#lists.isEmpty(actividadesPendientes)}" class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Duración</th>
+                    <th>Precio</th>
+                    <th>Descripción</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="ap : ${actividadesPendientes}">
+                    <td th:text="${ap.id}"></td>
+                    <td>
+                        <img th:src="${ap.imagenEfectiva}" th:alt="${ap.nombre}"
+                             style="width:64px; height:48px; object-fit:cover; border-radius:6px; display:block;">
+                    </td>
+                    <td th:text="${ap.nombre}"></td>
+                    <td><span class="badge badge-pendiente" th:text="${ap.categoria}"></span></td>
+                    <td th:text="${ap.duracion}"></td>
+                    <td th:text="${ap.precioAprox}"></td>
+                    <td th:text="${ap.descripcion != null ? #strings.abbreviate(ap.descripcion, 60) : ''}"></td>
+                    <td style="display:flex; gap:8px; flex-wrap:wrap;">
+                        <form th:action="@{/admin/actividades/{id}/aprobar(id=${ap.id})}" method="post">
+                            <button type="submit" class="btn-primary"
+                                    style="padding:8px 16px; font-size:0.8rem;">✔ Aprobar</button>
+                        </form>
+                        <form th:action="@{/admin/actividades/{id}/rechazar(id=${ap.id})}" method="post"
+                              onsubmit="return confirm('¿Rechazar esta actividad?');">
+                            <button type="submit" class="btn-primary"
+                                    style="padding:8px 16px; font-size:0.8rem; background:#e74c3c; border-color:#e74c3c; color:#fff;">✖ Rechazar</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ═══ GESTIÓN DE ACTIVIDADES ═══ -->
+    <div class="admin-section">
+        <h2>Gestión de Actividades</h2>
+
+        <!-- Formulario agregar actividad -->
+        <form action="/admin/actividades/agregar" method="post" enctype="multipart/form-data" style="margin-bottom:32px;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
+                <div class="form-group" style="margin:0; grid-column:1/-1;">
+                    <label>Nombre de la actividad</label>
+                    <input type="text" name="nombre" required placeholder="Ej: Tour en kayak por los manglares">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Categoría</label>
+                    <select name="categoria" required>
+                        <option value="">-- Seleccionar --</option>
+                        <option value="TOUR">🗺️ Tour</option>
+                        <option value="DEPORTE">🏄 Deporte</option>
+                        <option value="CULTURA">🏛️ Cultura</option>
+                        <option value="GASTRONOMIA">🍽️ Gastronomía</option>
+                        <option value="NATURALEZA">🌿 Naturaleza</option>
+                    </select>
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Duración aproximada</label>
+                    <input type="text" name="duracion" placeholder="Ej: 3 horas, Medio día">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Precio aproximado</label>
+                    <input type="text" name="precioAprox" placeholder="Ej: $80.000 COP por persona">
+                </div>
+                <div class="form-group" style="margin:0;">
+                    <label>Imagen (JPG/PNG, opcional)</label>
+                    <input type="file" name="imagen" accept="image/jpeg,image/png,image/jpg">
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Descripción</label>
+                <textarea name="descripcion" rows="2" placeholder="Describe la actividad..."></textarea>
+            </div>
+            <button type="submit" class="btn-primary">+ Agregar actividad</button>
+        </form>
+
+        <!-- Listado de actividades existentes -->
+        <div th:if="${#lists.isEmpty(actividades)}" class="sin-datos">
+            No hay actividades registradas todavía.
+        </div>
+
+        <table th:unless="${#lists.isEmpty(actividades)}" class="admin-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Imagen</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Estado</th>
+                    <th>Duración</th>
+                    <th>Precio</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr th:each="act : ${actividades}">
+                    <td th:text="${act.id}"></td>
+                    <td>
+                        <img th:src="${act.imagenEfectiva}" th:alt="${act.nombre}"
+                             style="width:64px; height:48px; object-fit:cover; border-radius:6px; display:block;">
+                    </td>
+                    <td th:text="${act.nombre}"></td>
+                    <td><span class="badge badge-aprobado" th:text="${act.categoria}"></span></td>
+                    <td>
+                        <span th:text="${act.estado}"
+                              th:class="${act.estado.name() == 'APROBADO'} ? 'badge badge-aprobado' : (${act.estado.name() == 'PENDIENTE'} ? 'badge badge-pendiente' : 'badge badge-rechazado')">
+                        </span>
+                    </td>
+                    <td th:text="${act.duracion}"></td>
+                    <td th:text="${act.precioAprox}"></td>
+                    <td style="display:flex; gap:8px; flex-wrap:wrap; min-width:200px;">
+                        <button type="button" class="btn-primary btn-editar-actividad"
+                                style="padding:7px 14px; font-size:0.8rem;"
+                                th:data-id="${act.id}"
+                                th:data-nombre="${act.nombre}"
+                                th:data-descripcion="${act.descripcion}"
+                                th:data-duracion="${act.duracion}"
+                                th:data-precio="${act.precioAprox}"
+                                th:data-categoria="${act.categoria}">
+                            Editar
+                        </button>
+                        
+                        <form th:action="@{/admin/actividades/{id}/eliminar(id=${act.id})}" method="post"
+                              onsubmit="return confirm('¿Seguro que quieres eliminar esta actividad?');">
+                            <button type="submit" class="btn-primary"
+                                    style="padding:7px 14px; font-size:0.8rem; background:#e74c3c; border-color:#e74c3c; color:#fff;">Eliminar</button>
+                        </form>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <p style="margin-top:16px; color:var(--gris); font-size:.9rem;">
+            Ver actividades públicas: <a href="/actividades" style="color:var(--azul-claro);">Ir a actividades</a>
+        </p>
+    </div>
+
+</div>
+
+
+<style>
+  .odyx-modal-overlay {
+    display: none; position: fixed; inset: 0;
+    background: rgba(10,20,50,0.65);
+    backdrop-filter: blur(3px);
+    z-index: 9999; align-items: center; justify-content: center;
+  }
+  .odyx-modal-box {
+    background: #fff; border-radius: 14px; padding: 0;
+    max-width: 580px; width: 92%;
+    box-shadow: 0 12px 48px rgba(10,20,50,0.22);
+    position: relative; max-height: 92vh; overflow-y: auto;
+  }
+  .odyx-modal-header {
+    background: linear-gradient(135deg, #13357B 0%, #1a4fa0 100%);
+    padding: 20px 28px; border-radius: 14px 14px 0 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .odyx-modal-header h3 {
+    color: #fff; margin: 0; font-size: 1.1rem; font-weight: 600;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .odyx-modal-header h3 .icon {
+    background: rgba(255,255,255,0.15); width: 32px; height: 32px;
+    border-radius: 8px; display: flex; align-items: center; justify-content: center;
+  }
+  .odyx-modal-close {
+    background: rgba(255,255,255,0.15); border: none; color: #fff;
+    width: 30px; height: 30px; border-radius: 8px; font-size: 1rem;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    transition: background 0.2s;
+  }
+  .odyx-modal-close:hover { background: rgba(255,255,255,0.3); }
+  .odyx-modal-body { padding: 24px 28px 28px; }
+  .odyx-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 4px; }
+  .odyx-field { display: flex; flex-direction: column; gap: 5px; }
+  .odyx-field.full { grid-column: 1 / -1; }
+  .odyx-field label {
+    font-size: 0.78rem; font-weight: 600; color: #5a6a8a;
+    text-transform: uppercase; letter-spacing: 0.5px;
+  }
+  .odyx-field input, .odyx-field select, .odyx-field textarea {
+    padding: 9px 12px; border: 1.5px solid #dde3f0; border-radius: 8px;
+    font-size: 0.9rem; color: #1a2a4a; background: #f8faff;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    width: 100%; box-sizing: border-box;
+  }
+  .odyx-field input:focus, .odyx-field select:focus, .odyx-field textarea:focus {
+    outline: none; border-color: #13357B;
+    box-shadow: 0 0 0 3px rgba(19,53,123,0.1); background: #fff;
+  }
+  .odyx-field textarea { resize: vertical; }
+  .odyx-modal-footer { display: flex; gap: 10px; margin-top: 20px; }
+  .odyx-btn-save {
+    padding: 10px 24px;
+    background: linear-gradient(135deg, #13357B, #1a4fa0);
+    color: #fff; border: none; border-radius: 8px;
+    font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+  .odyx-btn-save:hover { opacity: 0.9; transform: translateY(-1px); }
+  .odyx-btn-cancel {
+    padding: 10px 20px; background: #f0f3fa; color: #5a6a8a;
+    border: 1.5px solid #dde3f0; border-radius: 8px;
+    font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    transition: background 0.2s;
+  }
+  .odyx-btn-cancel:hover { background: #e4e9f5; }
+</style>
+
+<!-- ═══ MODAL EDITAR LUGAR ═══ -->
+<div id="modalEditarLugar" class="odyx-modal-overlay">
+  <div class="odyx-modal-box">
+    <div class="odyx-modal-header">
+      <h3><span class="icon">📍</span> Editar Lugar</h3>
+      <button class="odyx-modal-close" type="button" onclick="document.getElementById('modalEditarLugar').style.display='none'">✕</button>
+    </div>
+    <div class="odyx-modal-body">
+      <form id="formEditarLugar" method="post" enctype="multipart/form-data">
+        <div class="odyx-field-grid">
+          <div class="odyx-field full">
+            <label>Nombre del lugar</label>
+            <input type="text" id="lugarNombre" name="nombre" required placeholder="Ej: Castillo San Felipe">
+          </div>
+          <div class="odyx-field full">
+            <label>Descripción</label>
+            <textarea id="lugarDescripcion" name="descripcion" rows="3" placeholder="Describe el lugar..."></textarea>
+          </div>
+          <div class="odyx-field">
+            <label>Ubicación</label>
+            <input type="text" id="lugarUbicacion" name="ubicacion" required placeholder="Ej: Centro histórico">
+          </div>
+          <div class="odyx-field">
+            <label>URL del mapa</label>
+            <input type="text" id="lugarUrlMapa" name="urlMapa" placeholder="https://maps.google.com/...">
+          </div>
+          <div class="odyx-field full">
+            <label>Categoría</label>
+            <select id="lugarCategoriaId" name="categoriaId" required>
+              <option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${cat.nombre}">Categoría</option>
+            </select>
+          </div>
+          <div class="odyx-field full">
+            <label>Nueva imagen (JPG/PNG, opcional)</label>
+            <input type="file" name="imagen" accept="image/jpeg,image/png,image/jpg">
+          </div>
+        </div>
+        <div class="odyx-modal-footer">
+          <button type="submit" class="odyx-btn-save">💾 Guardar cambios</button>
+          <button type="button" class="odyx-btn-cancel" onclick="document.getElementById('modalEditarLugar').style.display='none'">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL EDITAR EVENTO ═══ -->
+<div id="modalEditarEvento" class="odyx-modal-overlay">
+  <div class="odyx-modal-box">
+    <div class="odyx-modal-header">
+      <h3><span class="icon">🎭</span> Editar Evento</h3>
+      <button class="odyx-modal-close" onclick="cerrarModalEvento()">✕</button>
+    </div>
+    <div class="odyx-modal-body">
+      <form id="formEditarEvento" method="post" enctype="multipart/form-data">
+        <div class="odyx-field-grid">
+          <div class="odyx-field">
+            <label>Nombre del evento</label>
+            <input type="text" id="editNombre" name="nombre" required placeholder="Ej: Festival FICCI">
+          </div>
+          <div class="odyx-field">
+            <label>Fecha</label>
+            <input type="date" id="editFecha" name="fecha" required min="2026-01-01" max="2030-12-31" oninput="validarAnio(this)">
+          </div>
+          <div class="odyx-field">
+            <label>Lugar / Sede</label>
+            <input type="text" id="editLugar" name="lugar" placeholder="Ej: Teatro Heredia">
+          </div>
+          <div class="odyx-field">
+            <label>Nueva imagen (JPG/PNG, opcional)</label>
+            <input type="file" name="imagen" accept="image/jpeg,image/png,image/jpg">
+          </div>
+          <div class="odyx-field full">
+            <label>Descripción</label>
+            <input type="text" id="editDescripcion" name="descripcion" placeholder="Descripción del evento...">
+          </div>
+        </div>
+        <div class="odyx-modal-footer">
+          <button type="submit" class="odyx-btn-save">💾 Guardar cambios</button>
+          <button type="button" class="odyx-btn-cancel" onclick="cerrarModalEvento()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL EDITAR ACTIVIDAD ═══ -->
+<div id="modalEditarActividad" class="odyx-modal-overlay">
+  <div class="odyx-modal-box">
+    <div class="odyx-modal-header">
+      <h3><span class="icon">🎯</span> Editar Actividad</h3>
+      <button class="odyx-modal-close" onclick="cerrarModalActividad()">✕</button>
+    </div>
+    <div class="odyx-modal-body">
+      <form id="formEditarActividad" method="post" enctype="multipart/form-data">
+        <div class="odyx-field-grid">
+          <div class="odyx-field full">
+            <label>Nombre de la actividad</label>
+            <input type="text" id="actNombre" name="nombre" required placeholder="Ej: Buceo en Islas del Rosario">
+          </div>
+          <div class="odyx-field full">
+            <label>Descripción</label>
+            <textarea id="actDescripcion" name="descripcion" rows="3" placeholder="Describe la actividad..."></textarea>
+          </div>
+          <div class="odyx-field">
+            <label>Categoría</label>
+            <select id="actCategoria" name="categoria" required>
+              <option value="TOUR">🗺️ Tour</option>
+              <option value="DEPORTE">🏄 Deporte</option>
+              <option value="CULTURA">🏛️ Cultura</option>
+              <option value="GASTRONOMIA">🍽️ Gastronomía</option>
+              <option value="NATURALEZA">🌿 Naturaleza</option>
+            </select>
+          </div>
+          <div class="odyx-field">
+            <label>Duración aproximada</label>
+            <input type="text" id="actDuracion" name="duracion" placeholder="Ej: 3 horas">
+          </div>
+          <div class="odyx-field">
+            <label>Precio aproximado</label>
+            <input type="text" id="actPrecio" name="precioAprox" placeholder="Ej: $80.000 COP">
+          </div>
+          <div class="odyx-field">
+            <label>Nueva imagen (JPG/PNG, opcional)</label>
+            <input type="file" name="imagen" accept="image/jpeg,image/png,image/jpg">
+          </div>
+        </div>
+        <div class="odyx-modal-footer">
+          <button type="submit" class="odyx-btn-save">💾 Guardar cambios</button>
+          <button type="button" class="odyx-btn-cancel" onclick="cerrarModalActividad()">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ FOOTER ═══ -->
+<footer>
+    <p>© 2026 ODYXS — Panel de Administración · Todos los derechos reservados</p>
+</footer>
+
+<script>
+    const navbar = document.getElementById('navbar');
+    window.addEventListener('scroll', () => {
+        navbar.classList.toggle('scrolled', window.scrollY > 60);
+    });
+    function abrirMenu() {
+        document.getElementById('sidebar').classList.remove('hidden');
+        document.getElementById('overlay').classList.add('visible');
+    }
+    function cerrarMenu() {
+        document.getElementById('sidebar').classList.add('hidden');
+        document.getElementById('overlay').classList.remove('visible');
+    }
+
+
+    // Modelo editar lugar
+    document.querySelectorAll('.btn-editar-lugar').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const id          = this.dataset.id;
+            const categoriaId = this.dataset.categoriaId;
+            document.getElementById('lugarNombre').value      = this.dataset.nombre      || '';
+            document.getElementById('lugarDescripcion').value = this.dataset.descripcion || '';
+            document.getElementById('lugarUbicacion').value   = this.dataset.ubicacion   || '';
+            document.getElementById('lugarUrlMapa').value     = this.dataset.urlMapa     || '';
+            // Seleccionar la categoría correcta
+            const sel = document.getElementById('lugarCategoriaId');
+            for (let opt of sel.options) {
+                opt.selected = (opt.value === categoriaId);
+            }
+            document.getElementById('formEditarLugar').action = '/admin/lugares/' + id + '/editar';
+            document.getElementById('modalEditarLugar').style.display = 'flex';
+        });
+    });
+
+    // Modelo editar evento 
+    document.querySelectorAll('.btn-editar-evento').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const id          = this.dataset.id;
+            const nombre      = this.dataset.nombre      || '';
+            const fecha       = this.dataset.fecha       || '';
+            const lugar       = this.dataset.lugar       || '';
+            const descripcion = this.dataset.descripcion || '';
+            document.getElementById('editNombre').value      = nombre;
+            document.getElementById('editFecha').value       = fecha;
+            document.getElementById('editLugar').value       = lugar;
+            document.getElementById('editDescripcion').value = descripcion;
+            document.getElementById('formEditarEvento').action = '/admin/eventos/' + id + '/editar';
+            document.getElementById('modalEditarEvento').style.display = 'flex';
+        });
+    });
+    function cerrarModalEvento() {
+        document.getElementById('modalEditarEvento').style.display = 'none';
+    }
+    document.getElementById('modalEditarEvento').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalEvento();
+    });
+
+    // Modal editar actividad
+    document.querySelectorAll('.btn-editar-actividad').forEach(function(btn) {
+        btn.addEventListener('click', function() {
+            const id = this.dataset.id;
+            document.getElementById('actNombre').value      = this.dataset.nombre      || '';
+            document.getElementById('actDescripcion').value = this.dataset.descripcion || '';
+            document.getElementById('actDuracion').value    = this.dataset.duracion    || '';
+            document.getElementById('actPrecio').value      = this.dataset.precio      || '';
+            const sel = document.getElementById('actCategoria');
+            for (let opt of sel.options) {
+                opt.selected = (opt.value === (this.dataset.categoria || ''));
+            }
+            document.getElementById('formEditarActividad').action = '/admin/actividades/' + id + '/editar';
+            document.getElementById('modalEditarActividad').style.display = 'flex';
+        });
+    });
+    function cerrarModalActividad() {
+        document.getElementById('modalEditarActividad').style.display = 'none';
+    }
+    document.getElementById('modalEditarActividad').addEventListener('click', function(e) {
+        if (e.target === this) cerrarModalActividad();
+    });
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function validarAnio(input) {
+    var val = input.value;
+    if (!val) return;
+    var parts = val.split('-');
+    if (parts[0] && parts[0].length > 4) {
+        parts[0] = parts[0].substring(0, 4);
+        input.value = parts.join('-');
+    }
+    if (input.min && val < input.min) {
+        input.setCustomValidity('Solo se permiten eventos desde 2026 en adelante');
+    } else if (input.max && val > input.max) {
+        input.setCustomValidity('La fecha no puede ser posterior a ' + input.max);
+    } else {
+        input.setCustomValidity('');
+    }
+}
+</script>
+</body>
+</html>

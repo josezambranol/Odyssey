@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title th:text="${(catNombre != null ? catNombre : 'Lugares') + ' — ODYXS'}">Lugares — ODYXS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/odyxs-travela.css}">
+    <!-- Favicon ODYXS -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+</head>
+<body>
+<div th:replace="fragments :: topbar"></div>
+<div th:replace="fragments :: navbar-interno"></div>
+
+<div class="page-breadcrumb-hero">
+    <div style="position:relative; z-index:1;">
+        <nav aria-label="breadcrumb" class="mb-2">
+            <ol class="breadcrumb justify-content-center mb-0" style="background:none;">
+                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none" th:text="#{nav.inicio}">Inicio</a></li>
+                <!-- FIX: separar los dos casos con th:if / th:unless para evitar mezcla ${} y #{} -->
+                <li class="breadcrumb-item active text-white"
+                    th:if="${catNombreClave != null}"
+                    th:text="${#messages.msg('cat.' + catNombreClave)}">Categoría</li>
+                <li class="breadcrumb-item active text-white"
+                    th:unless="${catNombreClave != null}"
+                    th:text="#{lugares.breadcrumb}">Lugares</li>
+            </ol>
+        </nav>
+        <h1 style="font-style:italic;"
+            th:if="${catNombreClave != null}"
+            th:text="${#messages.msg('cat.' + catNombreClave)}">Categoría</h1>
+        <h1 style="font-style:italic;"
+            th:unless="${catNombreClave != null}"
+            th:text="#{lugares.titulo}">Lugares</h1>
+        <div class="gold-line"></div>
+        <p><span th:text="${#lists.size(lugares)}">0</span> <span th:text="#{lugares.encontrados}">lugares encontrados</span></p>
+    </div>
+</div>
+
+<div class="container py-5">
+    <!-- Filtros -->
+    <div class="d-flex flex-wrap gap-2 justify-content-center mb-5">
+        <a href="/lugares?categoriaId=0"
+           th:classappend="${categoriaId == null or categoriaId == 0} ? ' active' : ''"
+           class="cat-pill-btn"
+           th:text="#{section.filterAll}">🌟 Todos</a>
+        <a th:each="cat : ${categorias}"
+           th:href="@{/lugares(categoriaId=${cat.id})}"
+           th:text="${#messages.msg('cat.' + cat.nombreClave)}"
+           th:classappend="${cat.id == categoriaId} ? ' active' : ''"
+           class="cat-pill-btn">Categoría</a>
+    </div>
+
+    <!-- Grid de lugares -->
+    <div class="row g-4" th:if="${!#lists.isEmpty(lugares)}">
+        <div class="col-md-6 col-lg-4" th:each="lugar : ${lugares}">
+            <a th:href="@{/lugares/{id}(id=${lugar.id})}" class="lugar-card-travela">
+                <div class="lct-img">
+                    <img th:src="${lugar.imagenEfectiva}"
+                         th:alt="${lugar.nombre}"
+                         onerror="this.src='/img/hero-murallas.jpg'">
+                    <span class="lct-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Cat</span>
+                    <span class="lct-verified" th:if="${lugar.esOficial}"><i class="fa fa-check me-1"></i><span th:text="#{lugares.verificado}">Verificado</span></span>
+                </div>
+                <div class="lct-body">
+                    <h5 data-db th:text="${lugar.nombre}">Nombre</h5>
+                    <p class="text-muted small mb-2">
+                        <i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i>
+                        <span data-db th:text="${lugar.ubicacion}">Ubicación</span>
+                    </p>
+                    <p data-db class="small text-muted mb-2" th:text="${#strings.abbreviate(lugar.descripcion, 90)}">Descripción</p>
+                    <span class="lct-ver-mas" th:text="#{lugares.verDetalles}">Ver detalles</span> <i class="fa fa-arrow-right ms-1"></i>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div class="text-center py-5" th:if="${#lists.isEmpty(lugares)}">
+        <div style="font-size:4rem; margin-bottom:16px;">🗺️</div>
+        <h4 style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{lugares.noHay}">No hay lugares en esta categoría</h4>
+        <p class="text-muted mb-4" th:text="#{lugares.noHay.desc}">Puedes proponer un lugar nuevo o explorar otras categorías</p>
+        <a href="/lugares?categoriaId=0" class="btn btn-primary rounded-pill me-2 px-5" th:text="#{lugares.verTodos}">Ver todos</a>
+        <a href="/proponer-lugar" class="btn btn-outline-primary rounded-pill px-5" th:text="#{lugares.proponer}">➕ Proponer lugar</a>
+    </div>
+</div>
+
+<div class="text-center mt-5 p-4 rounded-3" style="background:var(--cream); border:1px dashed rgba(200,150,62,.4);">
+    <p class="text-muted mb-3" th:text="#{lugares.compartir}">¿Tienes algún lugar interesante? Puedes compartirlo en ODYXS.</p>
+    <a href="/proponer-lugar" class="btn btn-primary rounded-pill px-5" th:text="#{lugares.proponer}">➕ Proponer lugar</a>
+</div>
+
+<div th:replace="fragments :: footer-interno"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+1. Importar en MySQL Workbench
+Paso 1 — Abrir MySQL Workbench y conectarte a tu servidor local.
+Paso 2 — Importar el archivo SQL:
+
+Ve al menú: Server → Data Import
+Selecciona "Import from Self-Contained File"
+Haz clic en los (...) y busca tu archivo odyxsvg_db.sql
+En "Default Schema to be Imported To" puedes dejarlo vacío (el script ya crea la BD automáticamente con CREATE DATABASE IF NOT EXISTS odyxsvg_db)
+Haz clic en "Start Import"
+
+
+También puedes hacerlo más rápido con el menú File → Open SQL Script, abres el archivo y presionas el rayo ⚡ para ejecutarlo.
+
+
+2. Configurar application.properties en Spring Boot
+properties# Conexión a la base de datos
+spring.datasource.url=jdbc:mysql://localhost:3306/odyxsvg_db?useSSL=false&serverTimezone=UTC&allowPublicKeyRetrieval=true
+spring.datasource.username=root 
+spring.datasource.password=TU_CONTRASEÑA esto si depende de la contaseña que cada uno de ustedes alla configurado en su sql
+
+y listo ya con eso inician el proyecto y debe funcionar
+

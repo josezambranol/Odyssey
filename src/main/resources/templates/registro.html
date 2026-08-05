@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title th:text="#{register.title.page} + ' — ODYXS'">Registrarse — ODYXS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=Jost:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/odyxs-travela.css}">
+    <style>
+        .select-pais {
+            appearance: none;
+            -webkit-appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            padding-right: 36px !important;
+        }
+    </style>
+    <!-- Favicon ODYXS -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+</head>
+<body style="background:var(--cream);">
+
+<div class="auth-wrapper">
+    <div class="auth-left d-none d-lg-flex flex-column justify-content-end"
+         style="background-image:url('/img/hero-castillo.jpg');">
+        <div class="auth-left-content">
+            <span class="badge rounded-pill px-3 py-2 mb-3" style="background:rgba(255,193,7,.9);color:var(--azul);font-weight:700;">🏰 Siglo XVI</span>
+            <h2 class="fw-bold">Castillo de San Felipe</h2>
+            <p class="mb-0" style="color:rgba(255,255,255,.8);">La fortaleza más imponente del Nuevo Mundo</p>
+        </div>
+    </div>
+
+    <div class="auth-right">
+        <div class="auth-form-box">
+            <a href="/" class="auth-brand d-block mb-4"><i class="fa fa-anchor me-2"></i>ODYXS</a>
+            <h4 class="fw-bold mb-1" th:text="#{register.title}">Crea tu cuenta gratis</h4>
+            <p class="text-muted mb-4" th:text="#{register.sub}">Accede a la guía turística completa de Cartagena</p>
+
+            <div class="alerta-error" th:if="${error}" th:text="${error}"></div>
+
+            <form action="/registro" method="post">
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" th:text="#{register.name}">Nombre completo</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa fa-user text-primary"></i></span>
+                        <input type="text" name="nombre" class="form-control border-start-0"
+                               th:placeholder="#{register.name.placeholder}" placeholder="Tu nombre" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" th:text="#{register.email}">Correo electrónico</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa fa-envelope text-primary"></i></span>
+                        <input type="email" name="correo" class="form-control border-start-0"
+                               th:placeholder="#{login.email.placeholder}" placeholder="tucorreo@email.com" required>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" th:text="#{register.country}">País de origen</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa fa-globe text-primary"></i></span>
+                        <select name="country" class="form-control border-start-0 select-pais" required>
+                            <option value="" disabled th:text="#{register.country.select}">Selecciona tu país</option>
+                            <optgroup th:label="#{register.country.southamerica}" label="América del Sur">
+                                <option value="Colombia" selected>🇨🇴 Colombia</option>
+                                <option value="Argentina">🇦🇷 Argentina</option>
+                                <option value="Bolivia">🇧🇴 Bolivia</option>
+                                <option value="Brasil">🇧🇷 Brasil</option>
+                                <option value="Chile">🇨🇱 Chile</option>
+                                <option value="Ecuador">🇪🇨 Ecuador</option>
+                                <option value="Paraguay">🇵🇾 Paraguay</option>
+                                <option value="Perú">🇵🇪 Perú</option>
+                                <option value="Uruguay">🇺🇾 Uruguay</option>
+                                <option value="Venezuela">🇻🇪 Venezuela</option>
+                            </optgroup>
+                            <optgroup th:label="#{register.country.centralcaribe}" label="América Central y Caribe">
+                                <option value="Costa Rica">🇨🇷 Costa Rica</option>
+                                <option value="Cuba">🇨🇺 Cuba</option>
+                                <option value="Guatemala">🇬🇹 Guatemala</option>
+                                <option value="Honduras">🇭🇳 Honduras</option>
+                                <option value="México">🇲🇽 México</option>
+                                <option value="Nicaragua">🇳🇮 Nicaragua</option>
+                                <option value="Panamá">🇵🇦 Panamá</option>
+                                <option value="República Dominicana">🇩🇴 República Dominicana</option>
+                                <option value="El Salvador">🇸🇻 El Salvador</option>
+                            </optgroup>
+                            <optgroup th:label="#{register.country.northamerica}" label="América del Norte">
+                                <option value="Canadá">🇨🇦 Canadá</option>
+                                <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
+                            </optgroup>
+                            <optgroup th:label="#{register.country.europe}" label="Europa">
+                                <option value="Alemania">🇩🇪 Alemania</option>
+                                <option value="España">🇪🇸 España</option>
+                                <option value="Francia">🇫🇷 Francia</option>
+                                <option value="Italia">🇮🇹 Italia</option>
+                                <option value="Países Bajos">🇳🇱 Países Bajos</option>
+                                <option value="Portugal">🇵🇹 Portugal</option>
+                                <option value="Reino Unido">🇬🇧 Reino Unido</option>
+                                <option value="Suiza">🇨🇭 Suiza</option>
+                            </optgroup>
+                            <optgroup th:label="#{register.country.other}" label="Otros">
+                                <option value="Australia">🇦🇺 Australia</option>
+                                <option value="China">🇨🇳 China</option>
+                                <option value="Corea del Sur">🇰🇷 Corea del Sur</option>
+                                <option value="Japón">🇯🇵 Japón</option>
+                                <option value="Israel">🇮🇱 Israel</option>
+                                <option value="Otro">🌍 Otro</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold" th:text="#{register.birthdate}">Fecha de nacimiento</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa fa-calendar text-primary"></i></span>
+                        <input type="date" name="fechaNacimiento" class="form-control border-start-0" min="1920-01-01" max="2010-12-31" oninput="validarNacimiento(this)">
+                    </div>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label fw-semibold" th:text="#{register.password}">Contraseña</label>
+                    <div class="input-group">
+                        <span class="input-group-text bg-light border-end-0"><i class="fa fa-lock text-primary"></i></span>
+                        <input type="password" name="contrasena" class="form-control border-start-0"
+                               th:placeholder="#{register.password.placeholder}" placeholder="Mínimo 6 caracteres" required minlength="6">
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold">
+                    <i class="fa fa-user-plus me-2"></i><span th:text="#{register.btn}">Crear cuenta</span>
+                </button>
+            </form>
+
+            <hr class="my-4">
+            <p class="text-center text-muted mb-0">
+                <span th:text="#{register.hasAccount}">¿Ya tienes cuenta?</span>
+                <a href="/login" class="text-primary fw-semibold" th:text="#{register.login}">Iniciar sesión</a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+function validarNacimiento(input) {
+    var val = input.value;
+    if (!val) return;
+    var parts = val.split('-');
+    if (parts[0] && parts[0].length > 4) {
+        parts[0] = parts[0].substring(0, 4);
+        input.value = parts.join('-');
+    }
+    var anio = parseInt(parts[0]);
+    if (anio < 1920 || anio > 2010) {
+        input.setCustomValidity('Ingresa un año válido (1920–2010)');
+    } else {
+        input.setCustomValidity('');
+    }
+}
+</script>
+</body>
+</html>

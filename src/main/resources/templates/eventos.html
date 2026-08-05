@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title th:text="#{ev.page.title}">Eventos — ODYXS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/odyxs-travela.css}">
+    <style>
+        .ev-card { border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(11,45,107,.1); transition:.35s; background:#fff; }
+        .ev-card:hover { transform:translateY(-6px); box-shadow:0 16px 40px rgba(11,45,107,.2); }
+        .ev-img { height:210px; overflow:hidden; }
+        .ev-img img { width:100%; height:100%; object-fit:cover; transition:.4s; }
+        .ev-card:hover .ev-img img { transform:scale(1.06); }
+        .ev-meta { display:flex; border-top:1px solid rgba(11,45,107,.08); border-bottom:1px solid rgba(11,45,107,.08); }
+        .ev-meta span { flex:1; text-align:center; padding:10px; font-size:.8rem; color:#6c757d; }
+        .ev-meta span + span { border-left:1px solid rgba(11,45,107,.08); }
+        .ev-body { padding:22px; }
+        .ev-body h5 { font-family:'Cormorant Garamond',serif; font-weight:700; color:var(--azul); margin-bottom:8px; font-size:1.2rem; }
+    </style>
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+</head>
+<body>
+<div th:replace="fragments :: topbar"></div>
+<div th:replace="fragments :: navbar-interno"></div>
+
+<div class="page-breadcrumb-hero">
+    <div style="position:relative;z-index:1;">
+        <h1 style="font-style:italic;" th:text="#{ev.hero.title}">Eventos en Cartagena</h1>
+        <div class="gold-line"></div>
+        <p th:text="#{ev.hero.sub}">Festivales, conciertos y celebraciones durante todo el año</p>
+    </div>
+</div>
+
+<div class="container py-5">
+
+    <!-- Filtro -->
+    <form method="get" action="/eventos" class="d-flex gap-3 align-items-center justify-content-center mb-5 flex-wrap">
+        <label class="fw-semibold" style="color:var(--azul);" th:text="#{ev.filter.desde}">Desde:</label>
+        <input type="date" name="desde" th:value="${desde}" class="form-control w-auto rounded-pill"
+               style="border-color:rgba(11,45,107,.2);" min="2026-01-01" max="2030-12-31">
+        <button type="submit" class="btn btn-primary rounded-pill px-4" th:text="#{ev.filter.btn}">Filtrar</button>
+        <a href="/eventos" class="btn btn-outline-primary rounded-pill px-4" th:text="#{ev.filter.verTodos}">Ver todos</a>
+    </form>
+
+    <!-- Eventos dinámicos de la base de datos -->
+    <div class="row g-4" th:if="${!#lists.isEmpty(eventos)}">
+        <div class="col-md-6 col-lg-4" th:each="ev : ${eventos}">
+            <div class="ev-card">
+                <div class="ev-img">
+                    <img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/bocagrande.jpg'}"
+                         th:alt="${ev.nombre}" onerror="this.src='/img/bocagrande.jpg'">
+                </div>
+                <div class="ev-meta">
+                    <span><i class="fa fa-calendar-alt me-1" style="color:var(--gold);"></i><span th:text="${#temporals.format(ev.fecha,'dd MMM yyyy')}">Fecha</span></span>
+                    <span><i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i><span th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}">Lugar</span></span>
+                </div>
+                <div class="ev-body">
+                    <h5 data-db th:text="${ev.nombre}">Nombre</h5>
+                    <p data-db class="text-muted small mb-0" th:text="${#strings.abbreviate(ev.descripcion, 140)}">Descripción</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="text-center mt-5 p-4 rounded-3" style="background:var(--cream); border:1px dashed rgba(200,150,62,.4);">
+        <p class="text-muted mb-3" th:text="#{ev.cta.desc}">¿Organizas un evento en Cartagena? Puedes proponerlo en ODYXS.</p>
+        <a href="/proponer-evento" class="btn btn-primary rounded-pill px-5" th:text="#{ev.cta.btn}">➕ Proponer evento</a>
+    </div>
+</div>
+
+<div th:replace="fragments :: footer-interno"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<!-- ═══ FRAGMENTO: topbar ════════════════════════════════════ -->
+<div th:fragment="topbar" class="container-fluid topbar-odyxs px-4 px-lg-5 d-none d-lg-block notranslate" translate="no">
+    <div class="row gx-0">
+        <div class="col-lg-8 text-start">
+            <div class="d-inline-flex align-items-center" style="height:44px; gap:8px; flex-wrap:nowrap;">
+                <span class="text-white-50 small">
+                    <i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i>
+                    <a href="https://en.wikipedia.org/wiki/Cartagena,_Colombia" target="_blank" style="color:rgba(255,255,255,.5); text-decoration:none;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='rgba(255,255,255,.5)'">Cartagena de Indias, Colombia</a>
+                </span>
+                <span class="text-white-50 mx-2">|</span>
+                <span class="text-white-50 small">
+                    <i class="fa fa-star me-1" style="color:var(--gold);"></i>Patrimonio UNESCO 1984
+                </span>
+                <span class="text-white-50 mx-2">|</span>
+                <!-- Clima en tiempo real -->
+                <span class="d-inline-flex align-items-center gap-2" style="font-size:.78rem;">
+                    <span id="tb-clima-icono" style="font-size:1rem; line-height:1;">⏳</span>
+                    <span id="tb-clima-temp" style="color:#fff; font-weight:700;">--°C</span>
+                    <span id="tb-clima-desc" style="color:rgba(255,255,255,.55);">Cargando...</span>
+                    <span style="color:rgba(255,255,255,.3);">·</span>
+                    <span style="color:rgba(255,255,255,.45);">💧</span>
+                    <span id="tb-clima-hum" style="color:rgba(255,255,255,.65);">--%</span>
+                    <span style="color:rgba(255,255,255,.3);">·</span>
+                    <span style="color:rgba(255,255,255,.45);">💨</span>
+                    <span id="tb-clima-viento" style="color:rgba(255,255,255,.65);">-- km/h</span>
+                </span>
+            </div>
+        </div>
+        <div class="col-lg-4 text-end">
+            <div class="d-inline-flex align-items-center" style="height:44px; gap:10px;">
+                <div class="lang-switcher">
+                    <a th:href="@{/idioma(lang='es')}" class="lang-btn"
+                       th:classappend="${#locale.language == 'es'} ? ' lang-active' : ''">🇨🇴 ES</a>
+                    <span class="lang-sep">|</span>
+                    <a th:href="@{/idioma(lang='en')}" class="lang-btn"
+                       th:classappend="${#locale.language == 'en'} ? ' lang-active' : ''">🇺🇸 EN</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function(){
+        var WMO_ICONS={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",99:"⛈️"};
+        var WMO_DESC={0:"Despejado",1:"Casi despejado",2:"Parcial nublado",3:"Nublado",45:"Neblina",51:"Llovizna",53:"Llovizna",55:"Llovizna",61:"Lluvia leve",63:"Lluvia",65:"Lluvia fuerte",80:"Chubascos",81:"Chubascos",82:"Chubascos",95:"Tormenta",99:"Tormenta"};
+        fetch("https://api.open-meteo.com/v1/forecast?latitude=10.3910&longitude=-75.4794&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=America%2FBogota")
+        .then(function(r){return r.json();})
+        .then(function(d){
+            var c=d.current, code=c.weather_code;
+            var setEl=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+            setEl("tb-clima-icono", WMO_ICONS[code]||"🌡️");
+            setEl("tb-clima-temp",  Math.round(c.temperature_2m)+"°C");
+            setEl("tb-clima-desc",  WMO_DESC[code]||"Tropical");
+            setEl("tb-clima-hum",   c.relative_humidity_2m+"%");
+            setEl("tb-clima-viento",Math.round(c.wind_speed_10m)+" km/h");
+        })
+        .catch(function(){
+            var setEl=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+            setEl("tb-clima-icono","🌡️");
+            setEl("tb-clima-temp","~29°C");
+            setEl("tb-clima-desc","Tropical");
+        });
+    })();
+    </script>
+</div>
+
+
+<!-- ═══ FRAGMENTO: navbar-interno ═══════════════════════════ -->
+<div th:fragment="navbar-interno">
+
+
+    <!-- NAVBAR STICKY -->
+    <nav class="navbar navbar-expand-lg navbar-light px-4 px-lg-5 py-3 py-lg-0 notranslate" translate="no">
+        <a href="/" class="navbar-brand p-0 text-decoration-none" style="line-height:1;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fa fa-anchor" style="color:var(--gold); font-size:1.6rem;"></i>
+                <div style="display:flex; gap:8px; align-items:stretch;">
+                    <div style="line-height:1.1;">
+                        <div style="font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:700; color:var(--azul); letter-spacing:.5px;">ODYXS</div>
+                        <div style="font-family:'DM Sans',sans-serif; font-size:.72rem; font-weight:600; color:var(--gold); letter-spacing:.3px;">cartagena.com.co</div>
+                    </div>
+                    <div style="width:2px; background:var(--gold); border-radius:2px; margin:1px 0;"></div>
+                    <div style="font-family:'DM Sans',sans-serif; font-size:.6rem; font-weight:700; color:var(--azul); text-transform:uppercase; letter-spacing:1px; line-height:1.25; display:flex; align-items:center;">TU<br>GUÍA</div>
+                </div>
+            </div>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navInt">
+            <span class="fa fa-bars"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navInt">
+            <div class="navbar-nav ms-auto py-0">
+                <a href="/"            class="nav-item nav-link" th:text="#{nav.inicio}">Inicio</a>
+                <a href="/guia"        class="nav-item nav-link" th:text="#{nav.guia}">Guía</a>
+                <a href="/eventos"     class="nav-item nav-link" th:text="#{nav.eventos}">Eventos</a>
+                <a href="/actividades" class="nav-item nav-link" th:text="#{nav.actividades}">Actividades</a>
+                <a href="/transporte"  class="nav-item nav-link" th:text="#{nav.transporte}">Transporte</a>
+                <a href="/mapa"        class="nav-item nav-link" th:text="#{nav.mapa}">Mapa</a>
+            </div>
+            <!-- Móvil: selector idioma dentro del menú -->
+            <div class="d-lg-none px-2 py-2 d-flex gap-2">
+                <a th:href="@{/idioma(lang='es')}" class="lang-btn-mobile"
+                   th:classappend="${#locale.language == 'es'} ? ' lang-active' : ''">🇨🇴 ES</a>
+                <a th:href="@{/idioma(lang='en')}" class="lang-btn-mobile"
+                   th:classappend="${#locale.language == 'en'} ? ' lang-active' : ''">🇺🇸 EN</a>
+            </div>
+            <th:block th:if="${session.usuarioId != null}">
+                <a href="/menu" class="btn btn-primary rounded-pill py-2 px-4 ms-lg-3">
+                    <i class="fa fa-compass me-1"></i><span th:text="#{nav.miPanel}">Mi Panel</span>
+                </a>
+                <a href="/logout" class="btn btn-outline-danger rounded-pill py-2 px-3 ms-2"
+                   title="Cerrar sesión" style="font-size:.85rem;">
+                    <i class="fa fa-sign-out-alt me-1"></i>Salir
+                </a>
+            </th:block>
+            <th:block th:if="${session.usuarioId == null}">
+                <a href="/login" class="btn btn-primary rounded-pill py-2 px-4 ms-lg-3"
+                   th:text="#{nav.iniciarSesion}">Iniciar sesión</a>
+            </th:block>
+        </div>
+    </nav>
+</div>
+
+
+<!-- ═══ FRAGMENTO: footer-interno + CHATBOT POPUP ═══════════ -->
+<div th:fragment="footer-interno">
+
+    <!-- Footer -->
+    <div class="container-fluid py-4" style="background:var(--azul-dark);">
+        <div class="container py-3">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-4 text-center text-lg-start">
+                    <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;">
+                        <span style="color:#fff;">odyxs</span><span style="color:var(--gold);">cartagena.</span><span style="color:#fff;">com.co</span>
+                    </h5>
+                    <p class="mb-0 small" style="color:rgba(255,255,255,.45);" th:text="#{footer.tagline.short}">Guía Turística de Cartagena de Indias</p>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <a href="/guia"        class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{nav.guia}">Guía</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="/eventos"     class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{nav.eventos}">Eventos</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="/actividades" class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{nav.actividades}">Actividades</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="/mapa"        class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{nav.mapa}">Mapa</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center text-lg-end">
+                    <p class="mb-0 small" style="color:rgba(255,255,255,.35);" th:text="#{footer.rights}">© 2026 ODYXS</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to top -->
+    <a href="#" class="btn btn-primary btn-md-square back-to-top"><i class="fa fa-arrow-up"></i></a>
+
+    <!-- ════════════════════════════════════════════════════════
+         CHATBOT POPUP — Ventana emergente abajo a la derecha
+         ════════════════════════════════════════════════════════ -->
+
+    <!-- Botón FAB -->
+    <button id="chatFab" onclick="toggleChat()" title="ODYX Chatbot"
+            style="position:fixed;bottom:95px;right:28px;z-index:1060;
+                   width:58px;height:58px;border-radius:50%;border:none;
+                   cursor:pointer;background:var(--gold);color:var(--azul);
+                   font-size:1.5rem;box-shadow:0 6px 24px rgba(19,53,123,.4);
+                   display:flex;align-items:center;justify-content:center;
+                   transition:transform .2s,box-shadow .2s;overflow:hidden;padding:0;">
+        <img id="chatFabIcon" src="/img/chatbot-icon.png" alt="Chat"
+             style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+    </button>
+    <!-- Notificación roja -->
+    <span id="chatBadge"
+          style="position:fixed;bottom:139px;right:24px;z-index:1061;
+                 background:#e74c3c;color:#fff;font-size:.6rem;font-weight:700;
+                 width:16px;height:16px;border-radius:50%;display:flex;
+                 align-items:center;justify-content:center;pointer-events:none;">1</span>
+
+    <!-- Ventana emergente -->
+    <div id="chatPopup"
+         style="position:fixed;bottom:20px;right:94px;z-index:1059;
+                width:360px;max-width:calc(100vw - 120px);
+                background:#fff;border-radius:18px;
+                box-shadow:0 16px 56px rgba(19,53,123,.28);
+                display:none;flex-direction:column;overflow:hidden;
+                animation:slideUp .25s ease;">
+
+        <!-- Header del popup -->
+        <div style="background:linear-gradient(135deg,var(--azul) 0%,#1a4299 100%);
+                    padding:14px 16px;display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;border-radius:50%;
+                        overflow:hidden;border:2px solid rgba(255,193,7,.4);
+                        flex-shrink:0;">
+                <img src="/img/chatbot-icon.png" alt="ODYX" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <div style="flex:1;">
+                <div style="font-family:'Jost',sans-serif;font-weight:700;color:#fff;font-size:.9rem;"
+                     th:text="#{chatbot.title}">ODYX</div>
+                <div style="color:rgba(255,255,255,.6);font-size:.72rem;">
+                    <span style="color:#2ecc71;margin-right:4px;">●</span>
+                    <span th:text="#{chatbot.subtitle}">Online 24/7</span>
+                </div>
+            </div>
+            <button onclick="toggleChat()"
+                    style="background:rgba(255,255,255,.15);border:none;color:#fff;
+                           width:26px;height:26px;border-radius:50%;cursor:pointer;
+                           font-size:.8rem;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+
+        <!-- Mensajes -->
+        <div id="chatMessages"
+             style="height:280px;overflow-y:auto;padding:14px;
+                    display:flex;flex-direction:column;gap:10px;
+                    background:#f7f9ff;scroll-behavior:smooth;">
+            <!-- Mensaje inicial inyectado por JS -->
+        </div>
+
+        <!-- Sugerencias -->
+        <div style="padding:8px 10px;background:#fff;border-top:1px solid #eef2ff;
+                    display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    th:data-msg="#{chatbot.sug.clima}"    th:text="#{chatbot.sug.clima}">🌤️ Clima</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    th:data-msg="#{chatbot.sug.playas}"   th:text="#{chatbot.sug.playas}">🏖️ Playas</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    th:data-msg="#{chatbot.sug.transporte}" th:text="#{chatbot.sug.transporte}">🚌 Transport</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    th:data-msg="#{chatbot.sug.hoteles}"  th:text="#{chatbot.sug.hoteles}">🏨 Hotels</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    th:data-msg="#{chatbot.sug.actividades}" th:text="#{chatbot.sug.actividades}">🎯 Activities</button>
+        </div>
+
+        <!-- Input -->
+        <div style="display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #eef2ff;min-width:0;">
+            <input id="chatInputPop" type="text"
+                   th:placeholder="#{chatbot.placeholder}"
+                   placeholder="Escribe tu pregunta..."
+                   onkeydown="if(event.key==='Enter')chatEnviarInput()"
+                   style="flex:1;min-width:0;border:1.5px solid #dce5ff;border-radius:40px;
+                          padding:9px 15px;font-size:.87rem;outline:none;
+                          font-family:'Roboto',sans-serif;color:var(--azul);
+                          transition:.2s;overflow:hidden;text-overflow:ellipsis;">
+            <button onclick="chatEnviarInput()"
+                    style="background:var(--azul);color:#fff;border:none;
+                           width:36px;height:36px;border-radius:50%;cursor:pointer;
+                           display:flex;align-items:center;justify-content:center;
+                           flex-shrink:0;font-size:.85rem;transition:.2s;">
+                <i class="fa fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+    <!-- ════ FIN CHATBOT POPUP ════════════════════════════════ -->
+
+    <!-- Estilos del chatbot popup + selector idioma -->
+    <style>
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(20px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        /* Idioma */
+        .lang-switcher { display:flex;align-items:center;gap:4px; }
+        .lang-sep { color:rgba(255,255,255,.25);font-size:.7rem; }
+        .lang-btn {
+            font-family:'Jost',sans-serif;font-size:.72rem;font-weight:700;
+            color:rgba(255,255,255,.6);text-decoration:none;
+            padding:3px 8px;border-radius:20px;transition:.2s;
+            border:1px solid transparent;
+        }
+        .lang-btn:hover, .lang-btn.lang-active {
+            color:#fff;background:rgba(255,255,255,.15);
+            border-color:rgba(255,255,255,.25);
+        }
+        .lang-btn-mobile {
+            font-family:'Jost',sans-serif;font-size:.75rem;font-weight:700;
+            color:var(--azul);text-decoration:none;padding:4px 12px;
+            border-radius:20px;border:1.5px solid #dce5ff;transition:.2s;
+        }
+        .lang-btn-mobile.lang-active { background:var(--azul);color:#fff;border-color:var(--azul); }
+
+        /* Chatbot popup mensajes */
+        .chat-msg-bot, .chat-msg-user { display:flex;gap:7px;align-items:flex-end;max-width:88%; }
+        .chat-msg-bot  { align-self:flex-start; }
+        .chat-msg-user { align-self:flex-end;flex-direction:row-reverse; }
+        .chat-av-bot {
+            width:28px;height:28px;border-radius:50%;background:var(--azul);
+            color:#fff;display:flex;align-items:center;justify-content:center;
+            font-size:.85rem;flex-shrink:0;
+        }
+        .chat-av-user {
+            width:28px;height:28px;border-radius:50%;background:var(--gold);
+            color:var(--azul);display:flex;align-items:center;justify-content:center;
+            font-size:.85rem;flex-shrink:0;
+        }
+        .chat-bubble-bot {
+            padding:9px 13px;border-radius:16px;border-bottom-left-radius:3px;
+            background:#fff;color:var(--azul);font-size:.85rem;line-height:1.5;
+            border:1px solid #e0e8ff;white-space:pre-wrap;word-break:break-word;
+        }
+        .chat-bubble-user {
+            padding:9px 13px;border-radius:16px;border-bottom-right-radius:3px;
+            background:var(--azul);color:#fff;font-size:.85rem;line-height:1.5;
+            white-space:pre-wrap;word-break:break-word;
+        }
+        .chat-typing {
+            display:flex;gap:4px;align-items:center;padding:10px 13px;
+            background:#fff;border-radius:16px;border:1px solid #e0e8ff;
+        }
+        .chat-dot {
+            width:6px;height:6px;border-radius:50%;background:var(--azul);opacity:.3;
+            animation:chatPulse 1.2s infinite;
+        }
+        .chat-dot:nth-child(2){ animation-delay:.2s; }
+        .chat-dot:nth-child(3){ animation-delay:.4s; }
+        @keyframes chatPulse { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+        .chat-sug-pop {
+            font-family:'Jost',sans-serif;font-size:.65rem;font-weight:700;
+            text-transform:uppercase;letter-spacing:.03em;
+            background:#f0f4ff;border:1px solid #dce5ff;color:var(--azul);
+            padding:4px 10px;border-radius:20px;cursor:pointer;transition:.2s;
+        }
+        .chat-sug-pop:hover { background:var(--azul);color:#fff;border-color:var(--azul); }
+
+        #chatFab:hover { transform:scale(1.08);box-shadow:0 8px 28px rgba(19,53,123,.5); }
+        #chatInputPop:focus { border-color:var(--azul); }
+    </style>
+
+    <!-- Script del chatbot popup -->
+    <script th:inline="javascript">
+        const CHAT_WELCOME = /*[[#{chatbot.welcome}]]*/ '¡Hola! Soy ODYX.';
+
+        function toggleChat() {
+            const popup = document.getElementById('chatPopup');
+            const badge = document.getElementById('chatBadge');
+            const fab   = document.getElementById('chatFab');
+            const isOpen = popup.style.display === 'flex';
+            popup.style.display = isOpen ? 'none' : 'flex';
+            fab.style.background = isOpen ? 'var(--gold)' : 'var(--azul)';
+            if (badge) badge.style.display = 'none';
+            if (!isOpen) {
+                const msgs = document.getElementById('chatMessages');
+                if (msgs.children.length === 0) addBotMsg(CHAT_WELCOME);
+                setTimeout(() => document.getElementById('chatInputPop').focus(), 200);
+            }
+        }
+
+        function addBotMsg(text) {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'chat-msg-bot';
+            d.style.cssText = 'display:flex;gap:7px;align-items:flex-end;max-width:88%;align-self:flex-start;';
+            d.innerHTML = `<div class="chat-av-bot">🤖</div>
+                           <div class="chat-bubble-bot">${text.replace(/\n/g,'<br>')}</div>`;
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function addUserMsg(text) {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'chat-msg-user';
+            d.style.cssText = 'display:flex;gap:7px;align-items:flex-end;max-width:88%;align-self:flex-end;flex-direction:row-reverse;';
+            d.innerHTML = `<div class="chat-av-user">👤</div>
+                           <div class="chat-bubble-user">${text}</div>`;
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function addTyping() {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.id = 'chatTyping';
+            d.className = 'chat-msg-bot';
+            d.style.cssText = 'display:flex;gap:7px;align-items:flex-end;max-width:88%;align-self:flex-start;';
+            d.innerHTML = `<div class="chat-av-bot">🤖</div>
+                           <div class="chat-typing">
+                             <div class="chat-dot"></div>
+                             <div class="chat-dot"></div>
+                             <div class="chat-dot"></div>
+                           </div>`;
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function chatEnviar(msg) {
+            if (!msg || !msg.trim()) return;
+            addUserMsg(msg);
+            document.getElementById('chatInputPop').value = '';
+            addTyping();
+            try {
+                const res  = await fetch('/chatbot/respuesta', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({mensaje: msg})
+                });
+                const data = await res.json();
+                const t = document.getElementById('chatTyping');
+                if (t) t.remove();
+                addBotMsg(data.respuesta);
+            } catch(e) {
+                const t = document.getElementById('chatTyping');
+                if (t) t.remove();
+                addBotMsg('Lo siento, hubo un error técnico. Inténtalo de nuevo 🙏');
+            }
+        }
+
+        function chatEnviarInput() {
+            chatEnviar(document.getElementById('chatInputPop').value);
+        }
+    </script>
+
+    <!-- ── Traducción automática BD → EN (activa cuando idioma=en) ── -->
+    <div th:if="${#locale.language == 'en'}">
+    <script>
+    (function(){
+        var cache = {};
+
+        function translateNode(node) {
+            var children = node.childNodes, hasEl = false;
+            for (var i = 0; i < children.length; i++) {
+                if (children[i].nodeType === 1) { hasEl = true; break; }
+            }
+            var txt = node.textContent.trim();
+            if (!hasEl && txt.length > 1 && !/^\d/.test(txt)) {
+                if (cache[txt]) { node.textContent = cache[txt]; return; }
+                fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(txt) +
+                      '&langpair=es|en&de=odyxsvirtualguide@gmail.com')
+                .then(function(r){ return r.json(); })
+                .then(function(d){
+                    if (d.responseStatus === 200) {
+                        cache[txt] = d.responseData.translatedText;
+                        node.textContent = d.responseData.translatedText;
+                    }
+                })
+                .catch(function(){});
+            }
+        }
+
+        function run() {
+            // Seleccionar elementos de BD por data-db, más fallback de clases conocidas
+            var targets = document.querySelectorAll(
+                '[data-db], .lct-badge'
+            );
+            var queue = Array.from(targets).filter(function(el) {
+                // Saltar navbar, topbar, footer links, zonas notranslate
+                if (el.closest('.notranslate, nav, .topbar-odyxs, .footer-interno, .lang-switcher, [translate="no"]')) return false;
+                return el.textContent.trim().length > 1;
+            });
+            function batch(i) {
+                if (i >= queue.length) return;
+                queue.slice(i, i + 5).forEach(translateNode);
+                setTimeout(function(){ batch(i + 5); }, 600);
+            }
+            batch(0);
+        }
+
+        document.readyState === 'loading'
+            ? document.addEventListener('DOMContentLoaded', run)
+            : run();
+    })();
+    </script>
+    </div>
+<!-- ═══ FIN footer-interno ══════════════════════════════════ -->
+
+
+<!-- ═══ FRAGMENTO: footer-chatbot-only (solo popup sin footer) ═══ -->
+<div th:fragment="footer-chatbot-only">
+    <button id="chatFab" onclick="toggleChat()" title="ODYX Chatbot"
+            style="position:fixed;bottom:95px;right:28px;z-index:1060;
+                   width:58px;height:58px;border-radius:50%;border:none;
+                   cursor:pointer;background:var(--gold);color:var(--azul);
+                   font-size:1.5rem;box-shadow:0 6px 24px rgba(19,53,123,.4);
+                   display:flex;align-items:center;justify-content:center;transition:transform .2s;
+                   overflow:hidden;padding:0;">
+        <img id="chatFabIcon" src="/img/chatbot-icon.png" alt="Chat"
+             style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+    </button>
+    <span id="chatBadge" style="position:fixed;bottom:139px;right:24px;z-index:1061;
+          background:#e74c3c;color:#fff;font-size:.6rem;font-weight:700;
+          width:16px;height:16px;border-radius:50%;display:flex;
+          align-items:center;justify-content:center;pointer-events:none;">1</span>
+
+    <div id="chatPopup" style="position:fixed;bottom:20px;right:94px;z-index:1059;
+       width:360px;max-width:calc(100vw - 120px);background:#fff;border-radius:18px;
+         box-shadow:0 16px 56px rgba(19,53,123,.28);display:none;
+         flex-direction:column;overflow:hidden;">
+        <div style="background:linear-gradient(135deg,var(--azul) 0%,#1a4299 100%);
+                    padding:14px 16px;display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,193,7,.2);
+                        border:2px solid rgba(255,193,7,.4);display:flex;align-items:center;
+                        justify-content:center;font-size:1.3rem;flex-shrink:0;">🤖</div>
+            <div style="flex:1;">
+                <div style="font-family:'Jost',sans-serif;font-weight:700;color:#fff;font-size:.9rem;">ODYX — Guía de Cartagena</div>
+                <div style="color:rgba(255,255,255,.6);font-size:.72rem;">
+                    <span style="color:#2ecc71;margin-right:4px;">●</span>Online 24/7</div>
+            </div>
+            <button onclick="toggleChat()" style="background:rgba(255,255,255,.15);border:none;color:#fff;
+                    width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.8rem;
+                    display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+        <div id="chatMessages" style="height:280px;overflow-y:auto;padding:14px;
+             display:flex;flex-direction:column;gap:10px;background:#f7f9ff;scroll-behavior:smooth;"></div>
+        <div style="padding:8px 10px;background:#fff;border-top:1px solid #eef2ff;display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)" data-msg="¿Cuál es el clima en Cartagena?">🌤️ Clima</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)" data-msg="¿Cuáles son las mejores playas?">🏖️ Playas</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)" data-msg="¿Cómo me muevo en Cartagena?">🚌 Transporte</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)" data-msg="¿Qué hoteles recomiendas?">🏨 Hoteles</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)" data-msg="¿Qué actividades hay?">🎯 Actividades</button>
+        </div>
+        <div style="display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #eef2ff;min-width:0;">
+            <input id="chatInputPop" type="text" placeholder="Escribe tu pregunta sobre Cartagena..."
+                   onkeydown="if(event.key==='Enter')chatEnviarInput()"
+                   style="flex:1;min-width:0;border:1.5px solid #dce5ff;border-radius:40px;padding:9px 15px;
+                          font-size:.87rem;outline:none;font-family:'Roboto',sans-serif;color:var(--azul);
+                          overflow:hidden;text-overflow:ellipsis;">
+            <button onclick="chatEnviarInput()"
+                    style="background:var(--azul);color:#fff;border:none;width:36px;height:36px;
+                           border-radius:50%;cursor:pointer;display:flex;align-items:center;
+                           justify-content:center;flex-shrink:0;font-size:.85rem;">
+                <i class="fa fa-paper-plane"></i></button>
+        </div>
+    </div>
+
+    <style>
+        @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
+        .chat-sug-pop{font-family:'Jost',sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;
+            background:#f0f4ff;border:1px solid #dce5ff;color:var(--azul);padding:4px 10px;
+            border-radius:20px;cursor:pointer;transition:.2s;}
+        .chat-sug-pop:hover{background:var(--azul);color:#fff;}
+        #chatFab:hover{transform:scale(1.08);}
+    </style>
+    <script>
+    var chatOpen=false;
+    function toggleChat(){
+        var p=document.getElementById('chatPopup');
+        var b=document.getElementById('chatBadge');
+        var f=document.getElementById('chatFab');
+        var ic=document.getElementById('chatFabIcon');
+        chatOpen=!chatOpen;
+        p.style.display=chatOpen?'flex':'none';
+        f.style.background=chatOpen?'var(--azul)':'var(--gold)';
+        f.style.color=chatOpen?'#fff':'var(--azul)';
+        if(ic)ic.textContent=chatOpen?'✕':'🤖';
+        if(b)b.style.display='none';
+        var msgs=document.getElementById('chatMessages');
+        if(chatOpen&&msgs.children.length===0){
+            addBotMsg('¡Hola! 👋 Soy ODYX, tu guía inteligente de Cartagena de Indias. ¿En qué te ayudo?');
+        }
+        if(chatOpen)setTimeout(function(){document.getElementById('chatInputPop').focus();},200);
+    }
+    function addBotMsg(text){
+        var box=document.getElementById('chatMessages');
+        var d=document.createElement('div');
+        d.style.cssText='display:flex;gap:7px;align-items:flex-end;max-width:90%;align-self:flex-start;';
+        d.innerHTML='<div style="width:28px;height:28px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;">🤖</div><div style="padding:9px 13px;border-radius:16px;border-bottom-left-radius:3px;background:#fff;color:var(--azul);font-size:.85rem;line-height:1.5;border:1px solid #e0e8ff;white-space:pre-wrap;">'+text.replace(/\n/g,'<br>')+'</div>';
+        box.appendChild(d);box.scrollTop=box.scrollHeight;
+    }
+    function addUserMsg(text){
+        var box=document.getElementById('chatMessages');
+        var d=document.createElement('div');
+        d.style.cssText='display:flex;gap:7px;align-items:flex-end;max-width:90%;align-self:flex-end;flex-direction:row-reverse;';
+        d.innerHTML='<div style="width:28px;height:28px;border-radius:50%;background:var(--gold);color:var(--azul);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;">👤</div><div style="padding:9px 13px;border-radius:16px;border-bottom-right-radius:3px;background:var(--azul);color:#fff;font-size:.85rem;white-space:pre-wrap;">'+text+'</div>';
+        box.appendChild(d);box.scrollTop=box.scrollHeight;
+    }
+    function addTyping(){
+        var box=document.getElementById('chatMessages');
+        var d=document.createElement('div');
+        d.id='chatTypingDot';
+        d.style.cssText='display:flex;gap:7px;align-items:flex-end;align-self:flex-start;';
+        d.innerHTML='<div style="width:28px;height:28px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;">🤖</div><div style="padding:10px 14px;border-radius:16px;background:#fff;border:1px solid #e0e8ff;display:flex;gap:4px;align-items:center;"><span style="width:6px;height:6px;border-radius:50%;background:var(--azul);opacity:.3;animation:dot 1.2s infinite;display:block;"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--azul);opacity:.3;animation:dot 1.2s .2s infinite;display:block;"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--azul);opacity:.3;animation:dot 1.2s .4s infinite;display:block;"></span></div>';
+        box.appendChild(d);box.scrollTop=box.scrollHeight;
+    }
+    async function chatEnviar(msg){
+        if(!msg||!msg.trim())return;
+        addUserMsg(msg);
+        document.getElementById('chatInputPop').value='';
+        addTyping();
+        try{
+            var res=await fetch('/chatbot/respuesta',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mensaje:msg})});
+            var data=await res.json();
+            var t=document.getElementById('chatTypingDot');if(t)t.remove();
+            addBotMsg(data.respuesta);
+        }catch(e){
+            var t=document.getElementById('chatTypingDot');if(t)t.remove();
+            addBotMsg('Lo siento, hubo un error. Inténtalo de nuevo 🙏');
+        }
+    }
+    function chatEnviarInput(){chatEnviar(document.getElementById('chatInputPop').value);}
+    </script>
+
+
+
+</html>

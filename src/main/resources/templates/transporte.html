@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org"
+      th:lang="${#locale.language}">
+<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title th:text="#{transport.page.title}">Transporte — ODYXS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=Jost:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/odyxs-travela.css}">
+    <style>
+        .tr-card { background:#fff; border-radius:16px; padding:28px 24px; transition:.35s; height:100%; box-shadow:0 4px 20px rgba(11,45,107,.08); border-top:4px solid var(--gold); }
+        .tr-card:hover { box-shadow:0 14px 36px rgba(11,45,107,.18); transform:translateY(-5px); border-top-color:var(--azul); }
+        .tr-icon { font-size:2.6rem; margin-bottom:16px; }
+        .tr-tipo { font-family:'DM Sans',sans-serif; font-size:.7rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--gold); margin-bottom:6px; }
+        .tr-card h5 { font-family:'Cormorant Garamond',serif; font-weight:700; color:var(--azul); margin-bottom:10px; font-size:1.2rem; }
+        .tr-costo { display:inline-block; background:rgba(11,45,107,.07); color:var(--azul); font-family:'DM Sans',sans-serif; font-size:.8rem; font-weight:700; padding:5px 16px; border-radius:40px; margin-top:10px; border:1px solid rgba(11,45,107,.12); }
+        .tip-box { background:var(--cream); border:1px solid rgba(200,150,62,.25); border-radius:16px; padding:32px; margin-top:48px; }
+        .ruta-badge { display:inline-block; background:var(--azul); color:#fff; font-size:.7rem; font-weight:700; padding:3px 10px; border-radius:20px; margin-bottom:8px; }
+    </style>
+    <!-- Favicon ODYXS -->
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+</head>
+<body>
+<div th:replace="fragments :: topbar"></div>
+<div th:replace="fragments :: navbar-interno"></div>
+<div class="page-breadcrumb-hero">
+    <div style="position:relative;z-index:1;">
+        <h1 style="font-style:italic;" th:text="#{transport.hero.title}">Cómo moverse en Cartagena</h1>
+        <div class="gold-line"></div>
+        <p th:text="#{transport.hero.subtitle}">Guía completa de transporte para todos los viajeros</p>
+    </div>
+</div>
+<div class="container py-5">
+
+    <!-- Cards estáticas con i18n -->
+    <div class="row g-4">
+
+        <!-- Tarjeta 1: Transcaribe -->
+        <div class="col-md-6 col-lg-4">
+            <div class="tr-card">
+                <div class="tr-icon">🚌</div>
+                <div class="tr-tipo" th:text="#{transport.card1.tipo}">Transporte Público</div>
+                <h5 th:text="#{transport.card1.nombre}">Transcaribe</h5>
+                <p class="text-muted small" th:text="#{transport.card1.desc}"></p>
+                <div class="ruta-badge" th:text="#{transport.card1.ruta}">Aeropuerto → Centro: Línea T102</div>
+                <span class="tr-costo" th:text="#{transport.card1.costo}">💰 ~$3.900 COP</span>
+            </div>
+        </div>
+
+        <!-- Tarjeta 2: Taxi -->
+        <div class="col-md-6 col-lg-4">
+            <div class="tr-card" style="border-top-color:var(--azul-mid);">
+                <div class="tr-icon">🚕</div>
+                <div class="tr-tipo" th:text="#{transport.card2.tipo}">Taxi Convencional</div>
+                <h5 th:text="#{transport.card2.nombre}">Taxi Cartagena</h5>
+                <p class="text-muted small" th:text="#{transport.card2.desc}"></p>
+                <span class="tr-costo" th:text="#{transport.card2.costo}">💰 $13.300–$30.000 COP</span>
+            </div>
+        </div>
+
+        <!-- Tarjeta 3: App móvil -->
+        <div class="col-md-6 col-lg-4">
+            <div class="tr-card" style="border-top-color:var(--coral);">
+                <div class="tr-icon">📱</div>
+                <div class="tr-tipo" th:text="#{transport.card3.tipo}">Aplicación Móvil</div>
+                <h5 th:text="#{transport.card3.nombre}">InDriver / Uber</h5>
+                <p class="text-muted small" th:text="#{transport.card3.desc}"></p>
+                <span class="tr-costo" th:text="#{transport.card3.costo}">💰 10–30% más barato que taxi</span>
+            </div>
+        </div>
+
+        <!-- Tarjeta 4: Lanchas -->
+        <div class="col-md-6 col-lg-4">
+            <div class="tr-card" style="border-top-color:#27ae60;">
+                <div class="tr-icon">⛵</div>
+                <div class="tr-tipo" th:text="#{transport.card4.tipo}">Transporte Marítimo</div>
+                <h5 th:text="#{transport.card4.nombre}">Lanchas a las Islas</h5>
+                <p class="text-muted small" th:text="#{transport.card4.desc}"></p>
+                <span class="tr-costo" th:text="#{transport.card4.costo}">💰 $60.000–$120.000 COP</span>
+            </div>
+        </div>
+
+        <!-- Tarjeta 5: A pie -->
+        <div class="col-md-6 col-lg-4">
+            <div class="tr-card" style="border-top-color:var(--azul-mid);">
+                <div class="tr-icon">🚶</div>
+                <div class="tr-tipo" th:text="#{transport.card5.tipo}">A Pie</div>
+                <h5 th:text="#{transport.card5.nombre}">Centro Histórico a pie</h5>
+                <p class="text-muted small" th:text="#{transport.card5.desc}"></p>
+                <span class="tr-costo" th:text="#{transport.card5.costo}">💰 Gratis</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Tabla de rutas -->
+    <div class="mt-5">
+        <h4 class="mb-4" style="font-family:'Cormorant Garamond',serif; color:var(--azul);"
+            th:text="#{transport.routes.title}">Rutas y tiempos estimados</h4>
+        <div class="table-responsive">
+            <table class="table table-hover bg-white rounded-3 overflow-hidden shadow-sm">
+                <thead style="background:var(--azul); color:#fff;">
+                    <tr>
+                        <th class="py-3 px-4" th:text="#{transport.routes.origin}">Origen</th>
+                        <th class="py-3" th:text="#{transport.routes.dest}">Destino</th>
+                        <th class="py-3" th:text="#{transport.routes.mode}">Transporte</th>
+                        <th class="py-3" th:text="#{transport.routes.time}">Tiempo</th>
+                        <th class="py-3" th:text="#{transport.routes.cost}">Costo aprox.</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="px-4" th:text="#{transport.r1.origin}">Aeropuerto Rafael Núñez</td>
+                        <td th:text="#{transport.r1.dest}">Centro Histórico</td>
+                        <td th:text="#{transport.r1.mode}">Taxi / InDriver</td>
+                        <td th:text="#{transport.r1.time}">10–15 min</td>
+                        <td th:text="#{transport.r1.cost}">$15.000–$40.000</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4" th:text="#{transport.r2.origin}">Aeropuerto</td>
+                        <td th:text="#{transport.r2.dest}">Centro</td>
+                        <td th:text="#{transport.r2.mode}">Transcaribe Línea T102</td>
+                        <td th:text="#{transport.r2.time}">25–35 min</td>
+                        <td th:text="#{transport.r2.cost}">$3.900</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4" th:text="#{transport.r3.origin}">Centro Histórico</td>
+                        <td th:text="#{transport.r3.dest}">Bocagrande</td>
+                        <td th:text="#{transport.r3.mode}">Taxi / A pie</td>
+                        <td th:text="#{transport.r3.time}">10 min / 25 min</td>
+                        <td th:text="#{transport.r3.cost}">$15.000 / gratis</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4" th:text="#{transport.r4.origin}">Muelle de la Bodeguita</td>
+                        <td th:text="#{transport.r4.dest}">Islas del Rosario</td>
+                        <td th:text="#{transport.r4.mode}">Lancha colectiva</td>
+                        <td th:text="#{transport.r4.time}">45–60 min</td>
+                        <td th:text="#{transport.r4.cost}">$60.000–$80.000</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4" th:text="#{transport.r5.origin}">Muelle de la Bodeguita</td>
+                        <td th:text="#{transport.r5.dest}">Playa Blanca (Barú)</td>
+                        <td th:text="#{transport.r5.mode}">Lancha colectiva</td>
+                        <td th:text="#{transport.r5.time}">45 min</td>
+                        <td th:text="#{transport.r5.cost}">$50.000–$70.000</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4" th:text="#{transport.r6.origin}">Cartagena</td>
+                        <td th:text="#{transport.r6.dest}">Volcán del Totumo</td>
+                        <td th:text="#{transport.r6.mode}">Tour / Taxi</td>
+                        <td th:text="#{transport.r6.time}">45 min</td>
+                        <td th:text="#{transport.r6.cost}">Tour desde $50.000</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Tips -->
+    <div class="tip-box">
+        <h5 class="fw-bold mb-4" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.4rem;">
+            <i class="fa fa-lightbulb me-2" style="color:var(--gold);"></i>
+            <span th:text="#{transport.tips.title}">Consejos para moverte seguro</span>
+        </h5>
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <div style="color:var(--gold); font-size:1.2rem; margin-top:2px;">✓</div>
+                    <p class="mb-0 text-muted small" th:utext="#{transport.tip1}"></p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <div style="color:var(--gold); font-size:1.2rem; margin-top:2px;">✓</div>
+                    <p class="mb-0 text-muted small" th:utext="#{transport.tip2}"></p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <div style="color:var(--gold); font-size:1.2rem; margin-top:2px;">✓</div>
+                    <p class="mb-0 text-muted small" th:utext="#{transport.tip3}"></p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <div style="color:var(--gold); font-size:1.2rem; margin-top:2px;">✓</div>
+                    <p class="mb-0 text-muted small" th:utext="#{transport.tip4}"></p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <div style="color:var(--gold); font-size:1.2rem; margin-top:2px;">✓</div>
+                    <p class="mb-0 text-muted small" th:utext="#{transport.tip5}"></p>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="d-flex gap-3">
+                    <div style="color:var(--gold); font-size:1.2rem; margin-top:2px;">✓</div>
+                    <p class="mb-0 text-muted small" th:utext="#{transport.tip6}"></p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+<div th:replace="fragments :: footer-interno"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

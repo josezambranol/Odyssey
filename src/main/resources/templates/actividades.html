@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title th:text="#{act.page.title}">Actividades — ODYXS</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/odyxs-travela.css}">
+    <style>
+        .act-card { border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(11,45,107,.1); transition:.35s; background:#fff; height:100%; }
+        .act-card:hover { transform:translateY(-6px); box-shadow:0 16px 40px rgba(11,45,107,.2); }
+        .act-img { height:210px; overflow:hidden; position:relative; }
+        .act-img img { width:100%; height:100%; object-fit:cover; transition:.4s; }
+        .act-card:hover .act-img img { transform:scale(1.07); }
+        .act-body { padding:20px; }
+        .act-cat { font-family:'DM Sans',sans-serif; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--gold); margin-bottom:5px; }
+        .act-body h5 { font-family:'Cormorant Garamond',serif; font-weight:700; color:var(--azul); font-size:1.2rem; margin-bottom:8px; }
+        .act-meta span { background:rgba(11,45,107,.06); color:var(--azul); font-size:.75rem; font-weight:600; padding:3px 12px; border-radius:20px; border:1px solid rgba(11,45,107,.1); display:inline-block; margin:2px; }
+        .filtro-btn { font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; }
+    </style>
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+</head>
+<body>
+<div th:replace="fragments :: topbar"></div>
+<div th:replace="fragments :: navbar-interno"></div>
+
+<div class="page-breadcrumb-hero">
+    <div style="position:relative;z-index:1;">
+        <h1 style="font-style:italic;" th:text="#{act.hero.title}">Qué hacer en Cartagena</h1>
+        <div class="gold-line"></div>
+        <p th:text="#{act.hero.sub}">Tours, deportes, cultura y gastronomía para todos los gustos</p>
+    </div>
+</div>
+
+<div class="container py-5">
+
+    <!-- Filtros -->
+    <div class="d-flex flex-wrap gap-2 justify-content-center mb-5">
+        <a href="/actividades"                 class="btn filtro-btn rounded-pill px-4 py-2" th:classappend="${catActiva == null}           ? ' btn-primary' : ' btn-outline-primary'" th:text="#{act.filter.all}">🌟 Todas</a>
+        <a href="/actividades?cat=TOUR"        class="btn filtro-btn rounded-pill px-4 py-2" th:classappend="${catActiva == 'TOUR'}        ? ' btn-primary' : ' btn-outline-primary'" th:text="#{act.filter.tours}">🗺️ Tours</a>
+        <a href="/actividades?cat=DEPORTE"     class="btn filtro-btn rounded-pill px-4 py-2" th:classappend="${catActiva == 'DEPORTE'}     ? ' btn-primary' : ' btn-outline-primary'" th:text="#{act.filter.deportes}">🏄 Deportes</a>
+        <a href="/actividades?cat=CULTURA"     class="btn filtro-btn rounded-pill px-4 py-2" th:classappend="${catActiva == 'CULTURA'}     ? ' btn-primary' : ' btn-outline-primary'" th:text="#{act.filter.cultura}">🏛️ Cultura</a>
+        <a href="/actividades?cat=GASTRONOMIA" class="btn filtro-btn rounded-pill px-4 py-2" th:classappend="${catActiva == 'GASTRONOMIA'} ? ' btn-primary' : ' btn-outline-primary'" th:text="#{act.filter.gastronomia}">🍽️ Gastronomía</a>
+        <a href="/actividades?cat=NATURALEZA"  class="btn filtro-btn rounded-pill px-4 py-2" th:classappend="${catActiva == 'NATURALEZA'}  ? ' btn-primary' : ' btn-outline-primary'" th:text="#{act.filter.naturaleza}">🌿 Naturaleza</a>
+    </div>
+
+    <!-- Grid de actividades -->
+    <div class="row g-4" th:if="${!#lists.isEmpty(actividades)}">
+        <div class="col-md-6 col-lg-4" th:each="act : ${actividades}">
+            <div class="act-card">
+                <div class="act-img">
+                    <img th:src="${act.imagenEfectiva}" th:alt="${act.nombre}"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat" th:text="${act.categoria}">CAT</div>
+                    <h5 data-db th:text="${act.nombre}">Nombre</h5>
+                    <p data-db class="text-muted small mb-2" th:text="${#strings.abbreviate(act.descripcion, 110)}">Desc</p>
+                    <div class="act-meta">
+                        <span th:if="${act.duracion != null and !#strings.isEmpty(act.duracion)}">
+                            ⏱️ <span th:text="${act.duracion}"></span>
+                        </span>
+                        <span th:if="${act.precioAprox != null and !#strings.isEmpty(act.precioAprox)}">
+                            💰 <span th:text="${act.precioAprox}"></span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado vacío -->
+    <div class="text-center py-5" th:if="${#lists.isEmpty(actividades)}">
+        <div style="font-size:4rem; margin-bottom:16px;">🎯</div>
+        <h4 style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{act.empty.title}">No hay actividades en esta categoría</h4>
+        <p class="text-muted mb-4" th:text="#{act.empty.desc}">Puedes proponer una actividad nueva o explorar otras categorías</p>
+        <a href="/actividades" class="btn btn-primary rounded-pill me-2 px-5" th:text="#{act.empty.verTodas}">Ver todas</a>
+        <a href="/proponer-actividad" class="btn btn-outline-primary rounded-pill px-5" th:text="#{act.cta.btn}">➕ Proponer actividad</a>
+    </div>
+
+    <!-- CTA proponer -->
+    <div class="text-center p-4 rounded-3 mt-5" style="background:var(--cream); border:1px dashed rgba(200,150,62,.4);">
+        <p class="text-muted mb-3" th:text="#{act.cta.desc}">¿Eres organizador de tours o actividades? Propón tu actividad.</p>
+        <a href="/proponer-actividad" class="btn btn-primary rounded-pill px-5" th:text="#{act.cta.btn}">➕ Proponer actividad</a>
+    </div>
+
+</div>
+
+<div th:replace="fragments :: footer-interno"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

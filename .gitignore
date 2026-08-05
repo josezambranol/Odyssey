@@ -1,0 +1,14 @@
+# Maven
+target/
+*.class
+
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# Variables de entorno con keys secretas
+.env
+
+# Uploads locales
+src/main/resources/static/uploads/
