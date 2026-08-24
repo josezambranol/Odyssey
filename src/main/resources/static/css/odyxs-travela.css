@@ -98,8 +98,8 @@ h1,h2,h3,h4,h5,.display-1,.display-2,.display-3 {
 }
 
 /* ── Topbar ──────────────────────────────────────────────── */
-.topbar-odyxs {
-    background: var(--azul-dark);
+.topbar-odyxs, .topbar-odyssey {
+    background: var(--azul-dark) !important;
     border-bottom: 1px solid rgba(200,150,62,.2);
 }
 

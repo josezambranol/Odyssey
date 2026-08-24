@@ -2,8 +2,8 @@ package com.odyxs.vg.controller;
 
 import com.odyxs.vg.entity.*;
 import com.odyxs.vg.repository.*;
+import com.odyxs.vg.service.EventoSyncService;
 import com.odyxs.vg.service.FileStorageService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -24,24 +25,69 @@ public class TurismoController {
     @Autowired private ActividadRepository  actividadRepo;
     @Autowired private ChatbotRespuestaRepository chatbotRepo;
     @Autowired private FileStorageService   fileStorageService;
+    @Autowired private EventoSyncService    eventoSyncService;
 
-    // ── Eventos ───────────────────────────────────────────────
+    // ── Eventos (Web) ─────────────────────────────────────────
 
     @GetMapping("/eventos")
-    public String eventos(@RequestParam(required = false) String desde, Model model) {
-        List<Evento> lista;
+    public String eventos(@RequestParam(required = false) String desde,
+                          @RequestParam(required = false) String synced,
+                          Model model) {
+        LocalDate hoy = LocalDate.now();
+
         if (desde != null && !desde.isBlank()) {
             try {
-                lista = eventoRepo.findByActivoTrueAndFechaGreaterThanEqualOrderByFechaAsc(LocalDate.parse(desde.trim()));
+                LocalDate fechaDesde = LocalDate.parse(desde.trim());
+                List<Evento> filtrados = eventoRepo.findByActivoTrueAndFechaGreaterThanEqualOrderByFechaAsc(fechaDesde);
+                model.addAttribute("eventosFiltrados", filtrados);
+                model.addAttribute("desde", desde);
             } catch (DateTimeParseException e) {
-                lista = eventoRepo.findByActivoTrueOrderByFechaAsc();
+                model.addAttribute("error", "Formato de fecha no válido.");
             }
-        } else {
-            lista = eventoRepo.findByActivoTrueOrderByFechaAsc();
         }
-        model.addAttribute("eventos", lista);
-        model.addAttribute("desde", desde);
+
+        Map<String, List<Evento>> clasificados = eventoSyncService.obtenerEventosClasificados();
+        model.addAttribute("eventosHoy", clasificados.get("hoy"));
+        model.addAttribute("eventosProximos", clasificados.get("proximos"));
+        model.addAttribute("eventosFinalizados", clasificados.get("finalizados"));
+        model.addAttribute("fechaActual", hoy);
+
+        if ("true".equals(synced)) {
+            model.addAttribute("mensajeExito", "¡Cartelera de eventos sincronizada en tiempo real con éxito!");
+        }
+
         return "eventos";
+    }
+
+    @GetMapping("/eventos/sincronizar")
+    public String sincronizarEventosWeb(RedirectAttributes redirectAttributes) {
+        Map<String, Object> res = eventoSyncService.sincronizarEventosCartagena();
+        redirectAttributes.addFlashAttribute("mensajeExito", "Cartelera cultural actualizada. Nuevos eventos agregados: " + res.get("nuevosEventos"));
+        return "redirect:/eventos";
+    }
+
+    // ── API REST: Eventos en Tiempo Real (JSON) ───────────────
+
+    @GetMapping("/api/eventos")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> apiObtenerEventos() {
+        Map<String, List<Evento>> clasificados = eventoSyncService.obtenerEventosClasificados();
+        Map<String, Object> resp = new LinkedHashMap<>();
+        resp.put("status", "success");
+        resp.put("ciudad", "Cartagena de Indias");
+        resp.put("fechaServidor", LocalDate.now().toString());
+        resp.put("hoy", clasificados.get("hoy"));
+        resp.put("proximos", clasificados.get("proximos"));
+        resp.put("finalizados", clasificados.get("finalizados"));
+        resp.put("totalActivos", clasificados.get("hoy").size() + clasificados.get("proximos").size());
+        return ResponseEntity.ok(resp);
+    }
+
+    @PostMapping("/api/eventos/sincronizar")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> apiSincronizarEventos() {
+        Map<String, Object> resultado = eventoSyncService.sincronizarEventosCartagena();
+        return ResponseEntity.ok(resultado);
     }
 
     // ── Proponer evento (usuarios) ────────────────────────────
@@ -106,9 +152,8 @@ public class TurismoController {
     @Value("${gemini.api.key:}")
     private String geminiApiKey;
 
-    // System prompt en ESPAÑOL
     private static final String ODYSSEY_SYSTEM_ES =
-        "Eres Odyssey, asistente turístico de Odyssey para Cartagena de Indias. " +
+        "Eres Odyssey, asistente turístico de Cartagena de Indias. " +
         "Responde SIEMPRE en español, de forma amigable y concisa (máx. 3 párrafos). " +
         "Eres experto en: playas (Bocagrande, Barú, Islas del Rosario, Playa Blanca), " +
         "historia colonial (Castillo de San Felipe, murallas, Getsemaní), " +
@@ -118,9 +163,8 @@ public class TurismoController {
         "actividades (buceo, snorkel, chiva rumbera, kayak, tours en velero). " +
         "Usa emojis con moderación.";
 
-    // System prompt in ENGLISH
     private static final String ODYSSEY_SYSTEM_EN =
-        "You are Odyssey, the Odyssey tourist assistant for Cartagena de Indias, Colombia. " +
+        "You are Odyssey, the Cartagena tourist assistant for Cartagena de Indias, Colombia. " +
         "ALWAYS respond in English, in a friendly and concise way (max. 3 paragraphs). " +
         "You are an expert in: beaches (Bocagrande, Barú, Islas del Rosario, Playa Blanca), " +
         "colonial history (Castillo de San Felipe, city walls, Getsemaní neighborhood), " +
@@ -138,12 +182,10 @@ public class TurismoController {
             return ResponseEntity.ok(Map.of("respuesta", "¿En qué puedo ayudarte? 😊"));
         }
 
-        // Detectar idioma actual via CookieLocaleResolver (WebConfig)
         Locale locale = LocaleContextHolder.getLocale();
         boolean enIngles = "en".equalsIgnoreCase(locale.getLanguage());
         String systemPrompt = enIngles ? ODYSSEY_SYSTEM_EN : ODYSSEY_SYSTEM_ES;
 
-        // ── Intentar Gemini AI ───────────────────────────────────
         if (geminiApiKey != null && !geminiApiKey.isBlank()) {
             try {
                 String respIA = llamarGeminiAPI(mensaje, systemPrompt);
@@ -153,7 +195,6 @@ public class TurismoController {
             }
         }
 
-        // ── Fallback BD ──────────────────────────────────────────
         String clave = detectarClave(mensaje.toLowerCase());
         Optional<ChatbotRespuesta> opt = chatbotRepo.findByClave(clave);
         String respuesta = opt.isPresent() ? opt.get().getRespuesta()

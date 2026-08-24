@@ -7,8 +7,11 @@ target/
 *.iml
 .vscode/
 
-# Variables de entorno con keys secretas
+# Variables de entorno y configuraciones locales privadas
 .env
+*.env
+application-local.properties
+src/main/resources/application-local.properties
 
 # Uploads locales
 src/main/resources/static/uploads/

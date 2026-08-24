@@ -56,9 +56,9 @@ public class SecurityConfig {
                 ).permitAll()
                 // Rutas públicas de consulta
                 .requestMatchers(
-                    "/", "/guia", "/eventos", "/actividades", "/transporte",
+                    "/", "/guia", "/eventos", "/eventos/**", "/actividades", "/transporte",
                     "/mapa", "/buscar", "/lugares/**", "/idioma",
-                    "/login", "/registro", "/chatbot/**"
+                    "/login", "/registro", "/chatbot/**", "/api/**"
                 ).permitAll()
                 // Rutas de administración
                 .requestMatchers("/admin/**").hasRole("ADMIN")
@@ -70,7 +70,7 @@ public class SecurityConfig {
                 .anyRequest().authenticated()
             )
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/chatbot/respuesta")
+                .ignoringRequestMatchers("/chatbot/respuesta", "/api/**")
             )
             .formLogin(form -> form
                 .loginPage("/login")
