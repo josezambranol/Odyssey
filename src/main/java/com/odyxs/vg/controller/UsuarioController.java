@@ -64,6 +64,21 @@ public class UsuarioController {
         return "login";
     }
 
+    @GetMapping("/logout")
+    public String logout(jakarta.servlet.http.HttpServletRequest request,
+                         jakarta.servlet.http.HttpServletResponse response) {
+        org.springframework.security.core.Authentication auth =
+            org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            new org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler().logout(request, response, auth);
+        }
+        HttpSession session = request.getSession(false);
+        if (session != null) {
+            session.invalidate();
+        }
+        return "redirect:/login?logout=true";
+    }
+
     @GetMapping("/menu")
     public String menu(HttpSession session, Model model, Principal principal) {
         Object nombre = session.getAttribute("usuarioNombre");

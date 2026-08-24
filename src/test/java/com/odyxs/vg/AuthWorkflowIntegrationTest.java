@@ -76,4 +76,12 @@ public class AuthWorkflowIntegrationTest {
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/admin"));
     }
+
+    @Test
+    @WithMockUser(username = "viajero@odyssey.com", roles = "USUARIO")
+    public void testLogout() throws Exception {
+        mockMvc.perform(get("/logout"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/login?logout=true"));
+    }
 }
