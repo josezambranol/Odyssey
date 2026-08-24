@@ -91,8 +91,8 @@ graph TD
 
 ### 2. Clonar el Repositorio
 ```bash
-git clone https://github.com/josezambranol/odyxs.git
-cd odyxs
+git clone https://github.com/josezambranol/Odyssey.git
+cd Odyssey
 ```
 
 ### 3. Configurar la Base de Datos
