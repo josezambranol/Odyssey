@@ -231,7 +231,8 @@
         <h2>Gestión de Eventos</h2>
 
         <!-- Formulario agregar evento -->
-        <form action="/admin/eventos/agregar" method="post" enctype="multipart/form-data" style="margin-bottom:32px;">
+        <form th:action="@{/admin/eventos/agregar}" method="post" enctype="multipart/form-data" style="margin-bottom:32px;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
                 <div class="form-group" style="margin:0;">
                     <label>Nombre del evento</label>
@@ -376,7 +377,8 @@
         <h2>Gestión de Actividades</h2>
 
         <!-- Formulario agregar actividad -->
-        <form action="/admin/actividades/agregar" method="post" enctype="multipart/form-data" style="margin-bottom:32px;">
+        <form th:action="@{/admin/actividades/agregar}" method="post" enctype="multipart/form-data" style="margin-bottom:32px;">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px;">
                 <div class="form-group" style="margin:0; grid-column:1/-1;">
                     <label>Nombre de la actividad</label>
@@ -556,6 +558,7 @@
     </div>
     <div class="odyx-modal-body">
       <form id="formEditarLugar" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <div class="odyx-field-grid">
           <div class="odyx-field full">
             <label>Nombre del lugar</label>
@@ -602,6 +605,7 @@
     </div>
     <div class="odyx-modal-body">
       <form id="formEditarEvento" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <div class="odyx-field-grid">
           <div class="odyx-field">
             <label>Nombre del evento</label>
@@ -642,6 +646,7 @@
     </div>
     <div class="odyx-modal-body">
       <form id="formEditarActividad" method="post" enctype="multipart/form-data">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
         <div class="odyx-field-grid">
           <div class="odyx-field full">
             <label>Nombre de la actividad</label>

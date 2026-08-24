@@ -42,7 +42,8 @@
 
             <div class="alerta-error" th:if="${error}" th:text="${error}"></div>
 
-            <form action="/registro" method="post">
+            <form th:action="@{/registro}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                 <div class="mb-3">
                     <label class="form-label fw-semibold" th:text="#{register.name}">Nombre completo</label>
                     <div class="input-group">

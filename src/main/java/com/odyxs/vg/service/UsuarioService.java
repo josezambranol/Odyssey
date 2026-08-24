@@ -57,19 +57,24 @@ public class UsuarioService {
     /** Inicializa el administrador al arrancar la app.
      *  Si ya existe con contraseña en texto plano, la migra a BCrypt automáticamente. */
     public void inicializarAdmin() {
-        var adminOpt = usuarioRepository.findByCorreo(defaultAdminEmail);
-        if (adminOpt.isEmpty()) {
-            Usuario a = new Usuario();
-            a.setNombre("Administrador Odyssey");
-            a.setCorreo(defaultAdminEmail);
-            a.setContrasena(encoder.encode(defaultAdminPassword));
-            a.setRol(Usuario.Rol.ADMIN);
-            usuarioRepository.save(a);
-        } else {
-            Usuario a = adminOpt.get();
-            if (!a.getContrasena().startsWith("$2")) {
-                a.setContrasena(encoder.encode(a.getContrasena()));
+        String[] adminEmails = {defaultAdminEmail, "admin@odyssey.com", "admin@odyxs.com"};
+        for (String email : adminEmails) {
+            if (email == null || email.isBlank()) continue;
+            var adminOpt = usuarioRepository.findByCorreo(email.trim().toLowerCase());
+            if (adminOpt.isEmpty()) {
+                Usuario a = new Usuario();
+                a.setNombre("Administrador Odyssey");
+                a.setCorreo(email.trim().toLowerCase());
+                a.setContrasena(encoder.encode(defaultAdminPassword));
+                a.setRol(Usuario.Rol.ADMIN);
                 usuarioRepository.save(a);
+            } else {
+                Usuario a = adminOpt.get();
+                a.setRol(Usuario.Rol.ADMIN);
+                if (!a.getContrasena().startsWith("$2")) {
+                    a.setContrasena(encoder.encode(defaultAdminPassword));
+                    usuarioRepository.save(a);
+                }
             }
         }
     }

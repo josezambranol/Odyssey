@@ -26,7 +26,8 @@
     <div class="bg-white rounded-3 shadow-sm p-4 p-lg-5">
         <div class="alert alert-danger" th:if="${error}" th:text="${error}"></div>
         <div class="alert alert-success" th:if="${mensaje}" th:text="${mensaje}"></div>
-        <form action="/proponer-evento" method="post" enctype="multipart/form-data">
+        <form th:action="@{/proponer-evento}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div class="mb-3">
                 <label class="form-label fw-semibold">Nombre del evento <span class="text-danger">*</span></label>
                 <input type="text" name="nombre" class="form-control" placeholder="Ej: Festival de Música del Caribe" required>

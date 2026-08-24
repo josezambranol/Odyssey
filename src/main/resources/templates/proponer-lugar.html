@@ -21,7 +21,8 @@
         <div class="alerta-error" th:if="${error}" th:text="${error}"></div>
         <div class="alert alert-success" th:if="${mensaje}" th:text="${mensaje}"></div>
         <!-- enctype multipart/form-data para soporte de imagen -->
-        <form action="/proponer-lugar" method="post" enctype="multipart/form-data">
+        <form th:action="@{/proponer-lugar}" method="post" enctype="multipart/form-data">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
             <div class="mb-3">
                 <label class="form-label fw-semibold">Nombre del lugar <span class="text-danger">*</span></label>
                 <input type="text" name="nombre" class="form-control" placeholder="Ej: Playa La Bocana" required>

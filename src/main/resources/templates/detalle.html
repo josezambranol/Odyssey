@@ -117,7 +117,8 @@
                 <div class="p-4 rounded-3 mt-4" style="background:var(--cream); border:1px solid rgba(200,150,62,.2);"
                      th:if="${session.usuarioId != null}">
                     <h5 class="fw-bold mb-4" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{detalle.resena.form.title}">Escribe tu reseña</h5>
-                    <form action="/resenas" method="post">
+                    <form th:action="@{/resenas}" method="post">
+                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
                         <input type="hidden" name="lugarId" th:value="${lugar.id}">
                         <div class="mb-3">
                             <label class="form-label fw-semibold" style="color:var(--azul);" th:text="#{detalle.resena.calificacion}">Calificación</label>
