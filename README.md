@@ -18,30 +18,33 @@
 
 ## 🌟 Características Principales
 
+### 🔓 Filosofía de Acceso Abierto (Open Access)
+- **Consulta 100% Libre sin Barreras de Login:** Creemos que la información turística debe estar disponible para todos. Cualquier viajero puede explorar toda la guía, buscar sitios, consultar el transporte, ver el mapa interactivo, revisar la cartelera de eventos y conversar con el Asistente de IA sin necesidad de registrarse.
+- **Autenticación con Propósito Real:** El registro de cuenta está reservado para acciones de valor en la comunidad:
+  - ⭐ Calificar sitios con estrellas (1-5) y compartir reseñas verificadas.
+  - 🏪 Postular nuevos lugares, actividades o eventos (emprendedores locales).
+  - 🔔 Gestión de perfil y próximas funcionalidades de favoritos y notificaciones.
+
 ### 🤖 Asistente Virtual Inteligente (Odyssey AI)
 - Impulsado por **Google Gemini 2.5 Flash** con prompts contextualizados en cultura, gastronomía, historia, transporte y playas de Cartagena.
 - **Arquitectura Híbrida Resiliente:** Si no hay conexión o se excede la cuota de API, el sistema recurre automáticamente a un motor de búsqueda por palabras clave en base de datos local.
 - **Detección Automática de Idioma:** Adapta sus respuestas de manera nativa en **Español** o **Inglés**.
+
+### 📅 Cartelera de Eventos en Tiempo Real & Motor Cultural
+- **Clasificación Dinámica:**
+  - 🟢 **Eventos de Hoy:** Actividades culturales y presentaciones en vivo que tienen lugar hoy (con badge animado).
+  - 🔵 **Próximos Eventos:** Agenda de grandes festivales (FICCI, Hay Festival, Fiestas de Independencia, Regatas, Festival del Frito).
+  - ⚪ **Eventos Finalizados:** Memoria cultural y registro histórico de ediciones pasadas.
+- **Motor de Sincronización Extensible (`EventoSyncService`):** Agrega y clasifica la agenda cultural cartagenera en tiempo real con validación anti-duplicados y arquitectura lista para conectar APIs externas (Eventbrite, Ticketmaster, feeds culturales del IPCC).
+- **API REST Pública (`/api/eventos`):** Retorna la cartelera estructurada en JSON.
 
 ### 🏛️ Catálogo y Guía Turística Completa
 - Exploración de sitios históricos, playas paradisíacas, museos, hoteles y gastronomía caribeña.
 - Búsqueda en tiempo real e indexada por categorías.
 - Ficha detallada por lugar con ubicación, mapas interactivos, horarios y galería fotográfica.
 
-### 📅 Agenda de Eventos y Actividades
-- Cartelera de festivales emblemáticos (Hay Festival, FICCI, Fiestas de Independencia, Concurso Nacional de Belleza, Regatas).
-- Actividades guiadas (buceo, snorkel, tour en chiva rumbera, kayak en manglares, pesca deportiva).
-
-### ⭐ Comunidad y Reseñas de Visitantes
-- Sistema interactivo de calificaciones de 1 a 5 estrellas y comentarios por lugar.
-- Control de autoría: los usuarios solo pueden editar o eliminar sus propias opiniones.
-
-### 🏪 Ecosistema para Emprendedores Locales & Moderación
-- Los prestadores turísticos y usuarios registrados pueden proponer nuevos lugares, eventos y actividades.
-- **Panel Administrativo (`/admin`)** con flujos de aprobación, rechazo y edición con un solo clic.
-
 ### 🌦️ Clima en Tiempo Real & Transporte
-- Widget meteorológico en vivo (temperatura, humedad, viento y estado del cielo) con API de Open-Meteo.
+- Widget meteorológico en vivo (temperatura, humedad, viento y estado del cielo) consumiendo la API de Open-Meteo.
 - Guía detallada de movilidad (Transcaribe, taxis, lanchas a islas y traslados al Aeropuerto Rafael Núñez).
 
 ---

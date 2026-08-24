@@ -113,8 +113,9 @@
                     <p class="text-muted" th:text="#{detalle.resenas.empty}">Aún no hay reseñas. ¡Sé el primero en comentar!</p>
                 </div>
 
-                <!-- Formulario -->
-                <div class="p-4 rounded-3 mt-4" style="background:var(--cream); border:1px solid rgba(200,150,62,.2);">
+                <!-- Formulario para usuarios autenticados -->
+                <div class="p-4 rounded-3 mt-4" style="background:var(--cream); border:1px solid rgba(200,150,62,.2);"
+                     th:if="${session.usuarioId != null}">
                     <h5 class="fw-bold mb-4" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{detalle.resena.form.title}">Escribe tu reseña</h5>
                     <form action="/resenas" method="post">
                         <input type="hidden" name="lugarId" th:value="${lugar.id}">
@@ -144,6 +145,22 @@
                             <i class="fa fa-paper-plane me-2"></i><span th:text="#{detalle.publicar}">Publicar reseña</span>
                         </button>
                     </form>
+                </div>
+
+                <!-- Invitación para visitantes no autenticados -->
+                <div class="p-4 rounded-3 mt-4 text-center" style="background:var(--cream); border:1px dashed rgba(200,150,62,.4);"
+                     th:if="${session.usuarioId == null}">
+                    <div style="font-size:2rem; margin-bottom:8px;">⭐</div>
+                    <h5 class="fw-bold mb-2" style="color:var(--azul); font-family:'Cormorant Garamond',serif;">¿Has visitado este lugar?</h5>
+                    <p class="text-muted small mb-4">Inicia sesión o crea tu cuenta gratuita para calificar, compartir tu opinión y guardar tus sitios favoritos de Cartagena.</p>
+                    <div class="d-flex justify-content-center gap-3 flex-wrap">
+                        <a href="/login" class="btn btn-primary rounded-pill px-4 py-2 small">
+                            <i class="fa fa-sign-in-alt me-1"></i> Iniciar sesión
+                        </a>
+                        <a href="/registro" class="btn btn-outline-primary rounded-pill px-4 py-2 small">
+                            <i class="fa fa-user-plus me-1"></i> Registrarme gratis
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
