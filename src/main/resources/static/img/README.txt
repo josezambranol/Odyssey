@@ -1,4 +1,4 @@
-PAQUETE DE IMÁGENES — ODYXS
+PAQUETE DE IMÁGENES — ODYSSEY
 ============================
 Coloca aquí los archivos de imagen con estos nombres exactos:
 
@@ -17,7 +17,7 @@ Coloca aquí los archivos de imagen con estos nombres exactos:
   hotel-capilla.jpg     → GHL Capilla del Mar
   hotel-casavieja.jpg   → Hostal Casa Vieja Getsemaní
 
-  about-cartagena.jpg   → Foto colonial para sección "Sobre ODYXS"
+  about-cartagena.jpg   → Foto colonial para sección "Sobre ODYSSEY"
 
 FUENTES RECOMENDADAS (imágenes libres de derechos):
   https://commons.wikimedia.org (buscar "Cartagena de Indias")

@@ -1,4 +1,4 @@
-# 🚀 ODYXS — Hoja de Ruta y Plan de Refactorización
+# 🚀 ODYSSEY — Hoja de Ruta y Plan de Refactorización
 
 ## Fases de Modernización
 

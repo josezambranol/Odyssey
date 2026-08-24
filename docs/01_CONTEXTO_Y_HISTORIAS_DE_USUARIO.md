@@ -1,9 +1,9 @@
-# 📖 ODYXS — Contexto del Proyecto e Historias de Usuario
+# 📖 ODYSSEY — Contexto del Proyecto e Historias de Usuario
 
 ## 1. Contexto General del Proyecto
-**ODYXS (Cartagena Travel Guide & Assistant)** es una plataforma web integral desarrollada a lo largo de los semestres 4° a 7° de la carrera de Tecnología en Desarrollo de Software (TDS). Su propósito fundamental es ofrecer una guía turística interactiva, confiable, bilingüe e impulsada por Inteligencia Artificial para la ciudad de **Cartagena de Indias, Colombia** (Patrimonio Histórico y Cultural de la Humanidad UNESCO).
+**ODYSSEY (Cartagena Travel Guide & Assistant)** es una plataforma web integral desarrollada a lo largo de los semestres 4° a 7° de la carrera de Tecnología en Desarrollo de Software (TDS). Su propósito fundamental es ofrecer una guía turística interactiva, confiable, bilingüe e impulsada por Inteligencia Artificial para la ciudad de **Cartagena de Indias, Colombia** (Patrimonio Histórico y Cultural de la Humanidad UNESCO).
 
-La plataforma permite a los turistas descubrir sitios históricos, playas, gastronomía, eventos y actividades, interactuar mediante un asistente virtual con IA (ODYX / Google Gemini), emitir reseñas con calificaciones, y a los emprendedores locales proponer nuevos lugares y actividades para su debida moderación administrativa.
+La plataforma permite a los turistas descubrir sitios históricos, playas, gastronomía, eventos y actividades, interactuar mediante un asistente virtual con IA (ODYSSEY / Google Gemini), emitir reseñas con calificaciones, y a los emprendedores locales proponer nuevos lugares y actividades para su debida moderación administrativa.
 
 ---
 
@@ -13,7 +13,7 @@ La plataforma permite a los turistas descubrir sitios históricos, playas, gastr
 | :--- | :--- | :--- |
 | **Turista / Visitante No Registrado** | Usuario general que consulta información pública. | Consulta catálogo, mapa interactivo, guía turística, conversor de idioma y asistente básico. |
 | **Usuario Registrado / Emprendedor Local** | Turista registrado o prestador de servicios turísticos locales. | Publica reseñas (1 a 5 estrellas), propone nuevos lugares, eventos y actividades para aprobación. |
-| **Administrador (`ROLE_ADMIN`)** | Gestor general de la plataforma ODYXS. | Aprueba/rechaza propuestas de lugares, eventos y actividades; gestiona el catálogo oficial y categorías. |
+| **Administrador (`ROLE_ADMIN`)** | Gestor general de la plataforma ODYSSEY. | Aprueba/rechaza propuestas de lugares, eventos y actividades; gestiona el catálogo oficial y categorías. |
 
 ---
 
@@ -42,5 +42,5 @@ Basado en el levantamiento metodológico oficial del proyecto (**Anexo 4**):
 - **RNF01 (Seguridad):** Cifrado de contraseñas con algoritmo robusto (BCrypt), protección contra CSRF y control de acceso basado en roles (RBAC).
 - **RNF02 (Internacionalización - i18n):** Interfaz y respuestas completamente localizadas en Español (ES) e Inglés (EN).
 - **RNF03 (Disponibilidad y Resiliencia):** Arquitectura de Chatbot con fallback automático a base de datos si la API de IA no está disponible.
-- **RNF04 (Persistencia de Archivos):** Almacenamiento desacoplado del ciclo de vida del empaquetado JAR (`~/odyxs-uploads/`).
+- **RNF04 (Persistencia de Archivos):** Almacenamiento desacoplado del ciclo de vida del empaquetado JAR (`~/odyssey-uploads/`).
 - **RNF05 (Rendimiento):** Consultas indexadas y paginación para escalabilidad de registros.

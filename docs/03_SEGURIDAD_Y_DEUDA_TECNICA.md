@@ -1,4 +1,4 @@
-# 🛡️ ODYXS — Diagnóstico de Seguridad y Deuda Técnica
+# 🛡️ ODYSSEY — Diagnóstico de Seguridad y Deuda Técnica
 
 ## 1. Matriz de Riesgos y Vulnerabilidades Detectadas
 
@@ -6,7 +6,7 @@
 | :--- | :---: | :--- | :--- |
 | **Spring Security Bypassed (`permitAll`, `csrf.disable`)** | 🔴 Crítica | Acceso no autorizado por omisión en sesión manual y ataques CSRF en peticiones POST. | Implementando `SecurityFilterChain` real y tokens CSRF. |
 | **Hardcoded API Key (Google Gemini)** | 🔴 Crítica | Exposición de cuota y claves en repositorio público/privado. | Extraído a variable de entorno `GEMINI_API_KEY`. |
-| **Hardcoded Admin Email & Default Password** | 🔴 Crítica | Cuenta administrativa comprometida por defecto (`admin@odyxs.com` / `admin2026`). | Parametrizado mediante variables y control de acceso estándar. |
+| **Hardcoded Admin Email & Default Password** | 🔴 Crítica | Cuenta administrativa comprometida por defecto (`admin@odyssey.com` / `admin2026`). | Parametrizado mediante variables y control de acceso estándar. |
 | **Falta de Validación de Entrada (Bean Validation)** | 🟡 Alta | Inyección de datos inválidos, errores 500 (`DataTruncation`, `DateTimeParseException`). | Creación de DTOs y validadores `@Valid`. |
 | **Subida de Archivos No Sanitizada / Path Traversal** | 🟡 Alta | Riesgo de sobreescritura de archivos arbitrarios o subida de ejecutables disfrazados. | Centralización en `FileStorageService` seguro. |
 | **Ausencia de Pruebas Automatizadas** | 🟡 Media | Regresiones no detectadas al realizar refactorizaciones. | Creando suite de pruebas JUnit 5 + Mockito. |

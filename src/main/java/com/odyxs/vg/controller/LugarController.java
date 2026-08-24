@@ -86,7 +86,7 @@ public class LugarController {
         String resultado = lugarService.guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, false, imagen);
 
         if ("Lugar guardado.".equals(resultado)) {
-            model.addAttribute("mensaje", "¡Propuesta enviada! Será revisada por el equipo ODYXS.");
+            model.addAttribute("mensaje", "¡Propuesta enviada! Será revisada por el equipo Odyssey.");
         } else {
             model.addAttribute("error", resultado);
         }

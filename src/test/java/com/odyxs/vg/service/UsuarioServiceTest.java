@@ -32,7 +32,7 @@ class UsuarioServiceTest {
 
     @BeforeEach
     void setUp() {
-        ReflectionTestUtils.setField(usuarioService, "defaultAdminEmail", "admin@odyxs.com");
+        ReflectionTestUtils.setField(usuarioService, "defaultAdminEmail", "admin@odyssey.com");
         ReflectionTestUtils.setField(usuarioService, "defaultAdminPassword", "admin2026");
     }
 

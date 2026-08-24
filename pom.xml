@@ -9,10 +9,10 @@
 		<relativePath/>
 	</parent>
 	<groupId>com.odyxs</groupId>
-	<artifactId>odyxs</artifactId>
+	<artifactId>odyssey</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
-	<name>odyxs</name>
-	<description>ODYXS - Guía turística de Cartagena</description>
+	<name>odyssey</name>
+	<description>ODYSSEY - Guía turística inteligente de Cartagena de Indias</description>
 
 	<properties>
 		<java.version>21</java.version>

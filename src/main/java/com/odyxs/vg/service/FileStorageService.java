@@ -16,7 +16,7 @@ import java.util.UUID;
 @Service
 public class FileStorageService {
 
-    private static final String UPLOAD_BASE_DIR = System.getProperty("user.home") + "/odyxs-uploads/";
+    private static final String UPLOAD_BASE_DIR = System.getProperty("user.home") + "/odyssey-uploads/";
     private static final long MAX_FILE_SIZE = 5 * 1024 * 1024; // 5 MB
     private static final List<String> EXTENSIONES_PERMITIDAS = Arrays.asList(".jpg", ".jpeg", ".png", ".webp", ".gif");
     private static final List<String> TIPOS_MIME_PERMITIDOS = Arrays.asList(

@@ -2,7 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 
 <!-- ═══ FRAGMENTO: topbar ════════════════════════════════════ -->
-<div th:fragment="topbar" class="container-fluid topbar-odyxs px-4 px-lg-5 d-none d-lg-block notranslate" translate="no">
+<div th:fragment="topbar" class="container-fluid topbar-odyssey px-4 px-lg-5 d-none d-lg-block notranslate" translate="no">
     <div class="row gx-0">
         <div class="col-lg-8 text-start">
             <div class="d-inline-flex align-items-center" style="height:44px; gap:8px; flex-wrap:nowrap;">
@@ -78,7 +78,7 @@
                 <i class="fa fa-anchor" style="color:var(--gold); font-size:1.6rem;"></i>
                 <div style="display:flex; gap:8px; align-items:stretch;">
                     <div style="line-height:1.1;">
-                        <div style="font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:700; color:var(--azul); letter-spacing:.5px;">ODYXS</div>
+                        <div style="font-family:'Cormorant Garamond',serif; font-size:1.05rem; font-weight:700; color:var(--azul); letter-spacing:.5px;">ODYSSEY</div>
                         <div style="font-family:'DM Sans',sans-serif; font-size:.72rem; font-weight:600; color:var(--gold); letter-spacing:.3px;">cartagena.com.co</div>
                     </div>
                     <div style="width:2px; background:var(--gold); border-radius:2px; margin:1px 0;"></div>
@@ -132,7 +132,7 @@
             <div class="row g-4 align-items-center">
                 <div class="col-lg-4 text-center text-lg-start">
                     <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;">
-                        <span style="color:#fff;">odyxs</span><span style="color:var(--gold);">cartagena.</span><span style="color:#fff;">com.co</span>
+                        <span style="color:#fff;">odyssey</span><span style="color:var(--gold);">cartagena.</span><span style="color:#fff;">com.co</span>
                     </h5>
                     <p class="mb-0 small" style="color:rgba(255,255,255,.45);" th:text="#{footer.tagline.short}">Guía Turística de Cartagena de Indias</p>
                 </div>
@@ -148,7 +148,7 @@
                     </div>
                 </div>
                 <div class="col-lg-4 text-center text-lg-end">
-                    <p class="mb-0 small" style="color:rgba(255,255,255,.35);" th:text="#{footer.rights}">© 2026 ODYXS</p>
+                    <p class="mb-0 small" style="color:rgba(255,255,255,.35);" th:text="#{footer.rights}">© 2026 ODYSSEY</p>
                 </div>
             </div>
         </div>
@@ -162,7 +162,7 @@
          ════════════════════════════════════════════════════════ -->
 
     <!-- Botón FAB -->
-    <button id="chatFab" onclick="toggleChat()" title="ODYX Chatbot"
+    <button id="chatFab" onclick="toggleChat()" title="ODYSSEY Chatbot"
             style="position:fixed;bottom:95px;right:28px;z-index:1060;
                    width:58px;height:58px;border-radius:50%;border:none;
                    cursor:pointer;background:var(--gold);color:var(--azul);
@@ -194,11 +194,11 @@
             <div style="width:40px;height:40px;border-radius:50%;
                         overflow:hidden;border:2px solid rgba(255,193,7,.4);
                         flex-shrink:0;">
-                <img src="/img/chatbot-icon.png" alt="ODYX" style="width:100%;height:100%;object-fit:cover;">
+                <img src="/img/chatbot-icon.png" alt="ODYSSEY" style="width:100%;height:100%;object-fit:cover;">
             </div>
             <div style="flex:1;">
                 <div style="font-family:'Jost',sans-serif;font-weight:700;color:#fff;font-size:.9rem;"
-                     th:text="#{chatbot.title}">ODYX</div>
+                     th:text="#{chatbot.title}">ODYSSEY</div>
                 <div style="color:rgba(255,255,255,.6);font-size:.72rem;">
                     <span style="color:#2ecc71;margin-right:4px;">●</span>
                     <span th:text="#{chatbot.subtitle}">Online 24/7</span>
@@ -330,7 +330,7 @@
 
     <!-- Script del chatbot popup -->
     <script th:inline="javascript">
-        const CHAT_WELCOME = /*[[#{chatbot.welcome}]]*/ '¡Hola! Soy ODYX.';
+        const CHAT_WELCOME = /*[[#{chatbot.welcome}]]*/ '¡Hola! Soy ODYSSEY.';
 
         function toggleChat() {
             const popup = document.getElementById('chatPopup');
@@ -446,7 +446,7 @@
             );
             var queue = Array.from(targets).filter(function(el) {
                 // Saltar navbar, topbar, footer links, zonas notranslate
-                if (el.closest('.notranslate, nav, .topbar-odyxs, .footer-interno, .lang-switcher, [translate="no"]')) return false;
+                if (el.closest('.notranslate, nav, .topbar-odyssey, .footer-interno, .lang-switcher, [translate="no"]')) return false;
                 return el.textContent.trim().length > 1;
             });
             function batch(i) {
@@ -468,7 +468,7 @@
 
 <!-- ═══ FRAGMENTO: footer-chatbot-only (solo popup sin footer) ═══ -->
 <div th:fragment="footer-chatbot-only">
-    <button id="chatFab" onclick="toggleChat()" title="ODYX Chatbot"
+    <button id="chatFab" onclick="toggleChat()" title="ODYSSEY Chatbot"
             style="position:fixed;bottom:95px;right:28px;z-index:1060;
                    width:58px;height:58px;border-radius:50%;border:none;
                    cursor:pointer;background:var(--gold);color:var(--azul);
@@ -493,7 +493,7 @@
                         border:2px solid rgba(255,193,7,.4);display:flex;align-items:center;
                         justify-content:center;font-size:1.3rem;flex-shrink:0;">🤖</div>
             <div style="flex:1;">
-                <div style="font-family:'Jost',sans-serif;font-weight:700;color:#fff;font-size:.9rem;">ODYX — Guía de Cartagena</div>
+                <div style="font-family:'Jost',sans-serif;font-weight:700;color:#fff;font-size:.9rem;">ODYSSEY — Guía de Cartagena</div>
                 <div style="color:rgba(255,255,255,.6);font-size:.72rem;">
                     <span style="color:#2ecc71;margin-right:4px;">●</span>Online 24/7</div>
             </div>
@@ -547,7 +547,7 @@
         if(b)b.style.display='none';
         var msgs=document.getElementById('chatMessages');
         if(chatOpen&&msgs.children.length===0){
-            addBotMsg('¡Hola! 👋 Soy ODYX, tu guía inteligente de Cartagena de Indias. ¿En qué te ayudo?');
+            addBotMsg('¡Hola! 👋 Soy ODYSSEY, tu guía inteligente de Cartagena de Indias. ¿En qué te ayudo?');
         }
         if(chatOpen)setTimeout(function(){document.getElementById('chatInputPop').focus();},200);
     }

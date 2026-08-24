@@ -68,7 +68,7 @@ public class TurismoController {
             e.setActivo(false); // pendiente de aprobación admin
 
             eventoRepo.save(e);
-            model.addAttribute("mensaje", "¡Propuesta de evento enviada! Será revisada por el equipo ODYXS.");
+            model.addAttribute("mensaje", "¡Propuesta de evento enviada! Será revisada por el equipo Odyssey.");
         } catch (DateTimeParseException ex) {
             model.addAttribute("error", "Formato de fecha inválido. Utilice el formato AAAA-MM-DD.");
         }
@@ -107,8 +107,8 @@ public class TurismoController {
     private String geminiApiKey;
 
     // System prompt en ESPAÑOL
-    private static final String ODYX_SYSTEM_ES =
-        "Eres ODYX, asistente turístico de ODYXS para Cartagena de Indias. " +
+    private static final String ODYSSEY_SYSTEM_ES =
+        "Eres Odyssey, asistente turístico de Odyssey para Cartagena de Indias. " +
         "Responde SIEMPRE en español, de forma amigable y concisa (máx. 3 párrafos). " +
         "Eres experto en: playas (Bocagrande, Barú, Islas del Rosario, Playa Blanca), " +
         "historia colonial (Castillo de San Felipe, murallas, Getsemaní), " +
@@ -119,8 +119,8 @@ public class TurismoController {
         "Usa emojis con moderación.";
 
     // System prompt in ENGLISH
-    private static final String ODYX_SYSTEM_EN =
-        "You are ODYX, the ODYXS tourist assistant for Cartagena de Indias, Colombia. " +
+    private static final String ODYSSEY_SYSTEM_EN =
+        "You are Odyssey, the Odyssey tourist assistant for Cartagena de Indias, Colombia. " +
         "ALWAYS respond in English, in a friendly and concise way (max. 3 paragraphs). " +
         "You are an expert in: beaches (Bocagrande, Barú, Islas del Rosario, Playa Blanca), " +
         "colonial history (Castillo de San Felipe, city walls, Getsemaní neighborhood), " +
@@ -141,7 +141,7 @@ public class TurismoController {
         // Detectar idioma actual via CookieLocaleResolver (WebConfig)
         Locale locale = LocaleContextHolder.getLocale();
         boolean enIngles = "en".equalsIgnoreCase(locale.getLanguage());
-        String systemPrompt = enIngles ? ODYX_SYSTEM_EN : ODYX_SYSTEM_ES;
+        String systemPrompt = enIngles ? ODYSSEY_SYSTEM_EN : ODYSSEY_SYSTEM_ES;
 
         // ── Intentar Gemini AI ───────────────────────────────────
         if (geminiApiKey != null && !geminiApiKey.isBlank()) {
@@ -149,7 +149,7 @@ public class TurismoController {
                 String respIA = llamarGeminiAPI(mensaje, systemPrompt);
                 return ResponseEntity.ok(Map.of("respuesta", respIA));
             } catch (Exception ex) {
-                System.err.println("[ODYX] Error Gemini API: " + ex.getMessage());
+                System.err.println("[ODYSSEY] Error Gemini API: " + ex.getMessage());
             }
         }
 
@@ -198,7 +198,7 @@ public class TurismoController {
             request, java.net.http.HttpResponse.BodyHandlers.ofString());
 
         if (resp.statusCode() != 200) {
-            System.err.println("[ODYX] Gemini body: " + resp.body());
+            System.err.println("[ODYSSEY] Gemini body: " + resp.body());
             throw new RuntimeException("Gemini API HTTP " + resp.statusCode());
         }
 

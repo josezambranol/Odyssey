@@ -19,7 +19,7 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Bean
     public LocaleResolver localeResolver() {
-        CookieLocaleResolver clr = new CookieLocaleResolver("ODYXS_LANG");
+        CookieLocaleResolver clr = new CookieLocaleResolver("ODYSSEY_LANG");
         clr.setDefaultLocale(Locale.of("es"));
         clr.setCookieMaxAge(Duration.ofDays(365));
         return clr;
@@ -42,7 +42,7 @@ public class WebConfig implements WebMvcConfigurer {
 
         // Carpeta de uploads externa al jar (persiste entre reinicios)
         // Se crea automáticamente en user.home/odyxs-uploads/
-        String uploadsExterno = "file:" + System.getProperty("user.home") + "/odyxs-uploads/";
+        String uploadsExterno = "file:" + System.getProperty("user.home") + "/odyssey-uploads/";
 
         // Rutas classpath para recursos estáticos empaquetados (img, css, js)
         String staticFs = "file:" + Paths.get(System.getProperty("user.dir"),

@@ -60,7 +60,7 @@ public class UsuarioService {
         var adminOpt = usuarioRepository.findByCorreo(defaultAdminEmail);
         if (adminOpt.isEmpty()) {
             Usuario a = new Usuario();
-            a.setNombre("Administrador ODYXS");
+            a.setNombre("Administrador Odyssey");
             a.setCorreo(defaultAdminEmail);
             a.setContrasena(encoder.encode(defaultAdminPassword));
             a.setRol(Usuario.Rol.ADMIN);

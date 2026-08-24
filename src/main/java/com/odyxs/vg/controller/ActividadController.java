@@ -51,7 +51,7 @@ public class ActividadController {
         String resultado = actividadService.guardar(nombre, descripcion, duracion,
                                                     precioAprox, categoria, false, imagen);
         if ("Actividad guardada.".equals(resultado)) {
-            model.addAttribute("mensaje", "¡Propuesta enviada! Será revisada por el equipo ODYXS.");
+            model.addAttribute("mensaje", "¡Propuesta enviada! Será revisada por el equipo Odyssey.");
         } else {
             model.addAttribute("error", resultado);
         }

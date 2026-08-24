@@ -1,4 +1,4 @@
-# 🏛️ ODYXS — Arquitectura y Modelo de Datos
+# 🏛️ ODYSSEY — Arquitectura y Modelo de Datos
 
 ## 1. Arquitectura en Capas (Layered Architecture)
 
@@ -136,7 +136,7 @@ Puntos de interés turístico en Cartagena de Indias.
 - `url_mapa` (VARCHAR(1000)): Enlace a Google Maps / Street View.
 - `imagen_url` (VARCHAR(500)): Ruta o URL a la imagen representativa.
 - `categoria_id` (BIGINT, FK -> categorias.id, Not Null).
-- `es_oficial` (BIT(1)): `1` si fue creado por el staff ODYXS, `0` si fue propuesto por la comunidad.
+- `es_oficial` (BIT(1)): `1` si fue creado por el staff ODYSSEY, `0` si fue propuesto por la comunidad.
 - `estado` (ENUM('PENDIENTE', 'APROBADO', 'RECHAZADO')).
 
 ### 3.3. `actividades`
@@ -171,7 +171,7 @@ Calificaciones y retroalimentación de visitantes sobre lugares turísticos.
 - `usuario_id` (BIGINT, FK -> usuarios.id).
 
 ### 3.6. `chatbot_respuestas`
-Banco de respuestas predefinidas para el fallback sin conexión del chatbot ODYX.
+Banco de respuestas predefinidas para el fallback sin conexión del chatbot ODYSSEY.
 - `id` (BIGINT, PK, Auto-increment).
 - `clave` (VARCHAR(100), Not Null, Unique): Clave temática (ej: `playas`, `clima`, `transporte`, `gastronomia`, `hoteles`).
 - `respuesta` (VARCHAR(2000), Not Null): Texto de respuesta detallada.
