@@ -2,7 +2,6 @@ package com.odyxs.vg.controller;
 
 import com.odyxs.vg.entity.*;
 import com.odyxs.vg.service.*;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,25 +17,19 @@ public class LugarController {
     @Autowired private ResenaService     resenaService;
     @Autowired private CategoriaService  categoriaService;
 
-    // ── Listado por categoria ─────────────────────────────────
+    // ── Listado por categoría (Público) ───────────────────────
     @GetMapping("/lugares")
-    public String lugares(@RequestParam(required = false) Long categoriaId,
-                          Model model, HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
-
+    public String lugares(@RequestParam(required = false) Long categoriaId, Model model) {
         List<Lugar> lista = (categoriaId == null || categoriaId == 0)
                 ? lugarService.obtenerAprobados()
                 : lugarService.obtenerPorCategoriaAprobados(categoriaId);
 
-        // catNombre: nombre original de la categoría (para el título de la página)
-        // catNombreClave: clave sanitizada para i18n (sin tildes ni espacios)
         String catNombre = null;
         String catNombreClave = null;
         if (!lista.isEmpty() && categoriaId != null && categoriaId != 0) {
             catNombre = lista.get(0).getCategoria().getNombre();
             catNombreClave = lista.get(0).getCategoria().getNombreClave();
         } else if (categoriaId != null && categoriaId != 0) {
-            // Lista vacía pero hay filtro de categoría: buscar la categoría directamente
             var catOpt = categoriaService.obtenerTodas().stream()
                 .filter(c -> c.getId().equals(categoriaId))
                 .findFirst();
@@ -54,22 +47,19 @@ public class LugarController {
         return "lugares";
     }
 
-    // ── Detalle ───────────────────────────────────────────────
+    // ── Detalle del lugar (Público) ───────────────────────────
     @GetMapping("/lugares/{id}")
-    public String detalle(@PathVariable Long id, Model model, HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+    public String detalle(@PathVariable Long id, Model model) {
         Lugar lugar = lugarService.obtenerPorId(id);
-        if (lugar == null) return "redirect:/menu";
+        if (lugar == null) return "redirect:/lugares";
         model.addAttribute("lugar",   lugar);
         model.addAttribute("resenas", resenaService.obtenerPorLugar(id));
         return "detalle";
     }
 
-    // ── Busqueda global ───────────────────────────────────────
+    // ── Búsqueda global (Público) ─────────────────────────────
     @GetMapping("/buscar")
-    public String buscar(@RequestParam(defaultValue = "") String q,
-                         Model model, HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+    public String buscar(@RequestParam(defaultValue = "") String q, Model model) {
         List<Lugar> resultados = q.isBlank()
                 ? lugarService.obtenerAprobados()
                 : lugarService.buscar(q);
@@ -78,10 +68,9 @@ public class LugarController {
         return "buscar";
     }
 
-    // ── Proponer lugar ────────────────────────────────────────
+    // ── Proponer lugar (Usuarios autenticados) ─────────────────
     @GetMapping("/proponer-lugar")
-    public String proponerForm(Model model, HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+    public String proponerForm(Model model) {
         model.addAttribute("categorias", categoriaService.obtenerTodas());
         return "proponer-lugar";
     }
@@ -93,13 +82,10 @@ public class LugarController {
                                 @RequestParam Long categoriaId,
                                 @RequestParam(required = false) String urlMapa,
                                 @RequestParam(required = false) MultipartFile imagen,
-                                Model model, HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+                                Model model) {
+        String resultado = lugarService.guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, false, imagen);
 
-        String resultado = lugarService.guardar(categoriaId, nombre, descripcion,
-                                                ubicacion, urlMapa, false, imagen);
-
-        if (resultado.equals("Lugar guardado.")) {
+        if ("Lugar guardado.".equals(resultado)) {
             model.addAttribute("mensaje", "¡Propuesta enviada! Será revisada por el equipo ODYXS.");
         } else {
             model.addAttribute("error", resultado);

@@ -1,10 +1,5 @@
 package com.odyxs.vg.service;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,9 +16,7 @@ public class LugarService {
 
     @Autowired private LugarRepository lugarRepository;
     @Autowired private CategoriaRepository categoriaRepository;
-
-    private static final String UPLOAD_DIR = System.getProperty("user.home") + "/odyxs-uploads/lugares/";
-    private static final long MAX_BYTES = 2 * 1024 * 1024;
+    @Autowired private FileStorageService fileStorageService;
 
     public List<Lugar> obtenerTodos() {
         return lugarRepository.findAll();
@@ -49,7 +42,6 @@ public class LugarService {
         return lugarRepository.findByCategoriaIdAndEstado(categoriaId, Lugar.Estado.APROBADO);
     }
 
-
     public String aprobar(Long id) {
         Lugar lugar = lugarRepository.findById(id).orElse(null);
         if (lugar == null) return "Lugar no encontrado.";
@@ -67,26 +59,13 @@ public class LugarService {
     }
 
     public List<Lugar> buscar(String texto) {
-        return lugarRepository.findByNombreContainingIgnoreCaseAndEstado(texto, Lugar.Estado.APROBADO);
-    }
-
-
-    /** Solo intenta borrar si la URL es una imagen subida localmente */
-    private void borrarImagenLocal(String imagenUrl) {
-        if (imagenUrl == null || imagenUrl.isBlank()) return;
-        if (!imagenUrl.startsWith("/uploads/")) return; // URL externa, no tocar
-        try {
-            Path imgPath = Paths.get(System.getProperty("user.home") + "/odyxs-uploads" + imagenUrl.replace("/uploads", ""));
-            Files.deleteIfExists(imgPath);
-        } catch (IOException e) {
-            // Si falla el borrado del archivo, continuamos igual
-        }
+        return lugarRepository.findByNombreContainingIgnoreCaseAndEstado(texto.trim(), Lugar.Estado.APROBADO);
     }
 
     public String eliminar(Long id) {
         Lugar lugar = lugarRepository.findById(id).orElse(null);
         if (lugar == null) return "Lugar no encontrado.";
-        borrarImagenLocal(lugar.getImagenUrl());
+        fileStorageService.borrarArchivo(lugar.getImagenUrl());
         lugarRepository.deleteById(id);
         return "Lugar eliminado.";
     }
@@ -111,15 +90,17 @@ public class LugarService {
 
         String imagenUrlGuardada = null;
         if (imagen != null && !imagen.isEmpty()) {
-            imagenUrlGuardada = guardarArchivo(imagen);
-            if (imagenUrlGuardada == null) return "Error al guardar la imagen.";
+            imagenUrlGuardada = fileStorageService.guardarImagen(imagen, "lugares");
+            if (imagenUrlGuardada == null) return "Error al guardar la imagen (formato no soportado o tamaño excedido).";
+        } else if (imagenLocal != null && !imagenLocal.isBlank()) {
+            imagenUrlGuardada = imagenLocal.trim();
         }
 
         Lugar lugar = new Lugar();
-        lugar.setNombre(nombre);
-        lugar.setDescripcion(descripcion);
-        lugar.setUbicacion(ubicacion);
-        lugar.setUrlMapa(urlMapa);
+        lugar.setNombre(nombre.trim());
+        lugar.setDescripcion(descripcion != null ? descripcion.trim() : null);
+        lugar.setUbicacion(ubicacion.trim());
+        lugar.setUrlMapa(urlMapa != null ? urlMapa.trim() : null);
         lugar.setEsOficial(esOficial);
         lugar.setEstado(esOficial ? Lugar.Estado.APROBADO : Lugar.Estado.PENDIENTE);
         lugar.setCategoria(categoria);
@@ -133,33 +114,12 @@ public class LugarService {
         if (lugar == null) return "Lugar no encontrado.";
         if (imagen == null || imagen.isEmpty()) return "No se envió imagen.";
 
-        String imagenUrl = guardarArchivo(imagen);
+        String imagenUrl = fileStorageService.guardarImagen(imagen, "lugares");
         if (imagenUrl == null) return "Error al guardar la imagen.";
 
-        // Borrar imagen vieja solo si es local
-        borrarImagenLocal(lugar.getImagenUrl());
-
+        fileStorageService.borrarArchivo(lugar.getImagenUrl());
         lugar.setImagenUrl(imagenUrl);
         lugarRepository.save(lugar);
         return "Imagen actualizada.";
-    }
-
-    private String guardarArchivo(MultipartFile imagen) {
-        if (imagen.getSize() > MAX_BYTES) return null;
-        String tipo = imagen.getContentType();
-        if (tipo == null || !tipo.startsWith("image/")) return null;
-        try {
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
-            // Sanitizar nombre: reemplazar espacios y caracteres especiales con guiones
-            String nombreOriginal = imagen.getOriginalFilename() != null
-                    ? imagen.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "-")
-                    : "imagen.jpg";
-            String nombreArchivo = System.currentTimeMillis() + "_" + nombreOriginal;
-            Path destino = Paths.get(UPLOAD_DIR + nombreArchivo);
-            Files.copy(imagen.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/lugares/" + nombreArchivo;
-        } catch (IOException e) {
-            return null;
-        }
     }
 }

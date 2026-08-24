@@ -1,16 +1,20 @@
 package com.odyxs.vg.controller;
 
+import com.odyxs.vg.dto.UsuarioRegistroDto;
+import com.odyxs.vg.entity.Usuario;
+import com.odyxs.vg.service.UsuarioService;
+import jakarta.servlet.http.HttpSession;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.odyxs.vg.entity.Usuario;
-import com.odyxs.vg.service.UsuarioService;
-
-import jakarta.servlet.http.HttpSession;
+import java.security.Principal;
 
 @Controller
 public class UsuarioController {
@@ -19,59 +23,54 @@ public class UsuarioController {
     private UsuarioService usuarioService;
 
     @GetMapping("/registro")
-    public String mostrarRegistro() {
+    public String mostrarRegistro(Model model) {
+        if (!model.containsAttribute("usuario")) {
+            model.addAttribute("usuario", new UsuarioRegistroDto());
+        }
         return "registro";
     }
 
     @PostMapping("/registro")
-    public String procesarRegistro(@RequestParam String nombre,
-                                   @RequestParam String correo,
-                                   @RequestParam String contrasena,
-                                   @RequestParam(required = false) String country,
-                                   @RequestParam(required = false) String fechaNacimiento,
+    public String procesarRegistro(@Valid @ModelAttribute("usuario") UsuarioRegistroDto dto,
+                                   BindingResult bindingResult,
                                    Model model) {
-        String resultado = usuarioService.registrar(nombre, correo, contrasena, country, fechaNacimiento);
-        if (resultado.equals("Registro exitoso.")) {
-            return "redirect:/login";
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("error", bindingResult.getAllErrors().get(0).getDefaultMessage());
+            return "registro";
+        }
+
+        String resultado = usuarioService.registrar(dto);
+        if ("Registro exitoso.".equals(resultado)) {
+            return "redirect:/login?registered=true";
         }
         model.addAttribute("error", resultado);
         return "registro";
     }
 
     @GetMapping("/login")
-    public String mostrarLogin() {
-        return "login";
-    }
-
-    @PostMapping("/login")
-    public String procesarLogin(@RequestParam String correo,
-                                @RequestParam String contrasena,
-                                Model model,
-                                HttpSession session) {
-        Usuario usuario = usuarioService.login(correo, contrasena);
-        if (usuario != null) {
-            session.setAttribute("usuarioId", usuario.getId());
-            session.setAttribute("usuarioCorreo", usuario.getCorreo());
-            session.setAttribute("usuarioNombre", usuario.getNombre());
-            session.setAttribute("usuarioRol", usuario.getRol().name());
-            return "redirect:/";
+    public String mostrarLogin(@RequestParam(required = false) String error,
+                               @RequestParam(required = false) String logout,
+                               @RequestParam(required = false) String registered,
+                               Model model) {
+        if (error != null) {
+            model.addAttribute("error", "Correo o contraseña incorrectos.");
         }
-        model.addAttribute("error", "Correo o contraseña incorrectos.");
+        if (logout != null) {
+            model.addAttribute("mensaje", "Has cerrado sesión correctamente.");
+        }
+        if (registered != null) {
+            model.addAttribute("mensaje", "¡Registro exitoso! Por favor inicia sesión con tu cuenta.");
+        }
         return "login";
     }
 
     @GetMapping("/menu")
-    public String menu(HttpSession session, Model model) {
-        if (session.getAttribute("usuarioId") == null) {
-            return "redirect:/login";
+    public String menu(HttpSession session, Model model, Principal principal) {
+        Object nombre = session.getAttribute("usuarioNombre");
+        if (nombre == null && principal != null) {
+            nombre = principal.getName();
         }
-        model.addAttribute("nombre", session.getAttribute("usuarioNombre"));
+        model.addAttribute("nombre", nombre != null ? nombre : "Usuario");
         return "menu";
-    }
-
-    @GetMapping("/logout")
-    public String logout(HttpSession session) {
-        session.invalidate();
-        return "redirect:/";
     }
 }

@@ -6,18 +6,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.*;
 import java.util.List;
 
 @Service
 public class ActividadService {
 
     @Autowired private ActividadRepository actividadRepository;
-
-    private static final String UPLOAD_DIR =
-        System.getProperty("user.home") + "/odyxs-uploads/actividades/";
-    private static final long MAX_BYTES = 2 * 1024 * 1024;
+    @Autowired private FileStorageService fileStorageService;
 
     public List<Actividad> obtenerTodas() {
         return actividadRepository.findAll();
@@ -55,21 +50,10 @@ public class ActividadService {
         return "Actividad rechazada.";
     }
 
-    /** Solo intenta borrar si la URL es una imagen subida localmente */
-    private void borrarImagenLocal(String imagenUrl) {
-        if (imagenUrl == null || imagenUrl.isBlank()) return;
-        if (!imagenUrl.startsWith("/uploads/")) return; // URL externa, no tocar
-        try {
-            Files.deleteIfExists(Paths.get(System.getProperty("user.home") + "/odyxs-uploads" + imagenUrl.replace("/uploads", "")));
-        } catch (IOException e) {
-            // continuar aunque falle el borrado
-        }
-    }
-
     public String eliminar(Long id) {
         Actividad a = actividadRepository.findById(id).orElse(null);
         if (a == null) return "Actividad no encontrada.";
-        borrarImagenLocal(a.getImagenUrl());
+        fileStorageService.borrarArchivo(a.getImagenUrl());
         actividadRepository.deleteById(id);
         return "Actividad eliminada.";
     }
@@ -83,15 +67,15 @@ public class ActividadService {
 
             String imagenGuardada = null;
             if (imagen != null && !imagen.isEmpty()) {
-                imagenGuardada = guardarArchivo(imagen);
-                if (imagenGuardada == null) return "Error al guardar la imagen.";
+                imagenGuardada = fileStorageService.guardarImagen(imagen, "actividades");
+                if (imagenGuardada == null) return "Error al guardar la imagen (formato no soportado o tamaño excedido).";
             }
 
             Actividad a = new Actividad();
-            a.setNombre(nombre);
-            a.setDescripcion(descripcion);
-            a.setDuracion(duracion);
-            a.setPrecioAprox(precioAprox);
+            a.setNombre(nombre.trim());
+            a.setDescripcion(descripcion != null ? descripcion.trim() : null);
+            a.setDuracion(duracion != null ? duracion.trim() : null);
+            a.setPrecioAprox(precioAprox != null ? precioAprox.trim() : null);
             a.setCategoria(cat);
             a.setEsOficial(esOficial);
             a.setEstado(esOficial ? Actividad.Estado.APROBADO : Actividad.Estado.PENDIENTE);
@@ -108,15 +92,15 @@ public class ActividadService {
         Actividad a = actividadRepository.findById(id).orElse(null);
         if (a == null) return "Actividad no encontrada.";
         try {
-            a.setNombre(nombre);
-            a.setDescripcion(descripcion);
-            a.setDuracion(duracion);
-            a.setPrecioAprox(precioAprox);
+            a.setNombre(nombre.trim());
+            a.setDescripcion(descripcion != null ? descripcion.trim() : null);
+            a.setDuracion(duracion != null ? duracion.trim() : null);
+            a.setPrecioAprox(precioAprox != null ? precioAprox.trim() : null);
             a.setCategoria(Actividad.CategoriaActividad.valueOf(categoriaStr.toUpperCase()));
             if (imagen != null && !imagen.isEmpty()) {
-                String url = guardarArchivo(imagen);
+                String url = fileStorageService.guardarImagen(imagen, "actividades");
                 if (url != null) {
-                    borrarImagenLocal(a.getImagenUrl()); // borrar imagen vieja solo si es local
+                    fileStorageService.borrarArchivo(a.getImagenUrl());
                     a.setImagenUrl(url);
                 }
             }
@@ -124,25 +108,6 @@ public class ActividadService {
             return "Actividad actualizada.";
         } catch (IllegalArgumentException e) {
             return "Categoría inválida.";
-        }
-    }
-
-    private String guardarArchivo(MultipartFile imagen) {
-        if (imagen.getSize() > MAX_BYTES) return null;
-        String tipo = imagen.getContentType();
-        if (tipo == null || !tipo.startsWith("image/")) return null;
-        try {
-            Files.createDirectories(Paths.get(UPLOAD_DIR));
-            // Sanitizar nombre: reemplazar espacios y caracteres especiales con guiones
-            String nombreOriginal = imagen.getOriginalFilename() != null
-                    ? imagen.getOriginalFilename().replaceAll("[^a-zA-Z0-9._-]", "-")
-                    : "imagen.jpg";
-            String nombreArchivo = System.currentTimeMillis() + "_" + nombreOriginal;
-            Path destino = Paths.get(UPLOAD_DIR + nombreArchivo);
-            Files.copy(imagen.getInputStream(), destino, StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/actividades/" + nombreArchivo;
-        } catch (IOException e) {
-            return null;
         }
     }
 }

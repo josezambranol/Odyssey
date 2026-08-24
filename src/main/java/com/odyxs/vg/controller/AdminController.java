@@ -8,18 +8,21 @@ import com.odyxs.vg.repository.CategoriaRepository;
 import com.odyxs.vg.repository.LugarRepository;
 import com.odyxs.vg.service.ActividadService;
 import com.odyxs.vg.service.CategoriaService;
+import com.odyxs.vg.service.FileStorageService;
 import com.odyxs.vg.service.LugarService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 
 @Controller
+@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     @Autowired private LugarService      lugarService;
@@ -28,34 +31,10 @@ public class AdminController {
     @Autowired private CategoriaRepository categoriaRepository;
     @Autowired private EventoRepository  eventoRepo;
     @Autowired private ActividadService  actividadService;
-
-    private static final String UPLOAD_BASE = System.getProperty("user.home") + "/odyxs-uploads/";
-    private static final String EVENTOS_DIR  = UPLOAD_BASE + "eventos/";
-    private static final String LUGARES_DIR  = UPLOAD_BASE + "lugares/";
-
-    /** Borra un archivo físico dado su URL relativa (/uploads/...). Ignora URLs externas. */
-    private void borrarArchivoFisico(String imagenUrl) {
-        if (imagenUrl == null || imagenUrl.isBlank()) return;
-        if (!imagenUrl.startsWith("/uploads/")) return; // URL externa (http/https), no tocar
-        try {
-            Path p = Paths.get(
-                System.getProperty("user.home") + "/odyxs-uploads" + imagenUrl.replace("/uploads", ""));
-            Files.deleteIfExists(p);
-        } catch (IOException e) {
-            // no detener el flujo si falla
-        }
-    }
-
-    private boolean esAdmin(HttpSession session) {
-        Object rol    = session.getAttribute("usuarioRol");
-        Object correo = session.getAttribute("usuarioCorreo");
-        return rol != null && rol.toString().equals("ADMIN")
-            && "admin@odyxs.com".equals(correo);
-    }
+    @Autowired private FileStorageService fileStorageService;
 
     @GetMapping("/admin")
-    public String panelAdmin(HttpSession session, Model model) {
-        if (!esAdmin(session)) return "redirect:/";
+    public String panelAdmin(Model model) {
         model.addAttribute("pendientes",           lugarService.obtenerPendientes());
         model.addAttribute("lugares",              lugarService.obtenerTodos());
         model.addAttribute("categorias",           categoriaService.obtenerTodas());
@@ -69,21 +48,21 @@ public class AdminController {
     // ── LUGARES ───────────────────────────────────────────────
 
     @PostMapping("/admin/lugares/{id}/aprobar")
-    public String aprobar(@PathVariable Long id, HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
-        lugarService.aprobar(id); return "redirect:/admin";
+    public String aprobar(@PathVariable Long id) {
+        lugarService.aprobar(id);
+        return "redirect:/admin";
     }
 
     @PostMapping("/admin/lugares/{id}/rechazar")
-    public String rechazar(@PathVariable Long id, HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
-        lugarService.rechazar(id); return "redirect:/admin";
+    public String rechazar(@PathVariable Long id) {
+        lugarService.rechazar(id);
+        return "redirect:/admin";
     }
 
     @PostMapping("/admin/lugares/{id}/eliminar")
-    public String eliminarLugar(@PathVariable Long id, HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
-        lugarService.eliminar(id); return "redirect:/admin";
+    public String eliminarLugar(@PathVariable Long id) {
+        lugarService.eliminar(id);
+        return "redirect:/admin";
     }
 
     @PostMapping("/admin/lugares/agregar")
@@ -93,9 +72,7 @@ public class AdminController {
                                @RequestParam(required = false) String urlMapa,
                                @RequestParam Long categoriaId,
                                @RequestParam(required = false) MultipartFile imagen,
-                               @RequestParam(required = false) String imagenLocal,
-                               HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+                               @RequestParam(required = false) String imagenLocal) {
         lugarService.guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, true, imagen, imagenLocal);
         return "redirect:/admin";
     }
@@ -108,31 +85,26 @@ public class AdminController {
                               @RequestParam(required = false) String urlMapa,
                               @RequestParam Long categoriaId,
                               @RequestParam(required = false) MultipartFile imagen,
-                              @RequestParam(required = false) String imagenUrlExterna,
-                              HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+                              @RequestParam(required = false) String imagenUrlExterna) {
         Lugar lugar = lugarRepository.findById(id).orElse(null);
         if (lugar == null) return "redirect:/admin";
-        lugar.setNombre(nombre);
-        lugar.setDescripcion(descripcion);
-        lugar.setUbicacion(ubicacion);
-        lugar.setUrlMapa(urlMapa);
+        lugar.setNombre(nombre.trim());
+        lugar.setDescripcion(descripcion != null ? descripcion.trim() : null);
+        lugar.setUbicacion(ubicacion.trim());
+        lugar.setUrlMapa(urlMapa != null ? urlMapa.trim() : null);
         Categoria cat = categoriaRepository.findById(categoriaId).orElse(null);
         if (cat != null) lugar.setCategoria(cat);
 
         if (imagen != null && !imagen.isEmpty()) {
-            // Prioridad 1: nueva imagen subida como archivo
-            String url = guardarImagenLugar(imagen);
+            String url = fileStorageService.guardarImagen(imagen, "lugares");
             if (url != null) {
-                borrarArchivoFisico(lugar.getImagenUrl());
+                fileStorageService.borrarArchivo(lugar.getImagenUrl());
                 lugar.setImagenUrl(url);
             }
         } else if (imagenUrlExterna != null && !imagenUrlExterna.isBlank()) {
-            // Prioridad 2: URL externa pegada manualmente
-            borrarArchivoFisico(lugar.getImagenUrl()); // solo borra si era local
+            fileStorageService.borrarArchivo(lugar.getImagenUrl());
             lugar.setImagenUrl(imagenUrlExterna.trim());
         }
-        // Si ninguno se envió, se conserva la imagen actual
 
         lugarRepository.save(lugar);
         return "redirect:/admin";
@@ -140,86 +112,41 @@ public class AdminController {
 
     // ── EVENTOS ───────────────────────────────────────────────
 
-    private String guardarImagenEvento(MultipartFile imagen) {
-        if (imagen == null || imagen.isEmpty()) return null;
-        String tipo = imagen.getContentType();
-        if (tipo == null || !tipo.startsWith("image/")) return null;
-        try {
-            Files.createDirectories(Paths.get(EVENTOS_DIR));
-            String ext = "";
-            String original = imagen.getOriginalFilename();
-            if (original != null && original.contains(".")) {
-                ext = original.substring(original.lastIndexOf("."));
-            } else {
-                // Inferir extensión del content-type
-                ext = tipo.equals("image/png") ? ".png"
-                    : tipo.equals("image/webp") ? ".webp"
-                    : tipo.equals("image/gif") ? ".gif"
-                    : ".jpg";
-            }
-            String nombreArchivo = System.currentTimeMillis() + ext;
-            Path destino = Paths.get(EVENTOS_DIR + nombreArchivo);
-            Files.copy(imagen.getInputStream(), destino, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/eventos/" + nombreArchivo;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    private String guardarImagenLugar(MultipartFile imagen) {
-        if (imagen == null || imagen.isEmpty()) return null;
-        String tipo = imagen.getContentType();
-        if (tipo == null || !tipo.startsWith("image/")) return null;
-        try {
-            Files.createDirectories(Paths.get(LUGARES_DIR));
-            String original = imagen.getOriginalFilename();
-            String ext = (original != null && original.contains("."))
-                ? original.substring(original.lastIndexOf("."))
-                : (tipo.equals("image/png") ? ".png" : tipo.equals("image/webp") ? ".webp" : ".jpg");
-            String nombreArchivo = System.currentTimeMillis() + ext;
-            Path destino = Paths.get(LUGARES_DIR + nombreArchivo);
-            Files.copy(imagen.getInputStream(), destino, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/lugares/" + nombreArchivo;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     @PostMapping("/admin/eventos/agregar")
     public String agregarEvento(@RequestParam String nombre,
                                 @RequestParam String descripcion,
                                 @RequestParam String fecha,
                                 @RequestParam(required = false) String lugar,
-                                @RequestParam(required = false) MultipartFile imagen,
-                                HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
-        Evento e = new Evento();
-        e.setNombre(nombre);
-        e.setDescripcion(descripcion);
-        e.setFecha(java.time.LocalDate.parse(fecha));
-        e.setLugar(lugar);
-        e.setImagenUrl(guardarImagenEvento(imagen));
-        e.setActivo(true);
-        eventoRepo.save(e);
+                                @RequestParam(required = false) MultipartFile imagen) {
+        try {
+            Evento e = new Evento();
+            e.setNombre(nombre.trim());
+            e.setDescripcion(descripcion != null ? descripcion.trim() : null);
+            e.setFecha(LocalDate.parse(fecha.trim()));
+            e.setLugar(lugar != null ? lugar.trim() : null);
+            e.setImagenUrl(fileStorageService.guardarImagen(imagen, "eventos"));
+            e.setActivo(true);
+            eventoRepo.save(e);
+        } catch (DateTimeParseException ignored) {
+        }
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/eventos/{id}/aprobar")
-    public String aprobarEvento(@PathVariable Long id, HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+    public String aprobarEvento(@PathVariable Long id) {
         Evento e = eventoRepo.findById(id).orElse(null);
-        if (e != null) { e.setActivo(true); eventoRepo.save(e); }
+        if (e != null) {
+            e.setActivo(true);
+            eventoRepo.save(e);
+        }
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/eventos/{id}/rechazar")
-    public String rechazarEvento(@PathVariable Long id, HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+    public String rechazarEvento(@PathVariable Long id) {
         Evento e = eventoRepo.findById(id).orElse(null);
         if (e != null) {
-            borrarArchivoFisico(e.getImagenUrl());
+            fileStorageService.borrarArchivo(e.getImagenUrl());
             eventoRepo.deleteById(id);
         }
         return "redirect:/admin";
@@ -231,30 +158,32 @@ public class AdminController {
                                @RequestParam String descripcion,
                                @RequestParam String fecha,
                                @RequestParam(required = false) String lugar,
-                               @RequestParam(required = false) MultipartFile imagen,
-                               HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+                               @RequestParam(required = false) MultipartFile imagen) {
         Evento e = eventoRepo.findById(id).orElse(null);
         if (e == null) return "redirect:/admin";
-        e.setNombre(nombre);
-        e.setDescripcion(descripcion);
-        e.setFecha(java.time.LocalDate.parse(fecha));
-        e.setLugar(lugar);
-        String url = guardarImagenEvento(imagen);
-        if (url != null) {
-            borrarArchivoFisico(e.getImagenUrl()); // borrar imagen vieja
-            e.setImagenUrl(url);
+        try {
+            e.setNombre(nombre.trim());
+            e.setDescripcion(descripcion != null ? descripcion.trim() : null);
+            e.setFecha(LocalDate.parse(fecha.trim()));
+            e.setLugar(lugar != null ? lugar.trim() : null);
+            if (imagen != null && !imagen.isEmpty()) {
+                String url = fileStorageService.guardarImagen(imagen, "eventos");
+                if (url != null) {
+                    fileStorageService.borrarArchivo(e.getImagenUrl());
+                    e.setImagenUrl(url);
+                }
+            }
+            eventoRepo.save(e);
+        } catch (DateTimeParseException ignored) {
         }
-        eventoRepo.save(e);
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/eventos/{id}/eliminar")
-    public String eliminarEvento(@PathVariable Long id, HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+    public String eliminarEvento(@PathVariable Long id) {
         Evento e = eventoRepo.findById(id).orElse(null);
         if (e != null) {
-            borrarArchivoFisico(e.getImagenUrl());
+            fileStorageService.borrarArchivo(e.getImagenUrl());
             eventoRepo.deleteById(id);
         }
         return "redirect:/admin";
@@ -268,30 +197,25 @@ public class AdminController {
                                    @RequestParam(required = false) String duracion,
                                    @RequestParam(required = false) String precioAprox,
                                    @RequestParam String categoria,
-                                   @RequestParam(required = false) MultipartFile imagen,
-                                   HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+                                   @RequestParam(required = false) MultipartFile imagen) {
         actividadService.guardar(nombre, descripcion, duracion, precioAprox, categoria, true, imagen);
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/actividades/{id}/aprobar")
-    public String aprobarActividad(@PathVariable Long id, HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+    public String aprobarActividad(@PathVariable Long id) {
         actividadService.aprobar(id);
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/actividades/{id}/rechazar")
-    public String rechazarActividad(@PathVariable Long id, HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+    public String rechazarActividad(@PathVariable Long id) {
         actividadService.rechazar(id);
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/actividades/{id}/eliminar")
-    public String eliminarActividad(@PathVariable Long id, HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+    public String eliminarActividad(@PathVariable Long id) {
         actividadService.eliminar(id);
         return "redirect:/admin";
     }
@@ -303,9 +227,7 @@ public class AdminController {
                                   @RequestParam(required = false) String duracion,
                                   @RequestParam(required = false) String precioAprox,
                                   @RequestParam String categoria,
-                                  @RequestParam(required = false) MultipartFile imagen,
-                                  HttpSession session) {
-        if (!esAdmin(session)) return "redirect:/";
+                                  @RequestParam(required = false) MultipartFile imagen) {
         actividadService.actualizar(id, nombre, descripcion, duracion, precioAprox, categoria, imagen);
         return "redirect:/admin";
     }

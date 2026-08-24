@@ -2,7 +2,6 @@ package com.odyxs.vg.controller;
 
 import com.odyxs.vg.entity.Actividad;
 import com.odyxs.vg.service.ActividadService;
-import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -18,10 +17,7 @@ public class ActividadController {
 
     // ── Listado público (solo aprobadas) ──────────────────────
     @GetMapping("/actividades")
-    public String actividades(@RequestParam(required = false) String cat,
-                              Model model, HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
-
+    public String actividades(@RequestParam(required = false) String cat, Model model) {
         List<Actividad> lista;
         if (cat != null && !cat.isBlank()) {
             try {
@@ -38,10 +34,9 @@ public class ActividadController {
         return "actividades";
     }
 
-    // ── Proponer actividad (usuarios) ─────────────────────────
+    // ── Proponer actividad (usuarios autenticados) ────────────
     @GetMapping("/proponer-actividad")
-    public String proponerForm(HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+    public String proponerForm() {
         return "proponer-actividad";
     }
 
@@ -52,9 +47,7 @@ public class ActividadController {
                                     @RequestParam(required = false) String precioAprox,
                                     @RequestParam String categoria,
                                     @RequestParam(required = false) MultipartFile imagen,
-                                    Model model, HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
-
+                                    Model model) {
         String resultado = actividadService.guardar(nombre, descripcion, duracion,
                                                     precioAprox, categoria, false, imagen);
         if ("Actividad guardada.".equals(resultado)) {

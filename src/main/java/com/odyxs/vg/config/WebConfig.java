@@ -20,7 +20,7 @@ public class WebConfig implements WebMvcConfigurer {
     @Bean
     public LocaleResolver localeResolver() {
         CookieLocaleResolver clr = new CookieLocaleResolver("ODYXS_LANG");
-        clr.setDefaultLocale(new Locale("es"));
+        clr.setDefaultLocale(Locale.of("es"));
         clr.setCookieMaxAge(Duration.ofDays(365));
         return clr;
     }

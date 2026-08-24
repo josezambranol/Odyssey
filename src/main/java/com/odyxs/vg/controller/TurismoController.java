@@ -2,8 +2,10 @@ package com.odyxs.vg.controller;
 
 import com.odyxs.vg.entity.*;
 import com.odyxs.vg.repository.*;
+import com.odyxs.vg.service.FileStorageService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -11,9 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
-import java.nio.file.*;
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.*;
 
 @Controller
@@ -22,22 +23,19 @@ public class TurismoController {
     @Autowired private EventoRepository     eventoRepo;
     @Autowired private ActividadRepository  actividadRepo;
     @Autowired private ChatbotRespuestaRepository chatbotRepo;
-
-    private static final String EVENTOS_DIR =
-        System.getProperty("user.home") + "/odyxs-uploads/eventos/";
+    @Autowired private FileStorageService   fileStorageService;
 
     // ── Eventos ───────────────────────────────────────────────
 
     @GetMapping("/eventos")
-    public String eventos(
-            @RequestParam(required = false) String desde,
-            Model model, HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
-
+    public String eventos(@RequestParam(required = false) String desde, Model model) {
         List<Evento> lista;
         if (desde != null && !desde.isBlank()) {
-            lista = eventoRepo.findByActivoTrueAndFechaGreaterThanEqualOrderByFechaAsc(
-                        LocalDate.parse(desde));
+            try {
+                lista = eventoRepo.findByActivoTrueAndFechaGreaterThanEqualOrderByFechaAsc(LocalDate.parse(desde.trim()));
+            } catch (DateTimeParseException e) {
+                lista = eventoRepo.findByActivoTrueOrderByFechaAsc();
+            }
         } else {
             lista = eventoRepo.findByActivoTrueOrderByFechaAsc();
         }
@@ -46,42 +44,10 @@ public class TurismoController {
         return "eventos";
     }
 
-    // Gestión de eventos: ver AdminController
-
-
-
-    private String guardarImagenEvento(MultipartFile imagen) {
-        if (imagen == null || imagen.isEmpty()) return null;
-        String tipo = imagen.getContentType();
-        if (tipo == null || !tipo.startsWith("image/")) return null;
-        try {
-            Files.createDirectories(Paths.get(EVENTOS_DIR));
-            String ext = "";
-            String original = imagen.getOriginalFilename();
-            if (original != null && original.contains(".")) {
-                ext = original.substring(original.lastIndexOf("."));
-            } else {
-                // Inferir extensión del content-type
-                ext = tipo.equals("image/png") ? ".png"
-                    : tipo.equals("image/webp") ? ".webp"
-                    : tipo.equals("image/gif") ? ".gif"
-                    : ".jpg";
-            }
-            String nombreArchivo = System.currentTimeMillis() + ext;
-            Path destino = Paths.get(EVENTOS_DIR + nombreArchivo);
-            Files.copy(imagen.getInputStream(), destino, java.nio.file.StandardCopyOption.REPLACE_EXISTING);
-            return "/uploads/eventos/" + nombreArchivo;
-        } catch (IOException e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
     // ── Proponer evento (usuarios) ────────────────────────────
 
     @GetMapping("/proponer-evento")
-    public String proponerEventoForm(HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+    public String proponerEventoForm() {
         return "proponer-evento";
     }
 
@@ -91,72 +57,53 @@ public class TurismoController {
                                  @RequestParam String fecha,
                                  @RequestParam(required = false) String lugar,
                                  @RequestParam(required = false) MultipartFile imagen,
-                                 org.springframework.ui.Model model,
-                                 HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+                                 Model model) {
+        try {
+            Evento e = new Evento();
+            e.setNombre(nombre.trim());
+            e.setDescripcion(descripcion != null ? descripcion.trim() : null);
+            e.setFecha(LocalDate.parse(fecha.trim()));
+            e.setLugar(lugar != null ? lugar.trim() : null);
+            e.setImagenUrl(fileStorageService.guardarImagen(imagen, "eventos"));
+            e.setActivo(false); // pendiente de aprobación admin
 
-        Evento e = new Evento();
-        e.setNombre(nombre);
-        e.setDescripcion(descripcion);
-        e.setFecha(LocalDate.parse(fecha));
-        e.setLugar(lugar);
-        e.setImagenUrl(guardarImagenEvento(imagen));
-        e.setActivo(false); // pendiente de aprobación admin
-
-        eventoRepo.save(e);
-
-        model.addAttribute("mensaje", "¡Propuesta de evento enviada! Será revisada por el equipo ODYXS.");
+            eventoRepo.save(e);
+            model.addAttribute("mensaje", "¡Propuesta de evento enviada! Será revisada por el equipo ODYXS.");
+        } catch (DateTimeParseException ex) {
+            model.addAttribute("error", "Formato de fecha inválido. Utilice el formato AAAA-MM-DD.");
+        }
         return "proponer-evento";
     }
 
     // ── Transporte ────────────────────────────────────────────
-    // Datos estáticos definidos en i18n/messages*.properties — no requiere BD
 
     @GetMapping("/transporte")
-    public String transporte(HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+    public String transporte() {
         return "transporte";
     }
-
-    // ── Actividades ── gestionado por ActividadController ───────
 
     // ── Guía completa (info, clima, top5, cuándo visitar) ─────
 
     @GetMapping("/guia")
-    public String guia(HttpSession session, Model model) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+    public String guia(Model model) {
         return "guia";
     }
 
     // ── Mapa Interactivo ─────────────────────────────────────
 
     @GetMapping("/mapa")
-    public String mapa(HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+    public String mapa() {
         return "mapa";
     }
 
     // ── Chatbot ───────────────────────────────────────────────
 
     @GetMapping("/chatbot")
-    public String chatbotPage(HttpSession session) {
-        if (session.getAttribute("usuarioId") == null) return "redirect:/login";
+    public String chatbotPage() {
         return "chatbot";
     }
 
-    // ══════════════════════════════════════════════════════════
-    // Chatbot ODYX — Google Gemini (gemini-2.5-flash, GRATUITO)
-    // Bilingüe: detecta el idioma de la sesión (ES / EN)
-    //
-    // Cómo obtener tu API key GRATIS:
-    //   1. Ve a https://aistudio.google.com/app/apikey
-    //   2. Inicia sesión con tu cuenta Google
-    //   3. Clic en "Create API key" → copia la key
-    //   4. Pégala en application.properties:
-    //        gemini.api.key=AIzaSy...
-    // ══════════════════════════════════════════════════════════
-
-    @org.springframework.beans.factory.annotation.Value("${gemini.api.key:}")
+    @Value("${gemini.api.key:}")
     private String geminiApiKey;
 
     // System prompt en ESPAÑOL
@@ -185,17 +132,14 @@ public class TurismoController {
 
     @PostMapping("/chatbot/respuesta")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> responderChatbot(
-            @RequestBody Map<String, String> body,
-            HttpSession session) {
-
+    public ResponseEntity<Map<String, String>> responderChatbot(@RequestBody Map<String, String> body) {
         String mensaje = body.getOrDefault("mensaje", "").trim();
         if (mensaje.isBlank()) {
             return ResponseEntity.ok(Map.of("respuesta", "¿En qué puedo ayudarte? 😊"));
         }
 
         // Detectar idioma actual via CookieLocaleResolver (WebConfig)
-        java.util.Locale locale = LocaleContextHolder.getLocale();
+        Locale locale = LocaleContextHolder.getLocale();
         boolean enIngles = "en".equalsIgnoreCase(locale.getLanguage());
         String systemPrompt = enIngles ? ODYX_SYSTEM_EN : ODYX_SYSTEM_ES;
 
@@ -222,25 +166,17 @@ public class TurismoController {
     private String llamarGeminiAPI(String mensaje, String systemPrompt) throws Exception {
         com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
 
-        java.util.Map<String, Object> systemPart = java.util.Map.of("text", systemPrompt);
-        java.util.Map<String, Object> systemInstruction = java.util.Map.of(
-            "parts", java.util.List.of(systemPart)
-        );
+        Map<String, Object> systemPart = Map.of("text", systemPrompt);
+        Map<String, Object> systemInstruction = Map.of("parts", List.of(systemPart));
 
-        java.util.Map<String, Object> userPart = java.util.Map.of("text", mensaje);
-        java.util.Map<String, Object> userContent = java.util.Map.of(
-            "role", "user",
-            "parts", java.util.List.of(userPart)
-        );
+        Map<String, Object> userPart = Map.of("text", mensaje);
+        Map<String, Object> userContent = Map.of("role", "user", "parts", List.of(userPart));
 
-        java.util.Map<String, Object> generationConfig = java.util.Map.of(
-            "maxOutputTokens", 600,
-            "temperature", 0.7
-        );
+        Map<String, Object> generationConfig = Map.of("maxOutputTokens", 600, "temperature", 0.7);
 
-        java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
+        Map<String, Object> payload = new LinkedHashMap<>();
         payload.put("systemInstruction", systemInstruction);
-        payload.put("contents", java.util.List.of(userContent));
+        payload.put("contents", List.of(userContent));
         payload.put("generationConfig", generationConfig);
 
         String requestJson = mapper.writeValueAsString(payload);
@@ -266,7 +202,6 @@ public class TurismoController {
             throw new RuntimeException("Gemini API HTTP " + resp.statusCode());
         }
 
-        // Parsear: candidates[0].content.parts[0].text
         com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(resp.body());
         return root.path("candidates").get(0)
                    .path("content").path("parts").get(0)
@@ -296,10 +231,5 @@ public class TurismoController {
         if (msg.contains("adios") || msg.contains("gracias") || msg.contains("bye") || msg.contains("chao")
             || msg.contains("goodbye") || msg.contains("thank")) return "despedida";
         return "saludo";
-    }
-
-    private boolean esAdmin(HttpSession session) {
-        Object rol = session.getAttribute("usuarioRol");
-        return rol != null && rol.toString().equals("ADMIN");
     }
 }
