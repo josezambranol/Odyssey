@@ -221,7 +221,7 @@ public class TurismoController {
         payload.put("generationConfig", generationConfig);
 
         String requestJson = mapper.writeValueAsString(payload);
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + geminiApiKey;
+        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey;
 
         java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
             .connectTimeout(java.time.Duration.ofSeconds(15))
