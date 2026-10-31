@@ -59,7 +59,8 @@ public class SecurityConfig {
                 .requestMatchers(
                     "/", "/guia", "/eventos", "/eventos/**", "/actividades", "/transporte",
                     "/mapa", "/buscar", "/lugares/**", "/idioma",
-                    "/login", "/registro", "/chatbot/**", "/api/**"
+                    "/login", "/registro", "/chatbot/**", "/api/**",
+                    "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**"
                 ).permitAll()
                 // Rutas de administración
                 .requestMatchers("/admin/**").hasRole("ADMIN")
