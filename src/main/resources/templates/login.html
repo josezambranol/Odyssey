@@ -9,76 +9,113 @@
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
     <style>
+        html, body {
+            height: 100vh;
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            background: var(--cream);
+        }
+        .auth-wrapper {
+            height: 100vh;
+            max-height: 100vh;
+            display: flex;
+            overflow: hidden;
+        }
+        .auth-left {
+            flex: 0 0 44%;
+            height: 100vh;
+            background-size: cover;
+            background-position: center;
+            position: relative;
+        }
+        .auth-right {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: var(--cream);
+            padding: 15px 20px;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .auth-form-box {
+            width: 100%;
+            max-width: 440px;
+            background: #fff;
+            border-radius: 18px;
+            padding: 24px 28px;
+            box-shadow: 0 10px 36px rgba(11, 45, 107, 0.1);
+        }
+        .auth-brand {
+            font-family: 'Cormorant Garamond', serif;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--azul);
+            text-decoration: none;
+            margin-bottom: 6px !important;
+        }
         .auth-tabs {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 6px;
+            gap: 4px;
             background: rgba(11, 45, 107, 0.06);
-            padding: 5px;
+            padding: 3px;
             border-radius: 999px;
-            margin-bottom: 22px;
+            margin-bottom: 14px;
         }
         .auth-tab-btn {
             border: 0;
             background: transparent;
             color: var(--azul);
             font-weight: 700;
-            font-size: 0.82rem;
-            padding: 10px 14px;
+            font-size: 0.78rem;
+            padding: 7px 12px;
             border-radius: 999px;
-            transition: all 0.25s ease;
+            transition: all 0.2s ease;
         }
         .auth-tab-btn.active {
             background: var(--azul);
             color: #fff;
-            box-shadow: 0 6px 18px rgba(11, 45, 107, 0.22);
+            box-shadow: 0 4px 14px rgba(11, 45, 107, 0.2);
         }
         .otp-grid {
             display: grid;
             grid-template-columns: repeat(6, 1fr);
-            gap: 8px;
-            margin: 16px 0;
+            gap: 6px;
+            margin: 10px 0 8px;
         }
         .otp-digit {
             width: 100%;
-            height: 52px;
+            height: 44px;
             text-align: center;
-            font-size: 1.4rem;
+            font-size: 1.25rem;
             font-weight: 800;
             color: var(--azul);
-            border: 2px solid rgba(11, 45, 107, 0.18);
-            border-radius: 12px;
+            border: 1.5px solid rgba(11, 45, 107, 0.2);
+            border-radius: 10px;
             background: #fff;
             transition: all 0.2s ease;
         }
         .otp-digit:focus {
             border-color: var(--gold);
-            box-shadow: 0 0 0 4px rgba(200, 150, 62, 0.18);
+            box-shadow: 0 0 0 3px rgba(200, 150, 62, 0.2);
             outline: none;
-            transform: translateY(-2px);
         }
         .open-access-pill {
             background: linear-gradient(135deg, rgba(200, 150, 62, 0.12), rgba(11, 45, 107, 0.05));
-            border: 1px solid rgba(200, 150, 62, 0.35);
-            border-radius: 14px;
-            padding: 12px 15px;
-            font-size: 0.8rem;
-            color: var(--azul);
-            margin-bottom: 20px;
-        }
-        .demo-otp-toast {
-            background: #071d49;
-            color: #fff;
-            border-left: 4px solid var(--gold);
+            border: 1px solid rgba(200, 150, 62, 0.3);
             border-radius: 12px;
-            padding: 12px 16px;
-            margin-top: 12px;
-            font-size: 0.82rem;
-            animation: fadeIn 0.35s ease;
+            padding: 8px 12px;
+            font-size: 0.75rem;
+            color: var(--azul);
+            margin-bottom: 12px;
+            line-height: 1.35;
         }
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(8px); }
-            to { opacity: 1; transform: translateY(0); }
+        @media (max-height: 680px) {
+            .auth-form-box { padding: 18px 24px; }
+            .open-access-pill { display: none; }
+            .auth-brand { font-size: 1.3rem; margin-bottom: 4px !important; }
         }
     </style>
 </head>
@@ -89,13 +126,13 @@
     <div class="auth-left d-none d-lg-flex flex-column justify-content-end"
          style="background-image:url('/img/about-torre-reloj.jpg');">
         <div class="auth-left-content">
-            <span class="badge rounded-pill px-3 py-2 mb-3" style="background:rgba(255,193,7,.9);color:var(--azul);font-weight:700;">🇨🇴 <span th:text="#{index.hero.badge}">Patrimonio UNESCO</span></span>
-            <h2 class="fw-bold">Cartagena de Indias</h2>
-            <p class="mb-2" style="color:rgba(255,255,255,.88);">Explora libremente toda la guía. Inicia sesión solo cuando quieras calificar lugares o recibir alertas personalizadas en tu correo.</p>
-            <div class="d-flex gap-3 small text-warning fw-semibold">
-                <span><i class="fas fa-star me-1"></i>Reseñas Verificadas</span>
+            <span class="badge rounded-pill px-3 py-1 mb-2" style="background:rgba(255,193,7,.9);color:var(--azul);font-weight:700;font-size:0.75rem;">🇨🇴 <span th:text="#{index.hero.badge}">Patrimonio UNESCO</span></span>
+            <h2 class="fw-bold mb-1" style="font-size:1.8rem;">Cartagena de Indias</h2>
+            <p class="mb-2 small" style="color:rgba(255,255,255,.88);">Explora libremente toda la guía. Inicia sesión solo para calificar lugares o recibir alertas de tus sitios favoritos.</p>
+            <div class="d-flex gap-3 small text-warning fw-semibold" style="font-size:0.78rem;">
+                <span><i class="fas fa-star me-1"></i>Reseñas</span>
                 <span><i class="fas fa-bell me-1"></i>Alertas de Sitios</span>
-                <span><i class="fas fa-shield-alt me-1"></i>Acceso con Código 2FA</span>
+                <span><i class="fas fa-shield-alt me-1"></i>Código 2FA</span>
             </div>
         </div>
     </div>
@@ -103,15 +140,15 @@
     <!-- Lado derecho: formulario -->
     <div class="auth-right">
         <div class="auth-form-box">
-            <a href="/" class="auth-brand d-block mb-3">
+            <a href="/" class="auth-brand d-inline-block">
                 <i class="fa fa-compass me-2" style="color:var(--gold);"></i>ODYSSEY
             </a>
-            <h4 class="fw-bold mb-1" th:text="#{login.title}">Bienvenido de vuelta</h4>
-            <p class="text-muted small mb-3">Ingresa con tu contraseña o solicita un código único a tu correo</p>
+            <h4 class="fw-bold mb-0" th:text="#{login.title}" style="font-size:1.25rem;">Bienvenido de vuelta</h4>
+            <p class="text-muted small mb-2" style="font-size:0.78rem;">Ingresa con tu contraseña o solicita un código a tu correo</p>
 
             <div class="open-access-pill">
                 <i class="fas fa-unlock-alt me-1" style="color:var(--gold);"></i>
-                <strong>Filosofía de Acceso Abierto:</strong> Solo necesitas cuenta para <strong>dejar reseñas</strong> y <strong>recibir novedades</strong> de tus sitios de interés.
+                <strong>Acceso Abierto:</strong> Solo requieres cuenta para <strong>dejar reseñas</strong> y <strong>activar novedades</strong>.
             </div>
 
             <!-- Selector de método de ingreso -->
@@ -124,36 +161,36 @@
                 </button>
             </div>
 
-            <div class="alerta-error" th:if="${error != null || param.error != null}">Correo o contraseña incorrectos.</div>
-            <div class="alert alert-success py-2 small" th:if="${mensaje != null || param.logout != null}" th:text="${mensaje != null ? mensaje : 'Has cerrado sesión correctamente.'}"></div>
-            <div class="alert alert-success py-2 small" th:if="${param.registered != null}">¡Registro exitoso! Ya puedes iniciar sesión.</div>
+            <div class="alerta-error py-2 small mb-2" th:if="${error != null || param.error != null}">Correo o contraseña incorrectos.</div>
+            <div class="alert alert-success py-1 px-2 small mb-2" th:if="${mensaje != null || param.logout != null}" th:text="${mensaje != null ? mensaje : 'Has cerrado sesión correctamente.'}"></div>
+            <div class="alert alert-success py-1 px-2 small mb-2" th:if="${param.registered != null}">¡Registro exitoso! Ya puedes iniciar sesión.</div>
 
             <!-- MODO 1: CONTRASEÑA TRADICIONAL -->
             <div id="modePasswordPane">
                 <form th:action="@{/login}" method="post">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                    <div class="mb-3">
-                        <label class="form-label fw-semibold" th:text="#{login.email}">Correo electrónico</label>
+                    <div class="mb-2">
+                        <label class="form-label fw-semibold small mb-1" th:text="#{login.email}">Correo electrónico</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="fa fa-envelope text-primary"></i></span>
-                            <input type="email" name="correo" class="form-control border-start-0"
+                            <span class="input-group-text bg-light border-end-0 py-1"><i class="fa fa-envelope text-primary small"></i></span>
+                            <input type="email" name="correo" class="form-control border-start-0 py-1" style="font-size:0.88rem;"
                                    placeholder="tucorreo@gmail.com" required>
                         </div>
                     </div>
-                    <div class="mb-2">
-                        <div class="d-flex justify-content-between align-items-center">
-                            <label class="form-label fw-semibold mb-1" th:text="#{login.password}">Contraseña</label>
-                            <a href="/recuperar-password" class="small fw-semibold text-decoration-none" style="color:var(--gold);">
-                                ¿Olvidaste tu contraseña?
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label fw-semibold small mb-0" th:text="#{login.password}">Contraseña</label>
+                            <a href="/recuperar-password" class="small fw-semibold text-decoration-none" style="color:var(--gold); font-size:0.75rem;">
+                                ¿Olvidaste tu clave?
                             </a>
                         </div>
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="fa fa-lock text-primary"></i></span>
-                            <input type="password" name="contrasena" class="form-control border-start-0"
+                            <span class="input-group-text bg-light border-end-0 py-1"><i class="fa fa-lock text-primary small"></i></span>
+                            <input type="password" name="contrasena" class="form-control border-start-0 py-1" style="font-size:0.88rem;"
                                    placeholder="Tu contraseña" required>
                         </div>
                     </div>
-                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold mt-3">
+                    <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold" style="font-size:0.88rem;">
                         <i class="fa fa-sign-in-alt me-2"></i><span th:text="#{login.btn}">Iniciar sesión</span>
                     </button>
                 </form>
@@ -166,22 +203,22 @@
                 <!-- Paso 1: Solicitar código -->
                 <div id="otpStep1">
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Correo electrónico asociado</label>
+                        <label class="form-label fw-semibold small mb-1">Correo electrónico asociado</label>
                         <div class="input-group">
-                            <span class="input-group-text bg-light border-end-0"><i class="fa fa-paper-plane text-primary"></i></span>
-                            <input type="email" id="otpEmailInput" class="form-control border-start-0"
+                            <span class="input-group-text bg-light border-end-0 py-1"><i class="fa fa-paper-plane text-primary small"></i></span>
+                            <input type="email" id="otpEmailInput" class="form-control border-start-0 py-1" style="font-size:0.88rem;"
                                    placeholder="tucorreo@gmail.com" required>
                         </div>
-                        <small class="text-muted d-block mt-1">Te enviaremos un código de seguridad de 6 dígitos válido por 10 minutos.</small>
+                        <small class="text-muted d-block mt-1" style="font-size:0.74rem;">Código de seguridad de 6 dígitos válido por 10 minutos.</small>
                     </div>
-                    <button type="button" id="btnSendOtp" onclick="solicitarCodigoLogin()" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold">
+                    <button type="button" id="btnSendOtp" onclick="solicitarCodigoLogin()" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold" style="font-size:0.88rem;">
                         <i class="fas fa-envelope-open-text me-2"></i>Enviar código a mi correo
                     </button>
                 </div>
 
                 <!-- Paso 2: Ingresar los 6 dígitos -->
                 <div id="otpStep2" style="display:none;">
-                    <p class="small text-muted mb-2">Ingresa el código de 6 dígitos enviado a <strong id="otpTargetEmailLabel"></strong>:</p>
+                    <p class="small text-muted mb-1" style="font-size:0.78rem;">Código de 6 dígitos enviado a <strong id="otpTargetEmailLabel"></strong>:</p>
                     <div class="otp-grid" id="otpInputsWrap">
                         <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" data-idx="0">
                         <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" data-idx="1">
@@ -190,26 +227,26 @@
                         <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" data-idx="4">
                         <input type="text" maxlength="1" class="otp-digit" inputmode="numeric" data-idx="5">
                     </div>
-                    <div class="alert alert-info py-2 px-3 small mt-2 mb-3 d-flex align-items-center gap-2" style="border-radius:10px;">
+                    <div class="alert alert-info py-1 px-2 small mb-2 d-flex align-items-center gap-2" style="border-radius:8px; font-size:0.73rem;">
                         <i class="fas fa-shield-alt text-primary"></i>
-                        <span>Revisa tu bandeja de entrada o spam. Por seguridad, el código de 6 dígitos se despacha únicamente a tu correo.</span>
+                        <span>El código de seguridad se envía únicamente a tu correo.</span>
                     </div>
-                    <button type="button" id="btnVerifyOtp" onclick="verificarCodigoLogin()" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold mt-2">
+                    <button type="button" id="btnVerifyOtp" onclick="verificarCodigoLogin()" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold" style="font-size:0.88rem;">
                         <i class="fas fa-check-circle me-2"></i>Verificar código e ingresar
                     </button>
-                    <button type="button" onclick="reiniciarOtp()" class="btn btn-link w-100 btn-sm text-muted mt-1 text-decoration-none">
+                    <button type="button" onclick="reiniciarOtp()" class="btn btn-link w-100 btn-sm text-muted mt-1 text-decoration-none py-0" style="font-size:0.75rem;">
                         <i class="fas fa-redo me-1"></i>Cambiar correo o reenviar código
                     </button>
                 </div>
             </div>
 
-            <hr class="my-4">
-            <p class="text-center text-muted mb-0">
+            <hr class="my-2" style="opacity:0.15;">
+            <p class="text-center text-muted mb-1" style="font-size:0.8rem;">
                 <span th:text="#{login.noAccount}">¿No tienes cuenta?</span>
                 <a href="/registro" class="text-primary fw-semibold" th:text="#{login.register}">Regístrate gratis</a>
             </p>
-            <p class="text-center mt-2 mb-0">
-                <a href="/" class="text-muted small text-decoration-none"><i class="fa fa-arrow-left me-1"></i><span th:text="#{login.back}">Volver a explorar sin cuenta</span></a>
+            <p class="text-center mb-0">
+                <a href="/" class="text-muted text-decoration-none" style="font-size:0.76rem;"><i class="fa fa-arrow-left me-1"></i><span th:text="#{login.back}">Volver a explorar sin cuenta</span></a>
             </p>
         </div>
     </div>
