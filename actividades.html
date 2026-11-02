@@ -1,0 +1,939 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <base href="./">    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Actividades — ODYSSEY</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/odyssey-travela.css">
+    <style>
+        .act-card { border-radius:16px; overflow:hidden; box-shadow:0 4px 20px rgba(11,45,107,.1); transition:.35s; background:#fff; height:100%; }
+        .act-card:hover { transform:translateY(-6px); box-shadow:0 16px 40px rgba(11,45,107,.2); }
+        .act-img { height:210px; overflow:hidden; position:relative; }
+        .act-img img { width:100%; height:100%; object-fit:cover; transition:.4s; }
+        .act-card:hover .act-img img { transform:scale(1.07); }
+        .act-body { padding:20px; }
+        .act-cat { font-family:'DM Sans',sans-serif; font-size:.68rem; font-weight:700; text-transform:uppercase; letter-spacing:.08em; color:var(--gold); margin-bottom:5px; }
+        .act-body h5 { font-family:'Cormorant Garamond',serif; font-weight:700; color:var(--azul); font-size:1.2rem; margin-bottom:8px; }
+        .act-meta span { background:rgba(11,45,107,.06); color:var(--azul); font-size:.75rem; font-weight:600; padding:3px 12px; border-radius:20px; border:1px solid rgba(11,45,107,.1); display:inline-block; margin:2px; }
+        .filtro-btn { font-family:'DM Sans',sans-serif; font-size:.82rem; font-weight:600; }
+    </style>
+    <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="img/favicon-16x16.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+</head>
+<body>
+<div class="container-fluid topbar-odyssey px-4 px-lg-5 d-none d-lg-block notranslate" translate="no">
+    <div class="row gx-0">
+        <div class="col-lg-8 text-start">
+            <div class="d-inline-flex align-items-center" style="height:44px; gap:8px; flex-wrap:nowrap;">
+                <span class="text-white-50 small">
+                    <i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i>
+                    <a href="https://en.wikipedia.org/wiki/Cartagena,_Colombia" target="_blank" style="color:rgba(255,255,255,.5); text-decoration:none;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='rgba(255,255,255,.5)'">Cartagena de Indias, Colombia</a>
+                </span>
+                <span class="text-white-50 mx-2">|</span>
+                <span class="text-white-50 small">
+                    <i class="fa fa-star me-1" style="color:var(--gold);"></i>Patrimonio UNESCO 1984
+                </span>
+                <span class="text-white-50 mx-2">|</span>
+                <!-- Clima en tiempo real -->
+                <span class="d-inline-flex align-items-center gap-2" style="font-size:.78rem;">
+                    <span id="tb-clima-icono" style="font-size:1rem; line-height:1;">⏳</span>
+                    <span id="tb-clima-temp" style="color:#fff; font-weight:700;">--°C</span>
+                    <span id="tb-clima-desc" style="color:rgba(255,255,255,.55);">Cargando...</span>
+                    <span style="color:rgba(255,255,255,.3);">·</span>
+                    <span style="color:rgba(255,255,255,.45);">💧</span>
+                    <span id="tb-clima-hum" style="color:rgba(255,255,255,.65);">--%</span>
+                    <span style="color:rgba(255,255,255,.3);">·</span>
+                    <span style="color:rgba(255,255,255,.45);">💨</span>
+                    <span id="tb-clima-viento" style="color:rgba(255,255,255,.65);">-- km/h</span>
+                </span>
+            </div>
+        </div>
+        <div class="col-lg-4 text-end">
+            <div class="d-inline-flex align-items-center" style="height:44px; gap:10px;">
+                <div class="lang-switcher">
+                    <a href="/idioma?lang=es" class="lang-btn  lang-active"
+                       onclick="document.cookie='googtrans=/es/es;path=/;'; document.cookie='googtrans=/es/es;path=/;domain='+window.location.hostname;">🇨🇴 ES</a>
+                    <span class="lang-sep">|</span>
+                    <a href="/idioma?lang=en" class="lang-btn"
+                       onclick="document.cookie='googtrans=/es/en;path=/;'; document.cookie='googtrans=/es/en;path=/;domain='+window.location.hostname;">🇺🇸 EN</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function(){
+        var WMO_ICONS={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",99:"⛈️"};
+        var WMO_DESC={0:"Despejado",1:"Casi despejado",2:"Parcial nublado",3:"Nublado",45:"Neblina",51:"Llovizna",53:"Llovizna",55:"Llovizna",61:"Lluvia leve",63:"Lluvia",65:"Lluvia fuerte",80:"Chubascos",81:"Chubascos",82:"Chubascos",95:"Tormenta",99:"Tormenta"};
+        fetch("https://api.open-meteo.com/v1/forecast?latitude=10.3910&longitude=-75.4794&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=America%2FBogota")
+        .then(function(r){return r.json();})
+        .then(function(d){
+            var c=d.current, code=c.weather_code;
+            var setEl=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+            setEl("tb-clima-icono", WMO_ICONS[code]||"🌡️");
+            setEl("tb-clima-temp",  Math.round(c.temperature_2m)+"°C");
+            setEl("tb-clima-desc",  WMO_DESC[code]||"Tropical");
+            setEl("tb-clima-hum",   c.relative_humidity_2m+"%");
+            setEl("tb-clima-viento",Math.round(c.wind_speed_10m)+" km/h");
+        })
+        .catch(function(){
+            var setEl=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+            setEl("tb-clima-icono","🌡️");
+            setEl("tb-clima-temp","~29°C");
+            setEl("tb-clima-desc","Tropical");
+        });
+    })();
+    </script>
+</div>
+<div>
+    <style>
+        .navbar .navbar-nav .nav-link {
+            color: rgba(255, 255, 255, 0.92) !important;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            padding: 12px 16px !important;
+            letter-spacing: 0.3px;
+            transition: color 0.2s, transform 0.2s;
+        }
+        .navbar .navbar-nav .nav-link:hover,
+        .navbar .navbar-nav .nav-link.active {
+            color: var(--gold, #d4a64a) !important;
+            transform: translateY(-1px);
+        }
+        .navbar-toggler {
+            border-color: rgba(255, 255, 255, 0.25) !important;
+        }
+        .navbar-toggler .fa-bars {
+            color: var(--gold, #d4a64a) !important;
+        }
+    </style>
+
+    <!-- NAVBAR STICKY -->
+    <nav class="navbar navbar-expand-lg px-4 px-lg-5 py-3 py-lg-0 notranslate" style="background:var(--azul-dark, #0b1a3d);" translate="no">
+        <a href="index.html" class="navbar-brand p-0 text-decoration-none" style="line-height:1;">
+            <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fa fa-anchor" style="color:var(--gold); font-size:1.6rem;"></i>
+                <div style="display:flex; gap:8px; align-items:stretch;">
+                    <div style="line-height:1.1;">
+                        <div style="font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:700; color:#ffffff; letter-spacing:.5px;">ODYSSEY</div>
+                        <div style="font-family:'DM Sans',sans-serif; font-size:.72rem; font-weight:600; color:var(--gold); letter-spacing:.3px;">cartagena.com.co</div>
+                    </div>
+                    <div style="width:2px; background:var(--gold); border-radius:2px; margin:1px 0;"></div>
+                    <div style="font-family:'DM Sans',sans-serif; font-size:.6rem; font-weight:700; color:#ffffff; text-transform:uppercase; letter-spacing:1px; line-height:1.25; display:flex; align-items:center;">TU<br>GUÍA</div>
+                </div>
+            </div>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navInt">
+            <span class="fa fa-bars"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navInt">
+            <div class="navbar-nav ms-auto py-0">
+                <a href="index.html"            class="nav-item nav-link">Inicio</a>
+                <a href="/guia"        class="nav-item nav-link">Guía</a>
+                <a href="/eventos"     class="nav-item nav-link">Eventos</a>
+                <a href="actividades.html" class="nav-item nav-link">Actividades</a>
+                <a href="/transporte"  class="nav-item nav-link">Transporte</a>
+                <a href="mapa.html"        class="nav-item nav-link">Mapa</a>
+                <a href="/chatbot"     class="nav-item nav-link"><i class="fa fa-robot me-1" style="color:var(--gold);"></i>IA</a>
+            </div>
+            <!-- Móvil: selector idioma dentro del menú -->
+            <div class="d-lg-none px-2 py-2 d-flex gap-2">
+                <a href="/idioma?lang=es" class="lang-btn-mobile  lang-active"
+                   onclick="document.cookie='googtrans=/es/es;path=/;'; document.cookie='googtrans=/es/es;path=/;domain='+window.location.hostname;">🇨🇴 ES</a>
+                <a href="/idioma?lang=en" class="lang-btn-mobile"
+                   onclick="document.cookie='googtrans=/es/en;path=/;'; document.cookie='googtrans=/es/en;path=/;domain='+window.location.hostname;">🇺🇸 EN</a>
+            </div>
+            
+            
+                <a href="login.html" class="btn btn-primary rounded-pill py-2 px-4 ms-lg-3"
+                   title="Solo necesario para dejar reseñas o suscribirte a novedades">
+                   <i class="fa fa-bell me-1"></i><span>Iniciar sesión</span>
+                </a>
+            
+        </div>
+    </nav>
+</div>
+
+<div class="page-breadcrumb-hero">
+    <div style="position:relative;z-index:1;">
+        <h1 style="font-style:italic;">Qué hacer en Cartagena</h1>
+        <div class="gold-line"></div>
+        <p>Tours, deportes, cultura y gastronomía para todos los gustos</p>
+    </div>
+</div>
+
+<div class="container py-5">
+
+    <!-- Filtros -->
+    <div class="d-flex flex-wrap gap-2 justify-content-center mb-5">
+        <a href="actividades.html"                 class="btn filtro-btn rounded-pill px-4 py-2  btn-primary">🌟 Todas</a>
+        <a href="/actividades?cat=TOUR"        class="btn filtro-btn rounded-pill px-4 py-2  btn-outline-primary">🗺️ Tours</a>
+        <a href="/actividades?cat=DEPORTE"     class="btn filtro-btn rounded-pill px-4 py-2  btn-outline-primary">🏄 Deportes</a>
+        <a href="/actividades?cat=CULTURA"     class="btn filtro-btn rounded-pill px-4 py-2  btn-outline-primary">🏛️ Cultura</a>
+        <a href="/actividades?cat=GASTRONOMIA" class="btn filtro-btn rounded-pill px-4 py-2  btn-outline-primary">🍽️ Gastronomía</a>
+        <a href="/actividades?cat=NATURALEZA"  class="btn filtro-btn rounded-pill px-4 py-2  btn-outline-primary">🌿 Naturaleza</a>
+    </div>
+
+    <!-- Grid de actividades -->
+    <div class="row g-4">
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/hero-murallas.jpg" alt="Free Walking Tour por la Ciudad Amurallada"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">CULTURA</div>
+                    <h5 data-db>Free Walking Tour por la Ciudad Amurallada</h5>
+                    <p data-db class="text-muted small mb-2">Caminata guiada por historiadores locales a través de plazas, iglesias, palacios y murallas coloniales. Apr...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>2.5 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>Aporte voluntario ($30.000 COP sugerido)</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/act-getsemani.jpg" alt="Tour de Arte Urbano y Graffiti en Getsemaní"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">TOUR</div>
+                    <h5 data-db>Tour de Arte Urbano y Graffiti en Getsemaní</h5>
+                    <p data-db class="text-muted small mb-2">Recorrido a pie por la Calle de la Sierpe, Callejón Angosto y Calle de San Juan descubriendo el significado...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>2 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$40.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/act-islas-rosario.jpg" alt="Pasadía y Snorkel en Islas del Rosario y Barú"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">NATURALEZA</div>
+                    <h5 data-db>Pasadía y Snorkel en Islas del Rosario y Barú</h5>
+                    <p data-db class="text-muted small mb-2">Zarpe en lancha rápida desde el Muelle de la Bodeguita con parada de snorkel en arrecifes coralinos, visita...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>Día completo (8:00 AM - 4:00 PM)</span>
+                        </span>
+                        <span>
+                            💰 <span>$190.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/act-kayak-manglares.jpg" alt="Paseo en Canoa Ecológica por los Manglares de La Boquilla"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">NATURALEZA</div>
+                    <h5 data-db>Paseo en Canoa Ecológica por los Manglares de La Boquilla</h5>
+                    <p data-db class="text-muted small mb-2">Aventura comunitaria con pescadores nativos navegando por los túneles naturales de la Ciénaga de la Virgen ...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>3 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$75.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/act-chiva-rumbera.jpg" alt="Tour Nocturno en Chiva Rumbera Tradicional"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">TOUR</div>
+                    <h5 data-db>Tour Nocturno en Chiva Rumbera Tradicional</h5>
+                    <p data-db class="text-muted small mb-2">Recorrido nocturno a bordo de un colorido autobús típico colombiano de madera con música caribeña en vivo (...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>3 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$55.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/gastro-arepa.jpg" alt="Taller de Cocina Caribeña y Arepa con Huevo"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">GASTRONOMIA</div>
+                    <h5 data-db>Taller de Cocina Caribeña y Arepa con Huevo</h5>
+                    <p data-db class="text-muted small mb-2">Clase práctica con una cocinera tradicional para aprender los secretos de la posta negra cartagenera, el ar...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>3.5 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$130.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/hero-murallas.jpg" alt="Navegación al Atardecer en Catamarán por la Bahía"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">TOUR</div>
+                    <h5 data-db>Navegación al Atardecer en Catamarán por la Bahía</h5>
+                    <p data-db class="text-muted small mb-2">Travesía marítima relajada frente a las murallas coloniales y el skyline iluminado de Bocagrande, con cocte...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>2 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$95.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/act-getsemani.jpg" alt="Taller de Baile: Champeta y Ritmos Afrocaribeños"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">CULTURA</div>
+                    <h5 data-db>Taller de Baile: Champeta y Ritmos Afrocaribeños</h5>
+                    <p data-db class="text-muted small mb-2">Aprende los pasos y la historia de la champeta criolla y el bullerengue en una academia local de Getsemaní ...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>1.5 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$35.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/act-islas-rosario.jpg" alt="Buceo Scuba Diving en Arrecifes Protegidos"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">DEPORTE</div>
+                    <h5 data-db>Buceo Scuba Diving en Arrecifes Protegidos</h5>
+                    <p data-db class="text-muted small mb-2">Inmersión guiada por instructores certificados PADI en los jardines de coral submarinos del Parque Nacional...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>Medio día</span>
+                        </span>
+                        <span>
+                            💰 <span>$240.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/about-torre-reloj.jpg" alt="Paseo en Bicicleta Colonial por Baluartes y Manga"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">DEPORTE</div>
+                    <h5 data-db>Paseo en Bicicleta Colonial por Baluartes y Manga</h5>
+                    <p data-db class="text-muted small mb-2">Circuito guiado pedaleando sobre la cresta de las murallas, cruzando el puente Román hacia el barrio Manga ...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>2.5 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$45.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/hero-mar.jpg" alt="Bioluminiscencia en la Ciénaga de Portonaito (Barú)"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">NATURALEZA</div>
+                    <h5 data-db>Bioluminiscencia en la Ciénaga de Portonaito (Barú)</h5>
+                    <p data-db class="text-muted small mb-2">Excursión nocturna en lancha tradicional hacia las ciénagas calmas de Barú para nadar entre millones de mic...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>3.5 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$95.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/act-gastronomia.jpg" alt="Tour Gastronómico y Sensorial en el Mercado de Bazurto"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">GASTRONOMIA</div>
+                    <h5 data-db>Tour Gastronómico y Sensorial en el Mercado de Bazurto</h5>
+                    <p data-db class="text-muted small mb-2">Inmersión con guía local y chef en las entrañas del mercado más vibrante de Cartagena. Degustación de sopa ...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>3 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$65.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/hero-murallas.jpg" alt="Excursión al Volcán del Totumo y Baño de Lodo Terapéutico"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">NATURALEZA</div>
+                    <h5 data-db>Excursión al Volcán del Totumo y Baño de Lodo Terapéutico</h5>
+                    <p data-db class="text-muted small mb-2">Asciende a un cráter volcánico natural de lodo tibio con altas propiedades minerales que te mantiene a flot...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>4.5 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$85.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/act-buceo.jpg" alt="Paddleboard y Kayak al Amanecer en Castillogrande"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">DEPORTE</div>
+                    <h5 data-db>Paddleboard y Kayak al Amanecer en Castillogrande</h5>
+                    <p data-db class="text-muted small mb-2">Ruta matutina sobre aguas tranquilas en la Bahía de Castillogrande frente al skyline de Bocagrande y la isl...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>2 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$50.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/hero-cartagena.jpg" alt="Navegación Histórica en Galeón Pirata por la Bahía"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">TOUR</div>
+                    <h5 data-db>Navegación Histórica en Galeón Pirata por la Bahía</h5>
+                    <p data-db class="text-muted small mb-2">Zarpe al atardecer en una embarcación de madera réplica de galeones del siglo XVII. Recorrido teatralizado ...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>2.5 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$110.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/act-gastronomia.jpg" alt="Cata de Rones Añejos Colombianos y Cacao Fino"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">CULTURA</div>
+                    <h5 data-db>Cata de Rones Añejos Colombianos y Cacao Fino</h5>
+                    <p data-db class="text-muted small mb-2">Experiencia sensorial en una cava colonial del Centro Histórico. Maridaje de rones premiados (Dictador, La ...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>1.5 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$90.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/hero-mar.jpg" alt="Pasadía Exclusivo en Beach Club de Isla Grande (Islas del Rosario)"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">TOUR</div>
+                    <h5 data-db>Pasadía Exclusivo en Beach Club de Isla Grande (Islas del Rosario)</h5>
+                    <p data-db class="text-muted small mb-2">Traslado en lancha rápida privada, cama balinesa frente a un mar turquesa resplandeciente, cóctel de bienve...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>Día completo (8:00 AM - 4:00 PM)</span>
+                        </span>
+                        <span>
+                            💰 <span>$220.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/hero-murallas.jpg" alt="Ruta Fotográfica en la Hora Dorada por Murallas y Baluartes"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">CULTURA</div>
+                    <h5 data-db>Ruta Fotográfica en la Hora Dorada por Murallas y Baluartes</h5>
+                    <p data-db class="text-muted small mb-2">Caminata personalizada con fotógrafo profesional por los rincones más instagrameables de San Diego, Calle d...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>2 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$80.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/hero-cartagena.jpg" alt="Inmersión Cultural y Raíces en San Basilio de Palenque (UNESCO)"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">CULTURA</div>
+                    <h5 data-db>Inmersión Cultural y Raíces en San Basilio de Palenque (UNESCO)</h5>
+                    <p data-db class="text-muted small mb-2">Excursión al primer pueblo libre de América. Conoce la lengua palenquera, la medicina tradicional de sabias...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>6 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$140.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6 col-lg-4">
+            <div class="act-card">
+                <div class="act-img">
+                    <img src="img/hero-cartagena.jpg" alt="Tour Nocturno de Mitos, Leyendas y la Santa Inquisición"
+                         onerror="this.src='/img/act-gastronomia.jpg'">
+                </div>
+                <div class="act-body">
+                    <div class="act-cat">TOUR</div>
+                    <h5 data-db>Tour Nocturno de Mitos, Leyendas y la Santa Inquisición</h5>
+                    <p data-db class="text-muted small mb-2">Caminata bajo la tenue luz de los faroles coloniales escuchando las crónicas de brujería, juicios del Santo...</p>
+                    <div class="act-meta">
+                        <span>
+                            ⏱️ <span>2 horas</span>
+                        </span>
+                        <span>
+                            💰 <span>$35.000 COP por persona</span>
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estado vacío -->
+    
+
+    <!-- CTA proponer -->
+    <div class="text-center p-4 rounded-3 mt-5" style="background:var(--cream); border:1px dashed rgba(200,150,62,.4);">
+        <p class="text-muted mb-3">¿Eres organizador de tours o actividades? Propón tu actividad y llega a miles de viajeros.</p>
+        <a href="/proponer-actividad" class="btn btn-primary rounded-pill px-5">➕ Proponer actividad</a>
+    </div>
+
+</div>
+
+<div>
+
+    <!-- Footer -->
+    <div class="container-fluid py-4" style="background:var(--azul-dark);">
+        <div class="container py-3">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-4 text-center text-lg-start">
+                    <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;">
+                        <span style="color:#fff;">odyssey</span><span style="color:var(--gold);">cartagena.</span><span style="color:#fff;">com.co</span>
+                    </h5>
+                    <p class="mb-0 small" style="color:rgba(255,255,255,.45);">Guía Turística de Cartagena de Indias</p>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <a href="/guia"        class="small text-decoration-none" style="color:rgba(255,255,255,.55);">Guía</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="/eventos"     class="small text-decoration-none" style="color:rgba(255,255,255,.55);">Eventos</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="actividades.html" class="small text-decoration-none" style="color:rgba(255,255,255,.55);">Actividades</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="mapa.html"        class="small text-decoration-none" style="color:rgba(255,255,255,.55);">Mapa</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="/chatbot"     class="small text-decoration-none" style="color:var(--gold);">Concierge IA</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center text-lg-end">
+                    <p class="mb-0 small" style="color:rgba(255,255,255,.35);">© 2026 ODYSSEY · Proyecto de aula · Ingeniería de Sistemas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to top -->
+    <a href="#" class="btn btn-primary btn-md-square back-to-top"><i class="fa fa-arrow-up"></i></a>
+
+    <!-- ════════════════════════════════════════════════════════
+         CHATBOT POPUP — Ventana emergente abajo a la derecha
+         ════════════════════════════════════════════════════════ -->
+
+    <!-- Botón FAB -->
+    <button id="chatFab" onclick="toggleChat()" title="ODYSSEY Concierge IA"
+            style="position:fixed;bottom:95px;right:28px;z-index:1060;
+                   width:58px;height:58px;border-radius:50%;border:none;
+                   cursor:pointer;background:var(--gold);color:var(--azul);
+                   font-size:1.5rem;box-shadow:0 6px 24px rgba(19,53,123,.4);
+                   display:flex;align-items:center;justify-content:center;
+                   transition:transform .2s,box-shadow .2s;overflow:hidden;padding:0;">
+        <img id="chatFabIcon" src="img/chatbot-icon.png" alt="Chat"
+             style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+    </button>
+    <!-- Notificación roja -->
+    <span id="chatBadge"
+          style="position:fixed;bottom:139px;right:24px;z-index:1061;
+                 background:#e74c3c;color:#fff;font-size:.6rem;font-weight:700;
+                 width:16px;height:16px;border-radius:50%;display:flex;
+                 align-items:center;justify-content:center;pointer-events:none;">1</span>
+
+    <!-- Ventana emergente -->
+    <div id="chatPopup"
+         style="position:fixed;bottom:20px;right:94px;z-index:1059;
+                width:375px;max-width:calc(100vw - 120px);
+                background:#fff;border-radius:18px;
+                box-shadow:0 16px 56px rgba(19,53,123,.28);
+                display:none;flex-direction:column;overflow:hidden;
+                animation:slideUp .25s ease;">
+
+        <!-- Header del popup -->
+        <div style="background:linear-gradient(135deg,var(--azul) 0%,#1a4299 100%);
+                    padding:14px 16px;display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;border-radius:50%;
+                        overflow:hidden;border:2px solid rgba(255,193,7,.4);
+                        flex-shrink:0;">
+                <img src="img/chatbot-icon.png" alt="ODYSSEY" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <div style="flex:1;">
+                <div style="font-family:'Jost',sans-serif;font-weight:700;color:#fff;font-size:.9rem;">
+                    ODYSSEY Concierge IA
+                </div>
+                <div style="color:rgba(255,255,255,.65);font-size:.72rem;">
+                    <span style="color:#2ecc71;margin-right:4px;">●</span>IA Generativa · Cartagena 24/7
+                </div>
+            </div>
+            <a href="/chatbot" title="Abrir en pantalla completa"
+               style="background:rgba(255,255,255,.15);border:none;color:#fff;
+                      width:26px;height:26px;border-radius:50%;text-decoration:none;
+                      font-size:.72rem;display:flex;align-items:center;justify-content:center;">
+                <i class="fa fa-expand"></i>
+            </a>
+            <button onclick="toggleChat()"
+                    style="background:rgba(255,255,255,.15);border:none;color:#fff;
+                           width:26px;height:26px;border-radius:50%;cursor:pointer;
+                           font-size:.8rem;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+
+        <!-- Mensajes -->
+        <div id="chatMessages"
+             style="height:290px;overflow-y:auto;padding:14px;
+                    display:flex;flex-direction:column;gap:10px;
+                    background:#f7f9ff;scroll-behavior:smooth;">
+        </div>
+
+        <!-- Sugerencias -->
+        <div style="padding:8px 10px;background:#fff;border-top:1px solid #eef2ff;
+                    display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    data-msg="¿Cuál es el clima en Cartagena?">🌤️ Clima</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    data-msg="¿Cuáles son las mejores playas?">🏖️ Playas</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    data-msg="¿Cómo me muevo en Cartagena?">🚌 Transporte</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    data-msg="¿Qué hoteles recomiendas?">🏨 Hoteles</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    data-msg="¿Qué actividades puedo hacer?">🎯 Actividades</button>
+        </div>
+
+        <!-- Input -->
+        <div style="display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #eef2ff;min-width:0;">
+            <input id="chatInputPop" type="text"
+                   placeholder="Escribe tu pregunta..."
+                   onkeydown="if(event.key==='Enter')chatEnviarInput()"
+                   style="flex:1;min-width:0;border:1.5px solid #dce5ff;border-radius:40px;
+                          padding:9px 15px;font-size:.87rem;outline:none;
+                          font-family:'Roboto',sans-serif;color:var(--azul);
+                          transition:.2s;overflow:hidden;text-overflow:ellipsis;">
+            <button onclick="chatEnviarInput()"
+                    style="background:var(--azul);color:#fff;border:none;
+                           width:36px;height:36px;border-radius:50%;cursor:pointer;
+                           display:flex;align-items:center;justify-content:center;
+                           flex-shrink:0;font-size:.85rem;transition:.2s;">
+                <i class="fa fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+    <!-- ════ FIN CHATBOT POPUP ════════════════════════════════ -->
+
+    <!-- Estilos del chatbot popup + selector idioma -->
+    <style>
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(20px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .lang-switcher { display:flex;align-items:center;gap:4px; }
+        .lang-sep { color:rgba(255,255,255,.25);font-size:.7rem; }
+        .lang-btn {
+            font-family:'Jost',sans-serif;font-size:.72rem;font-weight:700;
+            color:rgba(255,255,255,.6);text-decoration:none;
+            padding:3px 8px;border-radius:20px;transition:.2s;
+            border:1px solid transparent;
+        }
+        .lang-btn:hover, .lang-btn.lang-active {
+            color:#fff;background:rgba(255,255,255,.15);
+            border-color:rgba(255,255,255,.25);
+        }
+        .lang-btn-mobile {
+            font-family:'Jost',sans-serif;font-size:.75rem;font-weight:700;
+            color:var(--azul);text-decoration:none;padding:4px 12px;
+            border-radius:20px;border:1.5px solid #dce5ff;transition:.2s;
+        }
+        .lang-btn-mobile.lang-active { background:var(--azul);color:#fff;border-color:var(--azul); }
+
+        .chat-msg-bot, .chat-msg-user { display:flex;gap:7px;align-items:flex-end;max-width:90%; }
+        .chat-msg-bot  { align-self:flex-start; }
+        .chat-msg-user { align-self:flex-end;flex-direction:row-reverse; }
+        .chat-av-bot {
+            width:28px;height:28px;border-radius:50%;background:var(--azul);
+            color:#fff;display:flex;align-items:center;justify-content:center;
+            font-size:.85rem;flex-shrink:0;
+        }
+        .chat-av-user {
+            width:28px;height:28px;border-radius:50%;background:var(--gold);
+            color:var(--azul);display:flex;align-items:center;justify-content:center;
+            font-size:.85rem;flex-shrink:0;
+        }
+        .chat-bubble-bot {
+            padding:10px 13px;border-radius:16px;border-bottom-left-radius:3px;
+            background:#fff;color:var(--azul);font-size:.84rem;line-height:1.55;
+            border:1px solid #e0e8ff;word-break:break-word;
+        }
+        .chat-bubble-user {
+            padding:9px 13px;border-radius:16px;border-bottom-right-radius:3px;
+            background:var(--azul);color:#fff;font-size:.84rem;line-height:1.5;
+            word-break:break-word;
+        }
+        .chat-typing {
+            display:flex;gap:4px;align-items:center;padding:10px 13px;
+            background:#fff;border-radius:16px;border:1px solid #e0e8ff;
+        }
+        .chat-dot {
+            width:6px;height:6px;border-radius:50%;background:var(--azul);opacity:.3;
+            animation:chatPulse 1.2s infinite;
+        }
+        .chat-dot:nth-child(2){ animation-delay:.2s; }
+        .chat-dot:nth-child(3){ animation-delay:.4s; }
+        @keyframes chatPulse { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+        .chat-sug-pop {
+            font-family:'Jost',sans-serif;font-size:.65rem;font-weight:700;
+            text-transform:uppercase;letter-spacing:.03em;
+            background:#f0f4ff;border:1px solid #dce5ff;color:var(--azul);
+            padding:4px 10px;border-radius:20px;cursor:pointer;transition:.2s;
+        }
+        .chat-sug-pop:hover { background:var(--azul);color:#fff;border-color:var(--azul); }
+
+        #chatFab:hover { transform:scale(1.08);box-shadow:0 8px 28px rgba(19,53,123,.5); }
+        #chatInputPop:focus { border-color:var(--azul); }
+    </style>
+
+    <!-- Script del chatbot popup -->
+    <script>
+        const CHAT_WELCOME = "\u00A1Hola! \uD83D\uDC4B Soy ODYSSEY, tu gu\u00EDa de Cartagena. \u00BFEn qu\u00E9 te ayudo?";
+
+        function formatChatMd(raw) {
+            if (!raw) return '';
+            let s = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            s = s.replace(/\n/g, '<br>');
+            return s;
+        }
+
+        function toggleChat() {
+            const popup = document.getElementById('chatPopup');
+            const badge = document.getElementById('chatBadge');
+            const fab   = document.getElementById('chatFab');
+            const isOpen = popup.style.display === 'flex';
+            popup.style.display = isOpen ? 'none' : 'flex';
+            fab.style.background = isOpen ? 'var(--gold)' : 'var(--azul)';
+            if (badge) badge.style.display = 'none';
+            if (!isOpen) {
+                const msgs = document.getElementById('chatMessages');
+                if (msgs.children.length === 0) addBotMsg(CHAT_WELCOME);
+                setTimeout(() => document.getElementById('chatInputPop').focus(), 200);
+            }
+        }
+
+        function addBotMsg(text) {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'chat-msg-bot';
+            d.innerHTML = `<div class="chat-av-bot">🤖</div>
+                           <div class="chat-bubble-bot">${formatChatMd(text)}</div>`;
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function addUserMsg(text) {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'chat-msg-user';
+            const safe = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            d.innerHTML = `<div class="chat-av-user">👤</div>
+                           <div class="chat-bubble-user">${safe}</div>`;
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function addTyping() {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.id = 'chatTyping';
+            d.className = 'chat-msg-bot';
+            d.innerHTML = `<div class="chat-av-bot">🤖</div>
+                           <div class="chat-typing">
+                             <div class="chat-dot"></div>
+                             <div class="chat-dot"></div>
+                             <div class="chat-dot"></div>
+                           </div>`;
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function chatEnviar(msg) {
+            if (!msg || !msg.trim()) return;
+            const clean = msg.replace(/^\[\[|\]\]$/g, '').trim();
+            addUserMsg(clean);
+            document.getElementById('chatInputPop').value = '';
+            addTyping();
+            try {
+                const res  = await fetch('/chatbot/respuesta', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({mensaje: clean})
+                });
+                const data = await res.json();
+                const t = document.getElementById('chatTyping');
+                if (t) t.remove();
+                addBotMsg(data.respuesta);
+            } catch(e) {
+                const t = document.getElementById('chatTyping');
+                if (t) t.remove();
+                addBotMsg('Lo siento, hubo un error técnico. Inténtalo de nuevo 🙏');
+            }
+        }
+
+        function chatEnviarInput() {
+            chatEnviar(document.getElementById('chatInputPop').value);
+        }
+    </script>
+
+    <!-- ── Traductor Global de Todo el Sitio (Google Translate Integrado) ── -->
+    <div id="google_translate_element" style="display:none;"></div>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'es',
+                includedLanguages: 'en,es',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <style>
+        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon, .goog-te-gadget-simple, .goog-tooltip, .goog-te-balloon-frame {
+            display: none !important;
+        }
+        body { top: 0px !important; }
+        .goog-text-highlight { background: none !important; box-shadow: none !important; }
+    </style>
+    
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

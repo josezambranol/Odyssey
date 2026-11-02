@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <base href="./">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Odyssey, guía turística inteligente de Cartagena de Indias.">
+    <title>ODYSSEY — Guía Turística de Cartagena de Indias</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Jost:wght@500;600;700&amp;family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,600&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="css/odyssey-travela.css">
+    <link rel="icon" type="image/svg+xml" href="img/favicon.svg">
+    <link rel="icon" type="image/png" sizes="32x32" href="img/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="img/apple-touch-icon.png">
+    <style>
+        /* ── Animaciones Envolventes & Micro-interacciones ── */
+        .reveal-item {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-item.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hero-mosaic figure {
+            transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.55s ease;
+        }
+        .hero-mosaic figure:hover {
+            transform: translateY(-8px) scale(1.025);
+            box-shadow: 0 22px 48px rgba(0, 0, 0, 0.42);
+            z-index: 3;
+        }
+        .destination-card, .service-card, .hotel-card, .event-card {
+            transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.38s ease !important;
+        }
+        .destination-card:hover, .service-card:hover, .hotel-card:hover, .event-card:hover {
+            transform: translateY(-8px) !important;
+            box-shadow: 0 22px 45px rgba(11, 45, 107, 0.16) !important;
+        }
+
+        /* Sección interactiva de Planificador IA en Vivo */
+        .itinerary-ai-showcase {
+            background: linear-gradient(135deg, #071630 0%, #0b2d6b 100%);
+            color: #fff;
+            border-radius: 28px;
+            padding: 42px 36px;
+            border: 1px solid rgba(212, 166, 74, 0.35);
+            box-shadow: 0 26px 64px rgba(7, 22, 48, 0.28);
+            position: relative;
+            overflow: hidden;
+        }
+        .itinerary-ai-showcase::before {
+            content: '';
+            position: absolute;
+            top: -120px; right: -120px;
+            width: 340px; height: 340px;
+            background: radial-gradient(circle, rgba(212,166,74,0.22), transparent 70%);
+            pointer-events: none;
+        }
+        .itin-day-card {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(212, 166, 74, 0.28);
+            border-radius: 18px;
+            padding: 20px;
+            height: 100%;
+            backdrop-filter: blur(8px);
+            animation: fadeInUp 0.45s ease forwards;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="odyssey-home">
+
+<div class="container-fluid topbar-odyssey px-4 px-lg-5 d-none d-lg-block notranslate" translate="no">
+    <div class="row gx-0">
+        <div class="col-lg-8 text-start">
+            <div class="d-inline-flex align-items-center" style="height:44px; gap:8px; flex-wrap:nowrap;">
+                <span class="text-white-50 small">
+                    <i class="fa fa-map-marker-alt me-1" style="color:var(--gold);"></i>
+                    <a href="https://en.wikipedia.org/wiki/Cartagena,_Colombia" target="_blank" style="color:rgba(255,255,255,.5); text-decoration:none;" onmouseover="this.style.color='var(--gold)'" onmouseout="this.style.color='rgba(255,255,255,.5)'">Cartagena de Indias, Colombia</a>
+                </span>
+                <span class="text-white-50 mx-2">|</span>
+                <span class="text-white-50 small">
+                    <i class="fa fa-star me-1" style="color:var(--gold);"></i>Patrimonio UNESCO 1984
+                </span>
+                <span class="text-white-50 mx-2">|</span>
+                <!-- Clima en tiempo real -->
+                <span class="d-inline-flex align-items-center gap-2" style="font-size:.78rem;">
+                    <span id="tb-clima-icono" style="font-size:1rem; line-height:1;">⏳</span>
+                    <span id="tb-clima-temp" style="color:#fff; font-weight:700;">--°C</span>
+                    <span id="tb-clima-desc" style="color:rgba(255,255,255,.55);">Cargando...</span>
+                    <span style="color:rgba(255,255,255,.3);">·</span>
+                    <span style="color:rgba(255,255,255,.45);">💧</span>
+                    <span id="tb-clima-hum" style="color:rgba(255,255,255,.65);">--%</span>
+                    <span style="color:rgba(255,255,255,.3);">·</span>
+                    <span style="color:rgba(255,255,255,.45);">💨</span>
+                    <span id="tb-clima-viento" style="color:rgba(255,255,255,.65);">-- km/h</span>
+                </span>
+            </div>
+        </div>
+        <div class="col-lg-4 text-end">
+            <div class="d-inline-flex align-items-center" style="height:44px; gap:10px;">
+                <div class="lang-switcher">
+                    <a href="/idioma?lang=es" class="lang-btn  lang-active"
+                       onclick="document.cookie='googtrans=/es/es;path=/;'; document.cookie='googtrans=/es/es;path=/;domain='+window.location.hostname;">🇨🇴 ES</a>
+                    <span class="lang-sep">|</span>
+                    <a href="/idioma?lang=en" class="lang-btn"
+                       onclick="document.cookie='googtrans=/es/en;path=/;'; document.cookie='googtrans=/es/en;path=/;domain='+window.location.hostname;">🇺🇸 EN</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+    (function(){
+        var WMO_ICONS={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",99:"⛈️"};
+        var WMO_DESC={0:"Despejado",1:"Casi despejado",2:"Parcial nublado",3:"Nublado",45:"Neblina",51:"Llovizna",53:"Llovizna",55:"Llovizna",61:"Lluvia leve",63:"Lluvia",65:"Lluvia fuerte",80:"Chubascos",81:"Chubascos",82:"Chubascos",95:"Tormenta",99:"Tormenta"};
+        fetch("https://api.open-meteo.com/v1/forecast?latitude=10.3910&longitude=-75.4794&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=America%2FBogota")
+        .then(function(r){return r.json();})
+        .then(function(d){
+            var c=d.current, code=c.weather_code;
+            var setEl=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+            setEl("tb-clima-icono", WMO_ICONS[code]||"🌡️");
+            setEl("tb-clima-temp",  Math.round(c.temperature_2m)+"°C");
+            setEl("tb-clima-desc",  WMO_DESC[code]||"Tropical");
+            setEl("tb-clima-hum",   c.relative_humidity_2m+"%");
+            setEl("tb-clima-viento",Math.round(c.wind_speed_10m)+" km/h");
+        })
+        .catch(function(){
+            var setEl=function(id,v){var e=document.getElementById(id);if(e)e.textContent=v;};
+            setEl("tb-clima-icono","🌡️");
+            setEl("tb-clima-temp","~29°C");
+            setEl("tb-clima-desc","Tropical");
+        });
+    })();
+    </script>
+</div>
+
+<header class="home-header">
+    <nav class="home-nav container" aria-label="Navegación principal">
+        <a href="index.html" class="home-brand" aria-label="Odyssey, inicio">
+            <span class="home-brand-mark"><i class="fas fa-compass"></i></span>
+            <span><strong>Odyssey</strong><small>Cartagena de Indias</small></span>
+        </a>
+        <button class="home-nav-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#homeNav" aria-controls="homeNav" aria-expanded="false" aria-label="Abrir navegación"><span aria-hidden="true">☰</span></button>
+        <div class="collapse home-nav-collapse" id="homeNav">
+            <div class="home-nav-links">
+                <a href="index.html" class="active">Inicio</a>
+                <a href="/guia">Guía</a>
+                <a href="/eventos">Eventos</a>
+                <a href="actividades.html">Actividades</a>
+                <a href="/transporte">Transporte</a>
+                <a href="mapa.html">Mapa</a>
+            </div>
+            <a href="login.html" class="home-nav-cta">Iniciar sesión</a>
+            
+        </div>
+    </nav>
+</header>
+
+<main>
+    <section class="editorial-hero" aria-labelledby="hero-title">
+        <div class="editorial-hero-backdrop"></div>
+        <div class="container editorial-hero-grid">
+            <div class="editorial-hero-copy">
+                <span class="eyebrow eyebrow-light"><i class="fas fa-certificate"></i> <span>🇨🇴 Patrimonio de la Humanidad UNESCO</span></span>
+                <h1 id="hero-title"><span>La Ciudad Heroica</span><span>donde el Caribe</span><span>abraza la</span><em>Historia</em></h1>
+                <p>Cartagena de Indias — historia colonial, playas caribeñas y cultura viva en el corazón de Colombia.</p>
+                <div class="hero-actions">
+                    <a href="#destinos" class="button button-gold"><span>Explorar ahora</span><i class="fas fa-arrow-down"></i></a>
+                    <a href="mapa.html" class="button button-glass"><i class="fas fa-satellite-dish"></i><span>Radar Cerca de Mí</span></a>
+                </div>
+            </div>
+            <div class="hero-mosaic" aria-label="Postales de Cartagena">
+                <figure class="hero-mosaic-main"><img src="img/hero-murallas.jpg" alt="Murallas de Cartagena al atardecer"></figure>
+                <figure><img src="img/hero-playa-blanca.jpg" alt="Playa Blanca en Barú"></figure>
+                <figure><img src="img/hero-getsemani.jpg" alt="Calles coloridas de Getsemaní"></figure>
+                <figure><img src="img/hero-castillo.jpg" alt="Castillo de San Felipe"></figure>
+            </div>
+        </div>
+        <div class="container hero-search-wrap">
+            <form class="hero-search" action="/buscar" method="get" data-search-form>
+                <label class="search-category"><span>Explorar por</span><select name="categoriaId" aria-label="Categoría"><option value="">Todas las categorías</option><option value="6">CULTURA Y ARTE</option><option value="5">GASTRONOMÍA</option><option value="4">HOTELES</option><option value="2">MUSEOS</option><option value="7">NATURALEZA Y AVENTURA</option><option value="1">PLAYAS</option><option value="3">SITIOS HISTÓRICOS</option></select></label>
+                <label class="search-query"><span class="visually-hidden">Buscar en Odyssey</span><i class="fas fa-search"></i><input type="search" name="q" placeholder="¿Qué quieres descubrir en Cartagena? (Ej: San Felipe, Barú, Celele...)" autocomplete="off"></label>
+                <button type="submit" class="button button-primary">Buscar</button>
+            </form>
+            <div class="quick-searches"><span>Tendencias hoy:</span><a href="/buscar?q=Torre%20del%20Reloj">Torre del Reloj</a><a href="/buscar?q=Islas%20del%20Rosario">Islas del Rosario</a><a href="/buscar?q=Getseman%C3%AD">Getsemaní</a><a href="#planificador-ia" class="text-warning fw-bold"><i class="fas fa-magic me-1"></i>Crear Itinerario IA</a></div>
+        </div>
+    </section>
+
+    <section class="nautical-stats reveal-item" aria-label="Cartagena en cifras"><div class="container stats-grid">
+        <article><i class="fas fa-landmark"></i><strong data-count="493">493</strong><span>Años de historia</span></article>
+        <article><i class="fas fa-ruler-horizontal"></i><strong>11 km</strong><span>Murallas intactas</span></article>
+        <article><i class="fas fa-water"></i><strong data-count="28">28+</strong><span>Islas y cayos</span></article>
+        <article><i class="fas fa-unlock-alt"></i><strong>100%</strong><span>Exploración libre</span></article>
+    </div></section>
+
+    <section class="home-section about-editorial reveal-item"><div class="container about-editorial-grid">
+        <div class="about-visual"><div class="about-frame-new"><img src="img/about-torre-reloj.jpg" alt="Arquitectura colonial de Cartagena"></div><div class="history-seal"><strong>493</strong><span>años de historia</span></div><div class="photo-caption"><span>Centro histórico</span><strong>Patrimonio vivo del Caribe</strong></div></div>
+        <div class="about-copy"><span class="eyebrow">Sobre ODYSSEY</span><h2>La llave maestra para vivir Cartagena como un <em>habitante ilustre</em></h2><p>ODYSSEY es tu guía turística inteligente de Cartagena de Indias — la ciudad amurallada declarada Patrimonio de la Humanidad por la UNESCO en 1984.</p><p>Navega sin barreras por toda la plataforma. Inicia sesión con contraseña o código único al correo únicamente cuando desees calificar un sitio o suscribirte a sus novedades culturales.</p>
+            <div class="about-checks"><div><i class="fas fa-check"></i><span>26 Sitios georreferenciados</span></div><div><i class="fas fa-check"></i><span>Tarifas oficiales DATT y Transcaribe</span></div><div><i class="fas fa-check"></i><span>Alertas de sitios al correo</span></div><div><i class="fas fa-check"></i><span>Mapa con radar 2dsphere</span></div><div><i class="fas fa-check"></i><span>Concierge IA 24/7</span></div><div><i class="fas fa-check"></i><span>Acceso con Código OTP</span></div></div>
+            <a href="/guia" class="text-link">Conocer la guía maestra de Cartagena <i class="fas fa-arrow-right"></i></a>
+        </div>
+    </div></section>
+
+    <section class="home-section services-editorial reveal-item"><div class="container">
+        <div class="section-heading centered"><span class="eyebrow">Servicios</span><h2>Ocho módulos diseñados para el <em>navegante moderno</em></h2><p>Todo lo que necesitas para planear el viaje perfecto a Cartagena</p></div>
+        <div class="services-grid">
+            <a href="/lugares" class="service-card"><span>Catálogo 01</span><i class="fas fa-map-marked-alt"></i><h3>Guía de Lugares</h3><p>Explora lugares turísticos de Cartagena organizados por categorías: playas, museos, sitios históricos, gastronomía y más.</p><b>Explorar <i class="fas fa-arrow-right"></i></b></a>
+            <a href="/lugares?categoriaId=4" class="service-card"><span>Catálogo 02</span><i class="fas fa-hotel"></i><h3>Información de Hoteles</h3><p>Consulta el Top 6 de hoteles de Cartagena con descripción, ubicación y características. Información turística de referencia.</p><b>Descubrir <i class="fas fa-arrow-right"></i></b></a>
+            <a href="/guia" class="service-card"><span>Catálogo 03</span><i class="fas fa-book-open"></i><h3>Guía de Viaje Completa</h3><p>Historia, gastronomía, playas, clima y consejos prácticos para planear tu estadía perfecta en La Heroica.</p><b>Leer guía <i class="fas fa-arrow-right"></i></b></a>
+            <a href="/chatbot" class="service-card"><span>Catálogo 04</span><i class="fas fa-robot"></i><h3>Chatbot ODYSSEY</h3><p>Resuelve tus dudas sobre transporte, clima, actividades y más con nuestro asistente inteligente disponible las 24 horas.</p><b>Conversar <i class="fas fa-arrow-right"></i></b></a>
+            <a href="/eventos" class="service-card"><span>Catálogo 05</span><i class="fas fa-calendar-alt"></i><h3>Eventos y Festivales</h3><p>Hay Festival, FICCI, Fiestas de Independencia y más. Mantente al día con los eventos culturales de Cartagena.</p><b>Ver agenda <i class="fas fa-arrow-right"></i></b></a>
+            <a href="/transporte" class="service-card"><span>Catálogo 06</span><i class="fas fa-bus-alt"></i><h3>Guía de Transporte</h3><p>Transcaribe, taxis, InDriver, yates a las Islas del Rosario. Todo sobre cómo moverte por Cartagena con costos reales.</p><b>Planear ruta <i class="fas fa-arrow-right"></i></b></a>
+            <a href="mapa.html" class="service-card"><span>Catálogo 07</span><i class="fas fa-map"></i><h3>Mapa Interactivo</h3><p>Explora la ciudad con nuestro mapa con puntos turísticos, filtros por categoría y panel de información detallada.</p><b>Abrir mapa <i class="fas fa-arrow-right"></i></b></a>
+            <a href="/lugares" class="service-card"><span>Catálogo 08</span><i class="fas fa-bell"></i><h3>Alertas y Reseñas</h3><p>Recibe novedades de tus sitios favoritos en tu correo y comparte tu experiencia.</p><b>Suscribirme <i class="fas fa-arrow-right"></i></b></a>
+        </div>
+    </div></section>
+
+    <section class="home-section destinations-editorial reveal-item" id="destinos"><div class="container">
+        <div class="section-heading split-heading"><div><span class="eyebrow">Destinos recomendados por la comunidad</span><h2>Destinos que definen el <em>Caribe</em></h2></div><a href="/lugares?categoriaId=0" class="text-link">Ver todos los lugares</a></div>
+        <ul class="nav category-pills" role="tablist">
+            <li><button class="active" data-bs-toggle="tab" data-bs-target="#places-all" type="button">🌟 Todos</button></li>
+            <li>
+                <button data-bs-toggle="tab" data-bs-target="#places-6" type="button">CULTURA Y ARTE</button>
+            </li>
+            <li>
+                <button data-bs-toggle="tab" data-bs-target="#places-5" type="button">GASTRONOMÍA</button>
+            </li>
+            <li>
+                <button data-bs-toggle="tab" data-bs-target="#places-4" type="button">HOTELES</button>
+            </li>
+            <li>
+                <button data-bs-toggle="tab" data-bs-target="#places-2" type="button">MUSEOS</button>
+            </li>
+            <li>
+                <button data-bs-toggle="tab" data-bs-target="#places-7" type="button">NATURALEZA Y AVENTURA</button>
+            </li>
+            <li>
+                <button data-bs-toggle="tab" data-bs-target="#places-1" type="button">PLAYAS</button>
+            </li>
+            <li>
+                <button data-bs-toggle="tab" data-bs-target="#places-3" type="button">SITIOS HISTÓRICOS</button>
+            </li>
+        </ul>
+        <div class="tab-content"><div id="places-all" class="tab-pane fade show active"><div class="destination-grid">
+            <a href="/lugares/1" class="destination-card">
+                <div class="destination-card-image">
+                    <img src="img/hero-castillo.jpg" onerror="this.src='/img/hero-murallas.jpg'" alt="Castillo de San Felipe de Barajas">
+                    <span class="destination-badge">SITIOS HISTÓRICOS</span>
+                    <span class="verified-badge">
+                        <i class="fas fa-check-circle"></i> <span>Verificado</span>
+                    </span>
+                </div>
+                <div class="destination-card-body">
+                    <h3 data-db>Castillo de San Felipe de Barajas</h3>
+                    <p><i class="fas fa-map-marker-alt"></i><span data-db>Barrio San Lázaro, Pie de la Popa</span></p>
+                    <span>Ver detalles y activar alertas <i class="fas fa-arrow-right ms-1"></i></span>
+                </div>
+            </a><a href="/lugares/2" class="destination-card">
+                <div class="destination-card-image">
+                    <img src="img/about-torre-reloj.jpg" onerror="this.src='/img/hero-murallas.jpg'" alt="Torre del Reloj y Plaza de los Coches">
+                    <span class="destination-badge">SITIOS HISTÓRICOS</span>
+                    <span class="verified-badge">
+                        <i class="fas fa-check-circle"></i> <span>Verificado</span>
+                    </span>
+                </div>
+                <div class="destination-card-body">
+                    <h3 data-db>Torre del Reloj y Plaza de los Coches</h3>
+                    <p><i class="fas fa-map-marker-alt"></i><span data-db>Entrada al Centro Histórico frente al Camellón de los Mártires</span></p>
+                    <span>Ver detalles y activar alertas <i class="fas fa-arrow-right ms-1"></i></span>
+                </div>
+            </a><a href="/lugares/3" class="destination-card">
+                <div class="destination-card-image">
+                    <img src="img/hero-murallas.jpg" onerror="this.src='/img/hero-murallas.jpg'" alt="Baluarte de Santo Domingo y Murallas">
+                    <span class="destination-badge">SITIOS HISTÓRICOS</span>
+                    <span class="verified-badge">
+                        <i class="fas fa-check-circle"></i> <span>Verificado</span>
+                    </span>
+                </div>
+                <div class="destination-card-body">
+                    <h3 data-db>Baluarte de Santo Domingo y Murallas</h3>
+                    <p><i class="fas fa-map-marker-alt"></i><span data-db>Murallas del Centro Histórico frente al mar</span></p>
+                    <span>Ver detalles y activar alertas <i class="fas fa-arrow-right ms-1"></i></span>
+                </div>
+            </a><a href="/lugares/4" class="destination-card">
+                <div class="destination-card-image">
+                    <img src="img/hero-murallas.jpg" onerror="this.src='/img/hero-murallas.jpg'" alt="Las Bóvedas de Santa Clara">
+                    <span class="destination-badge">SITIOS HISTÓRICOS</span>
+                    <span class="verified-badge">
+                        <i class="fas fa-check-circle"></i> <span>Verificado</span>
+                    </span>
+                </div>
+                <div class="destination-card-body">
+                    <h3 data-db>Las Bóvedas de Santa Clara</h3>
+                    <p><i class="fas fa-map-marker-alt"></i><span data-db>San Diego, entre los baluartes de Santa Clara y Santa Catalina</span></p>
+                    <span>Ver detalles y activar alertas <i class="fas fa-arrow-right ms-1"></i></span>
+                </div>
+            </a><a href="/lugares/5" class="destination-card">
+                <div class="destination-card-image">
+                    <img src="img/about-torre-reloj.jpg" onerror="this.src='/img/hero-murallas.jpg'" alt="Palacio de la Inquisición (MUHCA)">
+                    <span class="destination-badge">MUSEOS</span>
+                    <span class="verified-badge">
+                        <i class="fas fa-check-circle"></i> <span>Verificado</span>
+                    </span>
+                </div>
+                <div class="destination-card-body">
+                    <h3 data-db>Palacio de la Inquisición (MUHCA)</h3>
+                    <p><i class="fas fa-map-marker-alt"></i><span data-db>Plaza de Bolívar, Centro Histórico</span></p>
+                    <span>Ver detalles y activar alertas <i class="fas fa-arrow-right ms-1"></i></span>
+                </div>
+            </a><a href="/lugares/6" class="destination-card">
+                <div class="destination-card-image">
+                    <img src="img/hero-getsemani.jpg" onerror="this.src='/img/hero-murallas.jpg'" alt="Convento y Mirador de la Popa">
+                    <span class="destination-badge">SITIOS HISTÓRICOS</span>
+                    <span class="verified-badge">
+                        <i class="fas fa-check-circle"></i> <span>Verificado</span>
+                    </span>
+                </div>
+                <div class="destination-card-body">
+                    <h3 data-db>Convento y Mirador de la Popa</h3>
+                    <p><i class="fas fa-map-marker-alt"></i><span data-db>Cerro de la Popa, Cartagena</span></p>
+                    <span>Ver detalles y activar alertas <i class="fas fa-arrow-right ms-1"></i></span>
+                </div>
+            </a>
+        </div></div>
+        <div id="places-6" class="tab-pane fade"><div class="destination-grid"><a href="/lugares/10" class="destination-card"><div class="destination-card-image"><img src="img/about-torre-reloj.jpg" alt="Teatro Adolfo Mejía (Teatro Heredia)"><span class="destination-badge">CULTURA Y ARTE</span></div><div class="destination-card-body"><h3 data-db>Teatro Adolfo Mejía (Teatro Heredia)</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Plaza de la Merced, Calle de la Chichería</span></p><span>Ver detalles</span></div></a><a href="/lugares/12" class="destination-card"><div class="destination-card-image"><img src="img/act-getsemani.jpg" alt="Plaza de la Trinidad y Barrio Getsemaní"><span class="destination-badge">CULTURA Y ARTE</span></div><div class="destination-card-body"><h3 data-db>Plaza de la Trinidad y Barrio Getsemaní</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Calle del Guerrero con Calle de la Sierpe, Getsemaní</span></p><span>Ver detalles</span></div></a></div><div class="section-action"><a href="/lugares?categoriaId=6" class="button button-primary">Ver todos: CULTURA Y ARTE</a></div></div>
+        <div id="places-5" class="tab-pane fade"><div class="destination-grid"><a href="/lugares/19" class="destination-card"><div class="destination-card-image"><img src="img/act-gastronomia.jpg" alt="Mercado de Bazurto"><span class="destination-badge">GASTRONOMÍA</span></div><div class="destination-card-body"><h3 data-db>Mercado de Bazurto</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Avenida Pedro de Heredia, Sector Bazurto</span></p><span>Ver detalles</span></div></a><a href="/lugares/20" class="destination-card"><div class="destination-card-image"><img src="img/gastro-arepa.jpg" alt="Portal de los Dulces"><span class="destination-badge">GASTRONOMÍA</span></div><div class="destination-card-body"><h3 data-db>Portal de los Dulces</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Plaza de los Coches, Centro Histórico</span></p><span>Ver detalles</span></div></a><a href="/lugares/21" class="destination-card"><div class="destination-card-image"><img src="img/gastro-ceviche.jpg" alt="La Cevichería"><span class="destination-badge">GASTRONOMÍA</span></div><div class="destination-card-body"><h3 data-db>La Cevichería</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Calle Stuart #7-14, Plaza de San Diego</span></p><span>Ver detalles</span></div></a><a href="/lugares/22" class="destination-card"><div class="destination-card-image"><img src="img/gastro-arroz-mariscos.jpg" alt="Restaurante Celele"><span class="destination-badge">GASTRONOMÍA</span></div><div class="destination-card-body"><h3 data-db>Restaurante Celele</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Calle del Espíritu Santo #29-200, Getsemaní</span></p><span>Ver detalles</span></div></a><a href="/lugares/23" class="destination-card"><div class="destination-card-image"><img src="img/hero-murallas.jpg" alt="Café del Mar (Baluarte de Santo Domingo)"><span class="destination-badge">GASTRONOMÍA</span></div><div class="destination-card-body"><h3 data-db>Café del Mar (Baluarte de Santo Domingo)</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Baluarte de Santo Domingo, Murallas de Cartagena</span></p><span>Ver detalles</span></div></a></div><div class="section-action"><a href="/lugares?categoriaId=5" class="button button-primary">Ver todos: GASTRONOMÍA</a></div></div>
+        <div id="places-4" class="tab-pane fade"><div class="destination-grid"><a href="/lugares/24" class="destination-card"><div class="destination-card-image"><img src="img/hotel-sofitel.jpg" alt="Sofitel Legend Santa Clara"><span class="destination-badge">HOTELES</span></div><div class="destination-card-body"><h3 data-db>Sofitel Legend Santa Clara</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Calle del Torno #39-29, Barrio San Diego</span></p><span>Ver detalles</span></div></a><a href="/lugares/25" class="destination-card"><div class="destination-card-image"><img src="img/hotel-charleston.jpg" alt="Hotel Charleston Santa Teresa"><span class="destination-badge">HOTELES</span></div><div class="destination-card-body"><h3 data-db>Hotel Charleston Santa Teresa</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Carrera 3 #31-23, Plaza de Santa Teresa</span></p><span>Ver detalles</span></div></a><a href="/lugares/26" class="destination-card"><div class="destination-card-image"><img src="img/hotel-bastion.jpg" alt="Bastión Luxury Hotel"><span class="destination-badge">HOTELES</span></div><div class="destination-card-body"><h3 data-db>Bastión Luxury Hotel</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Calle del Cuartel #36-07, Centro Histórico</span></p><span>Ver detalles</span></div></a></div><div class="section-action"><a href="/lugares?categoriaId=4" class="button button-primary">Ver todos: HOTELES</a></div></div>
+        <div id="places-2" class="tab-pane fade"><div class="destination-grid"><a href="/lugares/5" class="destination-card"><div class="destination-card-image"><img src="img/about-torre-reloj.jpg" alt="Palacio de la Inquisición (MUHCA)"><span class="destination-badge">MUSEOS</span></div><div class="destination-card-body"><h3 data-db>Palacio de la Inquisición (MUHCA)</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Plaza de Bolívar, Centro Histórico</span></p><span>Ver detalles</span></div></a><a href="/lugares/7" class="destination-card"><div class="destination-card-image"><img src="img/about-torre-reloj.jpg" alt="Museo del Oro Zenú"><span class="destination-badge">MUSEOS</span></div><div class="destination-card-body"><h3 data-db>Museo del Oro Zenú</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Plaza de Bolívar con Calle San Juan de Dios</span></p><span>Ver detalles</span></div></a><a href="/lugares/8" class="destination-card"><div class="destination-card-image"><img src="img/hero-murallas.jpg" alt="Museo Naval del Caribe"><span class="destination-badge">MUSEOS</span></div><div class="destination-card-body"><h3 data-db>Museo Naval del Caribe</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Calle San Juan de Dios #3-62, Centro Histórico</span></p><span>Ver detalles</span></div></a><a href="/lugares/11" class="destination-card"><div class="destination-card-image"><img src="img/about-torre-reloj.jpg" alt="Casa Museo Rafael Núñez"><span class="destination-badge">MUSEOS</span></div><div class="destination-card-body"><h3 data-db>Casa Museo Rafael Núñez</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Carrera 2 #41-89, Barrio El Cabrero</span></p><span>Ver detalles</span></div></a></div><div class="section-action"><a href="/lugares?categoriaId=2" class="button button-primary">Ver todos: MUSEOS</a></div></div>
+        <div id="places-7" class="tab-pane fade"><div class="destination-grid"><a href="/lugares/16" class="destination-card"><div class="destination-card-image"><img src="img/act-kayak-manglares.jpg" alt="Playas de La Boquilla y Manglares"><span class="destination-badge">NATURALEZA Y AVENTURA</span></div><div class="destination-card-body"><h3 data-db>Playas de La Boquilla y Manglares</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Corregimiento de La Boquilla, Km 7 Vía al Mar</span></p><span>Ver detalles</span></div></a></div><div class="section-action"><a href="/lugares?categoriaId=7" class="button button-primary">Ver todos: NATURALEZA Y AVENTURA</a></div></div>
+        <div id="places-1" class="tab-pane fade"><div class="destination-grid"><a href="/lugares/13" class="destination-card"><div class="destination-card-image"><img src="img/hero-playa-blanca.jpg" alt="Playa Blanca (Península de Barú)"><span class="destination-badge">PLAYAS</span></div><div class="destination-card-body"><h3 data-db>Playa Blanca (Península de Barú)</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Isla de Barú, a 45 minutos por puente o lancha</span></p><span>Ver detalles</span></div></a><a href="/lugares/14" class="destination-card"><div class="destination-card-image"><img src="img/act-islas-rosario.jpg" alt="Parque Nacional Natural Islas del Rosario"><span class="destination-badge">PLAYAS</span></div><div class="destination-card-body"><h3 data-db>Parque Nacional Natural Islas del Rosario</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Mar Caribe, 45 min en lancha desde Muelle de la Bodeguita</span></p><span>Ver detalles</span></div></a><a href="/lugares/15" class="destination-card"><div class="destination-card-image"><img src="img/act-playa-bocagrande.jpg" alt="Playas de Bocagrande y Castillogrande"><span class="destination-badge">PLAYAS</span></div><div class="destination-card-body"><h3 data-db>Playas de Bocagrande y Castillogrande</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Avenida San Martín y Carrera 1ra, Bocagrande</span></p><span>Ver detalles</span></div></a><a href="/lugares/17" class="destination-card"><div class="destination-card-image"><img src="img/act-islas-rosario.jpg" alt="Isla de Cholón (Barú)"><span class="destination-badge">PLAYAS</span></div><div class="destination-card-body"><h3 data-db>Isla de Cholón (Barú)</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Ensenada de Cholón, Península de Barú</span></p><span>Ver detalles</span></div></a></div><div class="section-action"><a href="/lugares?categoriaId=1" class="button button-primary">Ver todos: PLAYAS</a></div></div>
+        <div id="places-3" class="tab-pane fade"><div class="destination-grid"><a href="/lugares/1" class="destination-card"><div class="destination-card-image"><img src="img/hero-castillo.jpg" alt="Castillo de San Felipe de Barajas"><span class="destination-badge">SITIOS HISTÓRICOS</span></div><div class="destination-card-body"><h3 data-db>Castillo de San Felipe de Barajas</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Barrio San Lázaro, Pie de la Popa</span></p><span>Ver detalles</span></div></a><a href="/lugares/2" class="destination-card"><div class="destination-card-image"><img src="img/about-torre-reloj.jpg" alt="Torre del Reloj y Plaza de los Coches"><span class="destination-badge">SITIOS HISTÓRICOS</span></div><div class="destination-card-body"><h3 data-db>Torre del Reloj y Plaza de los Coches</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Entrada al Centro Histórico frente al Camellón de los Mártires</span></p><span>Ver detalles</span></div></a><a href="/lugares/3" class="destination-card"><div class="destination-card-image"><img src="img/hero-murallas.jpg" alt="Baluarte de Santo Domingo y Murallas"><span class="destination-badge">SITIOS HISTÓRICOS</span></div><div class="destination-card-body"><h3 data-db>Baluarte de Santo Domingo y Murallas</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Murallas del Centro Histórico frente al mar</span></p><span>Ver detalles</span></div></a><a href="/lugares/4" class="destination-card"><div class="destination-card-image"><img src="img/hero-murallas.jpg" alt="Las Bóvedas de Santa Clara"><span class="destination-badge">SITIOS HISTÓRICOS</span></div><div class="destination-card-body"><h3 data-db>Las Bóvedas de Santa Clara</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>San Diego, entre los baluartes de Santa Clara y Santa Catalina</span></p><span>Ver detalles</span></div></a><a href="/lugares/6" class="destination-card"><div class="destination-card-image"><img src="img/hero-getsemani.jpg" alt="Convento y Mirador de la Popa"><span class="destination-badge">SITIOS HISTÓRICOS</span></div><div class="destination-card-body"><h3 data-db>Convento y Mirador de la Popa</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Cerro de la Popa, Cartagena</span></p><span>Ver detalles</span></div></a><a href="/lugares/9" class="destination-card"><div class="destination-card-image"><img src="img/about-torre-reloj.jpg" alt="Santuario y Claustro de San Pedro Claver"><span class="destination-badge">SITIOS HISTÓRICOS</span></div><div class="destination-card-body"><h3 data-db>Santuario y Claustro de San Pedro Claver</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Plaza San Pedro Claver #01-30, Centro Histórico</span></p><span>Ver detalles</span></div></a><a href="/lugares/18" class="destination-card"><div class="destination-card-image"><img src="img/hero-murallas.jpg" alt="Fuerte de San Fernando y Bocachica (Tierra Bomba)"><span class="destination-badge">SITIOS HISTÓRICOS</span></div><div class="destination-card-body"><h3 data-db>Fuerte de San Fernando y Bocachica (Tierra Bomba)</h3><p><i class="fas fa-map-marker-alt"></i><span data-db>Corregimiento de Bocachica, Isla de Tierra Bomba</span></p><span>Ver detalles</span></div></a></div><div class="section-action"><a href="/lugares?categoriaId=3" class="button button-primary">Ver todos: SITIOS HISTÓRICOS</a></div></div>
+        </div>
+    </div></section>
+
+    <!-- NUEVO: GENERADOR INTERACTIVO DE ITINERARIOS IA EN TIEMPO REAL -->
+    <section class="home-section reveal-item" id="planificador-ia">
+        <div class="container">
+            <div class="itinerary-ai-showcase">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-5">
+                        <span class="badge rounded-pill px-3 py-1 mb-2" style="background:rgba(212,166,74,0.22);color:#f3c86b;font-weight:700;font-size:.75rem;">
+                            <i class="fas fa-magic me-1"></i> MOTOR DE ITINERARIOS NOSQL + IA
+                        </span>
+                        <h2 class="fw-bold text-white mb-2" style="font-family:'Playfair Display',serif;font-size:2.1rem;">
+                            Diseña tu ruta ideal por <em style="color:#d4a64a;">Cartagena</em> en segundos
+                        </h2>
+                        <p class="small mb-4" style="color:rgba(255,255,255,0.8);line-height:1.6;">
+                            Selecciona tus días de estancia, estilo de viaje y presupuesto. Nuestro motor construirá y almacenará en MongoDB un plan detallado con costos estimados en COP.
+                        </p>
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <label class="small text-warning fw-bold mb-1">Duración</label>
+                                <select id="itinDias" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                    <option value="1">1 Día</option>
+                                    <option value="2">2 Días</option>
+                                    <option value="3" selected>3 Días</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label class="small text-warning fw-bold mb-1">Estilo</label>
+                                <select id="itinEstilo" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                    <option value="CULTURAL">Cultural &amp; Historia</option>
+                                    <option value="ROMANTICO">Romántico</option>
+                                    <option value="AVENTURA">Playas &amp; Islas</option>
+                                    <option value="GASTRONOMICO">Gastronómico</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label class="small text-warning fw-bold mb-1">Presupuesto</label>
+                                <select id="itinPresupuesto" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                    <option value="ECONOMICO">Económico</option>
+                                    <option value="MEDIO" selected>Confort Medio</option>
+                                    <option value="PREMIUM">Premium Lujo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" id="btnGenerarItinHome" onclick="generarItinerarioEnVivo()" class="btn rounded-pill px-4 py-2 fw-bold w-100" style="background:#d4a64a;color:#071630;">
+                            <i class="fas fa-compass me-2"></i>Generar Mi Itinerario Personalizado
+                        </button>
+                    </div>
+                    <div class="col-lg-7">
+                        <div id="itinResultadoGrid" class="row g-3">
+                            <div class="col-12">
+                                <div class="itin-day-card text-center py-4">
+                                    <i class="fas fa-map-signs fa-2x mb-2" style="color:#d4a64a;"></i>
+                                    <h5 class="fw-bold text-white mb-1">Tu plan día por día aparecerá aquí</h5>
+                                    <p class="small text-white-50 mb-0">Haz clic en "Generar Mi Itinerario Personalizado" para obtener horarios de mañana, tarde y noche con costos reales en Cartagena.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section gastronomy-editorial reveal-item"><div class="container">
+        <div class="section-heading centered"><span class="eyebrow">Gastronomía</span><h2>Sabores del Caribe y <em>cocina de fogón</em></h2><p>La cocina cartagenera es una fusión de tradiciones indígenas, africanas y españolas</p></div>
+        <div class="gastronomy-grid">
+            <article style="--food-image:url('img/gastro-arepa.jpg')"><span>Frito tradicional</span><h3>Arepa de Huevo</h3><p>El snack más icónico de Cartagena. Masa de maíz frita rellena de huevo. Se encuentra en todo el Centro Histórico.</p></article><article style="--food-image:url('img/gastro-arroz-mariscos.jpg')"><span>Cocina marina</span><h3>Arroz con Mariscos</h3><p>Arroz cocinado en leche de coco con camarones, chipi chipi y langostinos frescos del Caribe.</p></article><article style="--food-image:url('img/gastro-jugos.jpg')"><span>Frutas tropicales</span><h3>Jugos Tropicales</h3><p>Maracuyá, tamarindo, guanábana y corozo. El corozo es el sabor más cartagenero que existe.</p></article><article style="--food-image:url('img/gastro-carimaniola.jpg')"><span>Cocina de fogón</span><h3>Carimañola de Yuca</h3><p>Masa de yuca frita rellena de carne o queso. Parte esencial de la cultura gastronómica caribeña.</p></article><article style="--food-image:url('img/gastro-ceviche.jpg')"><span>Fresco y local</span><h3>Ceviche Cartagenero</h3><p>Camarones y chipi chipi marinados en limón con ají, cebolla morada y tomate. Fresco y perfecto para el calor.</p></article><article style="--food-image:url('img/gastro-ron.jpg')"><span>Degustación</span><h3>Ron &amp; Chocolate</h3><p>Degustación de ron colombiano con chocolate artesanal. Una experiencia sensorial única en El Arsenal de Getsemaní.</p></article>
+        </div><div class="section-action"><a href="/actividades?categoria=GASTRONOMIA" class="button button-primary">Ver experiencias gastronómicas</a></div>
+    </div></section>
+
+    <section class="home-section seasons-editorial reveal-item"><div class="container">
+        <div class="section-heading centered"><span class="eyebrow">Clima</span><h2>Planifica según las <em>brisas del Caribe</em></h2><p>Clima tropical todo el año — siempre es una buena época para visitar La Heroica</p></div>
+        <div class="seasons-grid"><article><i class="fas fa-sun"></i><span>Diciembre — abril</span><h3>Temporada Seca</h3><strong>29°C · 74%</strong><p>Época ideal. Sol garantizado, pocas lluvias, perfecta para playas e Islas del Rosario. Alta temporada turística.</p></article><article><i class="fas fa-cloud-sun"></i><span>Mayo — junio</span><h3>Inicio de Lluvias</h3><strong>30°C · 79%</strong><p>Lluvia breve por las tardes. Ciudad menos congestionada, precios más bajos. Ideal para cultura e historia.</p></article><article><i class="fas fa-cloud-rain"></i><span>Agosto — octubre</span><h3>Temporada de Lluvias</h3><strong>28°C · 84%</strong><p>Aguaceros cortos pero intensos. Muy económico. El mar fosforescente de Isla Grande es espectacular en esta época.</p></article><article class="season-highlight"><i class="fas fa-drum"></i><span>Noviembre</span><h3>Fiestas y Eventos</h3><strong>29°C · 80%</strong><p>Fiestas de Independencia (11 nov), inicio de temporada seca, Hay Festival. ¡La ciudad en su máxima expresión!</p></article></div>
+    </div></section>
+
+    <section class="home-section hotels-editorial reveal-item"><div class="container">
+        <div class="section-heading split-heading"><div><span class="eyebrow">Alojamiento</span><h2>Hoteles de leyenda y <em>claustros virreinales</em></h2></div><a href="/lugares?categoriaId=4" class="text-link">Ver todos los hoteles</a></div>
+        <div class="hotel-grid"><article class="hotel-card"><img src="img/hotel-sofitel.jpg" alt="Sofitel Legend Santa Clara"><div><span>Barrio San Diego</span><h3>Sofitel Legend Santa Clara</h3><p>Convento franciscano del siglo XVII convertido en el hotel más icónico de Colombia. Piscina colonial, spa y tres restaurantes.</p><a href="/lugares/24">Ver ficha y alertas <i class="fas fa-arrow-right"></i></a></div></article><article class="hotel-card"><img src="img/hotel-charleston.jpg" alt="Charleston Santa Teresa"><div><span>Plaza Santa Teresa</span><h3>Charleston Santa Teresa</h3><p>Hotel boutique en convento restaurado. Tres restaurantes, spa completo y piscina en azotea con vistas a la ciudad amurallada.</p><a href="/lugares/25">Ver ficha y alertas <i class="fas fa-arrow-right"></i></a></div></article><article class="hotel-card"><img src="img/hotel-bastion.jpg" alt="Bastión Luxury Hotel"><div><span>Ciudad amurallada</span><h3>Bastión Luxury Hotel</h3><p>Integrado en las murallas coloniales del siglo XVII. Terrazas con vista al mar Caribe, gastronomía de autor y diseño contemporáneo.</p><a href="/lugares/26">Ver ficha y alertas <i class="fas fa-arrow-right"></i></a></div></article></div>
+    </div></section>
+
+    <section class="home-section events-editorial reveal-item"><div class="container">
+        <div class="section-heading split-heading"><div><span class="eyebrow">Agenda</span><h2>Próximos Eventos</h2></div><a href="/eventos" class="text-link">Ver todos los eventos</a></div>
+        <div class="event-grid"><a href="/eventos" class="event-card"><img src="img/act-getsemani.jpg" alt="Gran Bando y Desfile de Comparsas de la Independencia"><div><time datetime="2026-11-08">08 nov 2026</time><span data-db>Avenida Santander frente a las murallas</span><h3 data-db>Gran Bando y Desfile de Comparsas de la Independencia</h3><p data-db>Desfile multitudinario de carrozas folclóricas, disfraces tradicionales (el Capuchón, las Palenqueras, el Mohán) y bandas de mú...</p></div></a><a href="/eventos" class="event-card"><img src="img/hero-murallas.jpg" alt="Fiestas de la Independencia de Cartagena del 11 de Noviembre"><div><time datetime="2026-11-11">11 nov 2026</time><span data-db>Calles del Centro Histórico, Getsemaní y Avenida Santander</span><h3 data-db>Fiestas de la Independencia de Cartagena del 11 de Noviembre</h3><p data-db>La fiesta cívica y popular más grande de la ciudad. Conmemora el día de 1811 cuando Cartagena se convirtió en el primer territo...</p></div></a><a href="/eventos" class="event-card"><img src="img/hotel-sofitel.jpg" alt="Festival Internacional de Música de Cartagena (CIMF)"><div><time datetime="2027-01-06">06 ene 2027</time><span data-db>Teatro Adolfo Mejía y Claustro de Santa Teresa</span><h3 data-db>Festival Internacional de Música de Cartagena (CIMF)</h3><p data-db>Conciertos de música clásica de orquestas sinfónicas internacionales y agrupaciones de cámara en escenarios coloniales como la ...</p></div></a></div>
+        
+    </div></section>
+
+    <section class="home-section map-editorial reveal-item"><div class="container map-panel"><div class="map-copy"><span class="eyebrow eyebrow-light">Exploración georreferenciada 2dsphere</span><h2>Cartografía viva de baluartes, islas y playas</h2><p>Explora el nuevo Centro Cartográfico con radar de proximidad en tiempo real, selector de capas (Editorial, Nocturno, Satélite) y audioguía integrada.</p><ul><li><i class="fas fa-satellite-dish"></i> Radar MongoDB 2dsphere de distancias exactas</li><li><i class="fas fa-volume-up"></i> Audioguía interactiva en cada punto</li></ul><a href="mapa.html" class="button button-gold"><i class="fas fa-map-marked-alt"></i> Abrir Centro Cartográfico</a></div><a href="mapa.html" class="map-preview" aria-label="Abrir mapa interactivo"><img src="img/pf-mapa.jpg" alt="Vista del mapa de Cartagena"><span><small>Radar Activo</small><strong>26 Puntos Georreferenciados</strong></span></a></div></section>
+
+    <section class="home-section testimonials-editorial reveal-item"><div class="container">
+        <div class="section-heading centered"><span class="eyebrow">Viajeros</span><h2>Lo que dicen nuestros usuarios</h2></div>
+        <div class="testimonial-grid"><article><div class="stars">★★★★★</div><blockquote>&quot;ODYSSEY me ayudó a descubrir rincones de Cartagena que nunca habría encontrado solo. El mapa interactivo y el chatbot son increíbles para planear el día.&quot;</blockquote><footer><img src="img/resena-usuario-carlos.jpg" alt="Viajero"><div><strong>Carlos Mendoza</strong><span>Colombia</span></div></footer></article><article><div class="stars">★★★★★</div><blockquote>&quot;Gracias a la guía de gastronomía encontré restaurantes locales auténticos en Getsemaní. La arepa de huevo y el ceviche cartagenero fueron lo mejor del viaje.&quot;</blockquote><footer><img src="img/resena-usuario-maria.jpg" alt="Viajera"><div><strong>María Fernández</strong><span>España</span></div></footer></article><article><div class="stars">★★★★★</div><blockquote>&quot;La información sobre las Islas del Rosario y el transporte en yate fue perfecta. Llegamos a Playa Blanca sin ningún problema. ¡Cartagena es un paraíso!&quot;</blockquote><footer><img src="img/resena-usuario-james.jpg" alt="Viajero"><div><strong>James Rodriguez</strong><span>Estados Unidos</span></div></footer></article></div>
+    </div></section>
+
+    <section class="ai-banner reveal-item"><div class="container"><div class="ai-symbol"><i class="fas fa-compass"></i></div><span class="eyebrow eyebrow-light">Chatbot ODYSSEY</span><h2>¿Tienes preguntas sobre Cartagena?</h2><p>Habla con ODYSSEY, nuestro asistente inteligente 24/7. Clima, transporte, hoteles, playas, gastronomía y mucho más al instante.</p><div><a href="#" onclick="toggleChat();return false;" class="button button-gold"><i class="fas fa-comment-dots"></i><span>Hablar con ODYSSEY</span></a><a href="/chatbot" class="button button-glass">Abrir Consola Completa IA</a></div></div></section>
+</main>
+
+<div>
+
+    <!-- Footer -->
+    <div class="container-fluid py-4" style="background:var(--azul-dark);">
+        <div class="container py-3">
+            <div class="row g-4 align-items-center">
+                <div class="col-lg-4 text-center text-lg-start">
+                    <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;">
+                        <span style="color:#fff;">odyssey</span><span style="color:var(--gold);">cartagena.</span><span style="color:#fff;">com.co</span>
+                    </h5>
+                    <p class="mb-0 small" style="color:rgba(255,255,255,.45);">Guía Turística de Cartagena de Indias</p>
+                </div>
+                <div class="col-lg-4 text-center">
+                    <div class="d-flex justify-content-center gap-2 flex-wrap">
+                        <a href="/guia"        class="small text-decoration-none" style="color:rgba(255,255,255,.55);">Guía</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="/eventos"     class="small text-decoration-none" style="color:rgba(255,255,255,.55);">Eventos</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="actividades.html" class="small text-decoration-none" style="color:rgba(255,255,255,.55);">Actividades</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="mapa.html"        class="small text-decoration-none" style="color:rgba(255,255,255,.55);">Mapa</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="/chatbot"     class="small text-decoration-none" style="color:var(--gold);">Concierge IA</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 text-center text-lg-end">
+                    <p class="mb-0 small" style="color:rgba(255,255,255,.35);">© 2026 ODYSSEY · Proyecto de aula · Ingeniería de Sistemas</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Back to top -->
+    <a href="#" class="btn btn-primary btn-md-square back-to-top"><i class="fa fa-arrow-up"></i></a>
+
+    <!-- ════════════════════════════════════════════════════════
+         CHATBOT POPUP — Ventana emergente abajo a la derecha
+         ════════════════════════════════════════════════════════ -->
+
+    <!-- Botón FAB -->
+    <button id="chatFab" onclick="toggleChat()" title="ODYSSEY Concierge IA"
+            style="position:fixed;bottom:95px;right:28px;z-index:1060;
+                   width:58px;height:58px;border-radius:50%;border:none;
+                   cursor:pointer;background:var(--gold);color:var(--azul);
+                   font-size:1.5rem;box-shadow:0 6px 24px rgba(19,53,123,.4);
+                   display:flex;align-items:center;justify-content:center;
+                   transition:transform .2s,box-shadow .2s;overflow:hidden;padding:0;">
+        <img id="chatFabIcon" src="img/chatbot-icon.png" alt="Chat"
+             style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
+    </button>
+    <!-- Notificación roja -->
+    <span id="chatBadge"
+          style="position:fixed;bottom:139px;right:24px;z-index:1061;
+                 background:#e74c3c;color:#fff;font-size:.6rem;font-weight:700;
+                 width:16px;height:16px;border-radius:50%;display:flex;
+                 align-items:center;justify-content:center;pointer-events:none;">1</span>
+
+    <!-- Ventana emergente -->
+    <div id="chatPopup"
+         style="position:fixed;bottom:20px;right:94px;z-index:1059;
+                width:375px;max-width:calc(100vw - 120px);
+                background:#fff;border-radius:18px;
+                box-shadow:0 16px 56px rgba(19,53,123,.28);
+                display:none;flex-direction:column;overflow:hidden;
+                animation:slideUp .25s ease;">
+
+        <!-- Header del popup -->
+        <div style="background:linear-gradient(135deg,var(--azul) 0%,#1a4299 100%);
+                    padding:14px 16px;display:flex;align-items:center;gap:10px;">
+            <div style="width:40px;height:40px;border-radius:50%;
+                        overflow:hidden;border:2px solid rgba(255,193,7,.4);
+                        flex-shrink:0;">
+                <img src="img/chatbot-icon.png" alt="ODYSSEY" style="width:100%;height:100%;object-fit:cover;">
+            </div>
+            <div style="flex:1;">
+                <div style="font-family:'Jost',sans-serif;font-weight:700;color:#fff;font-size:.9rem;">
+                    ODYSSEY Concierge IA
+                </div>
+                <div style="color:rgba(255,255,255,.65);font-size:.72rem;">
+                    <span style="color:#2ecc71;margin-right:4px;">●</span>IA Generativa · Cartagena 24/7
+                </div>
+            </div>
+            <a href="/chatbot" title="Abrir en pantalla completa"
+               style="background:rgba(255,255,255,.15);border:none;color:#fff;
+                      width:26px;height:26px;border-radius:50%;text-decoration:none;
+                      font-size:.72rem;display:flex;align-items:center;justify-content:center;">
+                <i class="fa fa-expand"></i>
+            </a>
+            <button onclick="toggleChat()"
+                    style="background:rgba(255,255,255,.15);border:none;color:#fff;
+                           width:26px;height:26px;border-radius:50%;cursor:pointer;
+                           font-size:.8rem;display:flex;align-items:center;justify-content:center;">✕</button>
+        </div>
+
+        <!-- Mensajes -->
+        <div id="chatMessages"
+             style="height:290px;overflow-y:auto;padding:14px;
+                    display:flex;flex-direction:column;gap:10px;
+                    background:#f7f9ff;scroll-behavior:smooth;">
+        </div>
+
+        <!-- Sugerencias -->
+        <div style="padding:8px 10px;background:#fff;border-top:1px solid #eef2ff;
+                    display:flex;gap:5px;flex-wrap:wrap;">
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    data-msg="¿Cuál es el clima en Cartagena?">🌤️ Clima</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    data-msg="¿Cuáles son las mejores playas?">🏖️ Playas</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    data-msg="¿Cómo me muevo en Cartagena?">🚌 Transporte</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    data-msg="¿Qué hoteles recomiendas?">🏨 Hoteles</button>
+            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)"
+                    data-msg="¿Qué actividades puedo hacer?">🎯 Actividades</button>
+        </div>
+
+        <!-- Input -->
+        <div style="display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #eef2ff;min-width:0;">
+            <input id="chatInputPop" type="text"
+                   placeholder="Escribe tu pregunta..."
+                   onkeydown="if(event.key==='Enter')chatEnviarInput()"
+                   style="flex:1;min-width:0;border:1.5px solid #dce5ff;border-radius:40px;
+                          padding:9px 15px;font-size:.87rem;outline:none;
+                          font-family:'Roboto',sans-serif;color:var(--azul);
+                          transition:.2s;overflow:hidden;text-overflow:ellipsis;">
+            <button onclick="chatEnviarInput()"
+                    style="background:var(--azul);color:#fff;border:none;
+                           width:36px;height:36px;border-radius:50%;cursor:pointer;
+                           display:flex;align-items:center;justify-content:center;
+                           flex-shrink:0;font-size:.85rem;transition:.2s;">
+                <i class="fa fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+    <!-- ════ FIN CHATBOT POPUP ════════════════════════════════ -->
+
+    <!-- Estilos del chatbot popup + selector idioma -->
+    <style>
+        @keyframes slideUp {
+            from { opacity:0; transform:translateY(20px); }
+            to   { opacity:1; transform:translateY(0); }
+        }
+        .lang-switcher { display:flex;align-items:center;gap:4px; }
+        .lang-sep { color:rgba(255,255,255,.25);font-size:.7rem; }
+        .lang-btn {
+            font-family:'Jost',sans-serif;font-size:.72rem;font-weight:700;
+            color:rgba(255,255,255,.6);text-decoration:none;
+            padding:3px 8px;border-radius:20px;transition:.2s;
+            border:1px solid transparent;
+        }
+        .lang-btn:hover, .lang-btn.lang-active {
+            color:#fff;background:rgba(255,255,255,.15);
+            border-color:rgba(255,255,255,.25);
+        }
+        .lang-btn-mobile {
+            font-family:'Jost',sans-serif;font-size:.75rem;font-weight:700;
+            color:var(--azul);text-decoration:none;padding:4px 12px;
+            border-radius:20px;border:1.5px solid #dce5ff;transition:.2s;
+        }
+        .lang-btn-mobile.lang-active { background:var(--azul);color:#fff;border-color:var(--azul); }
+
+        .chat-msg-bot, .chat-msg-user { display:flex;gap:7px;align-items:flex-end;max-width:90%; }
+        .chat-msg-bot  { align-self:flex-start; }
+        .chat-msg-user { align-self:flex-end;flex-direction:row-reverse; }
+        .chat-av-bot {
+            width:28px;height:28px;border-radius:50%;background:var(--azul);
+            color:#fff;display:flex;align-items:center;justify-content:center;
+            font-size:.85rem;flex-shrink:0;
+        }
+        .chat-av-user {
+            width:28px;height:28px;border-radius:50%;background:var(--gold);
+            color:var(--azul);display:flex;align-items:center;justify-content:center;
+            font-size:.85rem;flex-shrink:0;
+        }
+        .chat-bubble-bot {
+            padding:10px 13px;border-radius:16px;border-bottom-left-radius:3px;
+            background:#fff;color:var(--azul);font-size:.84rem;line-height:1.55;
+            border:1px solid #e0e8ff;word-break:break-word;
+        }
+        .chat-bubble-user {
+            padding:9px 13px;border-radius:16px;border-bottom-right-radius:3px;
+            background:var(--azul);color:#fff;font-size:.84rem;line-height:1.5;
+            word-break:break-word;
+        }
+        .chat-typing {
+            display:flex;gap:4px;align-items:center;padding:10px 13px;
+            background:#fff;border-radius:16px;border:1px solid #e0e8ff;
+        }
+        .chat-dot {
+            width:6px;height:6px;border-radius:50%;background:var(--azul);opacity:.3;
+            animation:chatPulse 1.2s infinite;
+        }
+        .chat-dot:nth-child(2){ animation-delay:.2s; }
+        .chat-dot:nth-child(3){ animation-delay:.4s; }
+        @keyframes chatPulse { 0%,80%,100%{opacity:.2} 40%{opacity:1} }
+
+        .chat-sug-pop {
+            font-family:'Jost',sans-serif;font-size:.65rem;font-weight:700;
+            text-transform:uppercase;letter-spacing:.03em;
+            background:#f0f4ff;border:1px solid #dce5ff;color:var(--azul);
+            padding:4px 10px;border-radius:20px;cursor:pointer;transition:.2s;
+        }
+        .chat-sug-pop:hover { background:var(--azul);color:#fff;border-color:var(--azul); }
+
+        #chatFab:hover { transform:scale(1.08);box-shadow:0 8px 28px rgba(19,53,123,.5); }
+        #chatInputPop:focus { border-color:var(--azul); }
+    </style>
+
+    <!-- Script del chatbot popup -->
+    <script>
+        const CHAT_WELCOME = "\u00A1Hola! \uD83D\uDC4B Soy ODYSSEY, tu gu\u00EDa de Cartagena. \u00BFEn qu\u00E9 te ayudo?";
+
+        function formatChatMd(raw) {
+            if (!raw) return '';
+            let s = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
+            s = s.replace(/\n/g, '<br>');
+            return s;
+        }
+
+        function toggleChat() {
+            const popup = document.getElementById('chatPopup');
+            const badge = document.getElementById('chatBadge');
+            const fab   = document.getElementById('chatFab');
+            const isOpen = popup.style.display === 'flex';
+            popup.style.display = isOpen ? 'none' : 'flex';
+            fab.style.background = isOpen ? 'var(--gold)' : 'var(--azul)';
+            if (badge) badge.style.display = 'none';
+            if (!isOpen) {
+                const msgs = document.getElementById('chatMessages');
+                if (msgs.children.length === 0) addBotMsg(CHAT_WELCOME);
+                setTimeout(() => document.getElementById('chatInputPop').focus(), 200);
+            }
+        }
+
+        function addBotMsg(text) {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'chat-msg-bot';
+            d.innerHTML = `<div class="chat-av-bot">🤖</div>
+                           <div class="chat-bubble-bot">${formatChatMd(text)}</div>`;
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function addUserMsg(text) {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.className = 'chat-msg-user';
+            const safe = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+            d.innerHTML = `<div class="chat-av-user">👤</div>
+                           <div class="chat-bubble-user">${safe}</div>`;
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        function addTyping() {
+            const box = document.getElementById('chatMessages');
+            const d = document.createElement('div');
+            d.id = 'chatTyping';
+            d.className = 'chat-msg-bot';
+            d.innerHTML = `<div class="chat-av-bot">🤖</div>
+                           <div class="chat-typing">
+                             <div class="chat-dot"></div>
+                             <div class="chat-dot"></div>
+                             <div class="chat-dot"></div>
+                           </div>`;
+            box.appendChild(d);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        async function chatEnviar(msg) {
+            if (!msg || !msg.trim()) return;
+            const clean = msg.replace(/^\[\[|\]\]$/g, '').trim();
+            addUserMsg(clean);
+            document.getElementById('chatInputPop').value = '';
+            addTyping();
+            try {
+                const res  = await fetch('/chatbot/respuesta', {
+                    method:'POST',
+                    headers:{'Content-Type':'application/json'},
+                    body: JSON.stringify({mensaje: clean})
+                });
+                const data = await res.json();
+                const t = document.getElementById('chatTyping');
+                if (t) t.remove();
+                addBotMsg(data.respuesta);
+            } catch(e) {
+                const t = document.getElementById('chatTyping');
+                if (t) t.remove();
+                addBotMsg(responderChatCartagena(clean));
+            }
+        }
+
+        function responderChatCartagena(query) {
+            const q = (query || '').toLowerCase();
+            if (q.includes('playa') || q.includes('isla') || q.includes('mar') || q.includes('barú') || q.includes('rosario')) {
+                return '🌊 **Playas e Islas imperdibles en Cartagena**:\n\n• **Islas del Rosario**: Aguas turquesas y arrecifes. Salida en lanchas rápidas desde el Muelle de La Bodeguita (8:00 AM a 9:30 AM).\n• **Playa Blanca (Barú)**: Arena blanca caribeña. Se llega por tierra (45 min) o por mar.\n• **Bocagrande y Castillogrande**: Playas urbanas cerca de hoteles y restaurantes modernos, ideales para atardeceres.';
+            }
+            if (q.includes('transporte') || q.includes('taxi') || q.includes('mover') || q.includes('tarifa') || q.includes('bus') || q.includes('transcaribe')) {
+                return '🚕 **Cómo moverte seguro en Cartagena**:\n\n• **Transcaribe**: Buses articulados seguros y con aire acondicionado. Tarifa plana ~$3.100 COP. La ruta T102 conecta el Centro con Bocagrande.\n• **Taxis**: Siempre acuerda el precio antes de subirte (dentro del Centro Histórico el trayecto promedia $10.000 - $14.000 COP).\n• **Apps (InDriver / Uber)**: Funcionan muy bien y ofrecen tarifas fijas transparentes.';
+            }
+            if (q.includes('castillo') || q.includes('historia') || q.includes('muralla') || q.includes('monumento') || q.includes('felipe') || q.includes('reloj')) {
+                return '🏰 **Patrimonio Histórico de Cartagena (UNESCO)**:\n\n• **Castillo San Felipe de Barajas**: La mayor fortaleza militar española en América. Recomendado visitarlo temprano (8:00 AM) o después de las 4:00 PM por el sol.\n• **Torre del Reloj y Plaza de los Coches**: La entrada icónica a la Ciudad Amurallada.\n• **Las Murallas y Baluarte Santo Domingo**: El mejor lugar para ver el atardecer sobre el Mar Caribe.';
+            }
+            if (q.includes('comer') || q.includes('comida') || q.includes('restaurante') || q.includes('gastronom') || q.includes('plato')) {
+                return '🍽️ **Gastronomía Típica Cartagenera**:\n\n• **Imperdibles**: Posta negra cartagenera, arroz con coco, patacones con queso costeño y arepa de huevo (en el Portal de los Dulces).\n• **Zonas recomendadas**: Plaza de San Diego, Calle del Arsenal en Getsemaní y el Centro Histórico para alta cocina caribeña.';
+            }
+            return '✨ **¡Hola! Soy tu Concierge ODYSSEY para Cartagena de Indias.**\n\nPuedo orientarte con:\n1. 🏰 Sitios históricos, baluartes y Castillo San Felipe.\n2. 🏖️ Mejores playas e Islas del Rosario.\n3. 🚌 Tarifas oficiales de taxis y Transcaribe.\n4. 🍴 Dónde comer la mejor comida típica del Caribe.\n\n¿Qué te gustaría descubrir hoy?';
+        }
+
+        function chatEnviarInput() {
+            chatEnviar(document.getElementById('chatInputPop').value);
+        }
+    </script>
+
+    <!-- ── Traductor Global de Todo el Sitio (Google Translate Integrado) ── -->
+    <div id="google_translate_element" style="display:none;"></div>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'es',
+                includedLanguages: 'en,es',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <style>
+        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon, .goog-te-gadget-simple, .goog-tooltip, .goog-te-balloon-frame {
+            display: none !important;
+        }
+        body { top: 0px !important; }
+        .goog-text-highlight { background: none !important; box-shadow: none !important; }
+    </style>
+    
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Búsqueda por categoría
+    document.querySelector('[data-search-form]').addEventListener('submit', function (event) {
+        var query = this.querySelector('[name="q"]').value.trim();
+        var category = this.querySelector('[name="categoriaId"]').value;
+        if (!query && category) { event.preventDefault(); window.location.href = '/lugares?categoriaId=' + encodeURIComponent(category); }
+    });
+
+    // IntersectionObserver para animaciones envolventes al hacer scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+            }
+        });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
+
+    // Generador de Itinerarios en vivo desde el Home
+    async function generarItinerarioEnVivo() {
+        const dias = parseInt(document.getElementById('itinDias').value || '3', 10);
+        const estilo = document.getElementById('itinEstilo').value;
+        const presupuesto = document.getElementById('itinPresupuesto').value;
+        const btn = document.getElementById('btnGenerarItinHome');
+        const grid = document.getElementById('itinResultadoGrid');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Diseñando ruta en MongoDB...';
+
+        try {
+            const res = await fetch('/api/v1/itinerarios/generar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                body: JSON.stringify({ dias: dias, estiloViaje: estilo, presupuesto: presupuesto })
+            });
+            const json = await res.json();
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-compass me-2"></i>Generar Mi Itinerario Personalizado';
+
+            if (json.success && json.data && Array.isArray(json.data.planDias)) {
+                grid.innerHTML = json.data.planDias.map(d => `
+                    <div class="col-md-${json.data.planDias.length === 1 ? '12' : '6'}">
+                        <div class="itin-day-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-warning text-dark fw-bold">DÍA ${d.numeroDia}</span>
+                                <span class="small text-warning fw-semibold">${d.costoAproximadoCop}</span>
+                            </div>
+                            <h6 class="fw-bold text-white mb-2" style="font-family:'Playfair Display',serif;">${d.tituloDia}</h6>
+                            <p class="small mb-1" style="color:rgba(255,255,255,0.82);font-size:0.77rem;"><strong>☀️ Mañana:</strong> ${d.manana}</p>
+                            <p class="small mb-1" style="color:rgba(255,255,255,0.82);font-size:0.77rem;"><strong>🌤️ Tarde:</strong> ${d.tarde}</p>
+                            <p class="small mb-0" style="color:rgba(255,255,255,0.82);font-size:0.77rem;"><strong>🌙 Noche:</strong> ${d.noche}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } catch (e) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-compass me-2"></i>Generar Mi Itinerario Personalizado';
+        }
+    }
+</script>
+</body>
+</html>
