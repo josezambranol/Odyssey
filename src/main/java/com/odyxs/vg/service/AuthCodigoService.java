@@ -8,6 +8,8 @@ import com.odyxs.vg.repository.LugarRepository;
 import com.odyxs.vg.repository.UsuarioRepository;
 import com.odyxs.vg.repository.mongo.CodigoVerificacionRepository;
 import com.odyxs.vg.repository.mongo.SuscripcionLugarRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -20,6 +22,7 @@ import java.util.*;
 @Service
 public class AuthCodigoService {
 
+    private static final Logger log = LoggerFactory.getLogger(AuthCodigoService.class);
     private static final SecureRandom RANDOM = new SecureRandom();
 
     @Autowired
@@ -96,10 +99,11 @@ public class AuthCodigoService {
         resp.put("correo", correo);
         resp.put("enviadoSmtp", enviadoSmtp);
         if (enviadoSmtp) {
-            resp.put("mensaje", "Hemos enviado un código de 6 dígitos a tu correo " + ocultarCorreo(correo) + ".");
+            resp.put("mensaje", "Hemos enviado un código de seguridad de 6 dígitos a tu correo " + ocultarCorreo(correo) + ".");
         } else {
-            resp.put("mensaje", "Código generado para " + correo + ". (Modo Demo Local: configura MAIL_USERNAME y MAIL_PASSWORD en application-local.properties para despacho Gmail directo).");
-            resp.put("codigoDemo", codigo);
+            // Seguridad: NUNCA enviar el código en la respuesta HTTP.
+            resp.put("mensaje", "Código de seguridad de 6 dígitos generado y enviado a " + ocultarCorreo(correo) + ".");
+            log.info("[ODYSSEY-AUTH-CONSOLA] Código de seguridad para {}: {} (Válido 10 min)", correo, codigo);
         }
         return resp;
     }

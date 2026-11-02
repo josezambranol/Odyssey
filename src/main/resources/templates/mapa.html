@@ -444,11 +444,11 @@ const map = L.map('mapa', { zoomControl: false }).setView([10.4236, -75.5489], 1
 L.control.zoom({ position: 'bottomright' }).addTo(map);
 
 const CAPAS = {
-    voyager: L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap · © CARTO', maxZoom: 19
+    voyager: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors', maxZoom: 19
     }),
-    dark: L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-        attribution: '© OpenStreetMap · © CARTO Dark', maxZoom: 19
+    dark: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri · Dark Gray Canvas', maxZoom: 16
     }),
     satelite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '© Esri World Imagery', maxZoom: 19

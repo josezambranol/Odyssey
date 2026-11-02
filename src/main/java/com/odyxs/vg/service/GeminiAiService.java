@@ -299,6 +299,11 @@ public class GeminiAiService {
             return construirPlanPersonalizadoRag(qNorm, tokens);
         }
 
+        // 2. Si el usuario pregunta por los MEJORES LUGARES, QUÉ VISITAR, SITIOS RECOMENDADOS:
+        if (qNorm.matches(".*(mejor|lugares|sitios|visitar|conocer|imperdibl|atracci|destacado|top|recomend|must see|best places|places to visit).*")) {
+            return construirGuiaMejoresLugaresRag(enIngles);
+        }
+
         // 2. Buscar lugares específicos por relevancia (sin importar tildes)
         if (lugarRepository != null && !tokens.isEmpty()) {
             try {
@@ -340,6 +345,31 @@ public class GeminiAiService {
         return enIngles
                 ? "🌴 Welcome to Cartagena de Indias! Ask me about beaches (Islas del Rosario, Barú), historic forts (Castillo San Felipe), DATT taxi rates, Transcaribe, or Caribbean cuisine."
                 : "🌴 ¡Bienvenido a Cartagena de Indias! Pregúntame sobre playas (Islas del Rosario, Barú), historia colonial (Castillo San Felipe, Murallas), transporte seguro (Transcaribe y tarifas DATT), hoteles o gastronomía caribeña.";
+    }
+
+    private String construirGuiaMejoresLugaresRag(boolean enIngles) {
+        if (enIngles) {
+            return "🌟 **Top Must-See Places in Cartagena de Indias:**\n\n" +
+                    "🏰 **1. Castillo de San Felipe de Barajas:** The greatest Spanish military fortress in the Americas with underground tunnels.\n\n" +
+                    "🕰️ **2. Torre del Reloj & Historic Center:** The main colonial gateway leading to cobblestone streets, Plaza de Bolívar, and floral balconies.\n\n" +
+                    "🎨 **3. Getsemaní Neighborhood:** Bohemian district with street art murals, Plaza de la Trinidad, and live acoustic Caribbean music.\n\n" +
+                    "🏖️ **4. Islas del Rosario & Barú:** Turquoise Caribbean waters, coral reef snorkeling, and Playa Blanca.\n\n" +
+                    "🌅 **5. Baluarte de Santo Domingo (Murallas):** Sunset views over the Caribbean sea with tropical breeze at Café del Mar.\n\n" +
+                    "💡 *Tip: Explore all 26 verified spots on our Interactive Map (`/mapa`) with audio-guide!*";
+        }
+
+        return "🌟 **Los Mejores Lugares Imperdibles para Visitar en Cartagena de Indias:**\n\n" +
+                "🏰 **1. Castillo de San Felipe de Barajas (Pie de la Popa):**\n" +
+                "La fortaleza militar colonial más imponente de América. Explora su red de túneles subterráneos y baterías de cañones con vista panorámica a toda la bahía.\n\n" +
+                "🕰️ **2. Ciudad Amurallada y Torre del Reloj (Centro Histórico):**\n" +
+                "Puerta monumental al corazón colonial. Camina por calles con balcones de buganvilias, la Plaza de Bolívar, el Palacio de la Inquisición y Las Bóvedas de Santa Clara.\n\n" +
+                "🎨 **3. Barrio Getsemaní (Plaza de la Trinidad y Calle de la Sierpe):**\n" +
+                "El barrio bohemio y rebelde de Cartagena. Murales de arte urbano, cafés de autor, comida callejera tradicional y música caribeña en vivo al anochecer.\n\n" +
+                "🏖️ **4. Islas del Rosario y Playa Blanca (Barú):**\n" +
+                "Archipiélago de 28 islas de aguas cristalinas turquesas, arrecifes de coral protegidos ideales para snorkel o buceo, y playas de arena blanca.\n\n" +
+                "🌅 **5. Murallas y Baluarte de Santo Domingo (Café del Mar):**\n" +
+                "El atardecer más emblemático de Colombia sobre los baluartes del siglo XVII con la brisa del Caribe y cócteles tropicales.\n\n" +
+                "💡 *Tip ODYSSEY: Puedes abrir nuestro **Mapa Interactivo (`/mapa`)** para ver la distancia exacta desde tu ubicación con audio-guía integrada.*";
     }
 
     private String construirPlanPersonalizadoRag(String qNorm, List<String> tokens) {
@@ -385,6 +415,7 @@ public class GeminiAiService {
     }
 
     public String detectarCategoria(String msgNorm) {
+        if (msgNorm.matches(".*(mejor|lugares|sitios|visitar|conocer|imperdibl|atracci|destacado|top|recomend).*")) return "lugares_imperdibles";
         if (msgNorm.matches(".*(hola|buenos dias|buenas|hi|hey|saludos|hello|good morning).*")) return "saludo";
         if (msgNorm.matches(".*(clima|lluvi|temperatur|cuando visit|mejor epoca|weather|rain|when to visit).*")) return "clima";
         if (msgNorm.matches(".*(playa|baru|rosario|bocagrande|cholon|boquilla|beach|island).*")) return "playas";
