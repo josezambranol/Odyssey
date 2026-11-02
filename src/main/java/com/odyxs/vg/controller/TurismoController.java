@@ -178,7 +178,8 @@ public class TurismoController {
     // ── Chatbot ODYSSEY con Google Gemini & Telemetría NoSQL ──
 
     @GetMapping("/chatbot")
-    public String chatbotPage() {
+    public String chatbotPage(Model model) {
+        model.addAttribute("geminiActivo", geminiAiService.tieneGeminiKeyConfigurada());
         return "chatbot";
     }
 
@@ -192,6 +193,23 @@ public class TurismoController {
         String clientIp = request.getRemoteAddr();
 
         String respuesta = geminiAiService.responder(mensaje, enIngles, clientIp);
-        return ResponseEntity.ok(Map.of("respuesta", respuesta));
+        return ResponseEntity.ok(Map.of(
+                "respuesta", respuesta,
+                "motor", geminiAiService.tieneGeminiKeyConfigurada() ? "Google Gemini 2.5 Flash + RAG" : "Odyssey Cloud AI + RAG Cartagena"
+        ));
+    }
+
+    @PostMapping("/chatbot/config-key")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> configurarGeminiKey(@RequestBody Map<String, String> body) {
+        String key = body.getOrDefault("apiKey", "").trim();
+        if (key.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("exito", false, "mensaje", "La API Key no puede estar vacía."));
+        }
+        geminiAiService.actualizarApiKey(key);
+        return ResponseEntity.ok(Map.of(
+                "exito", true,
+                "mensaje", "Google Gemini API Key activada en tiempo real para esta sesión."
+        ));
     }
 }

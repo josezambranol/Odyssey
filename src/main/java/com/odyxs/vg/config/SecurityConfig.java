@@ -55,24 +55,25 @@ public class SecurityConfig {
                     "/css/**", "/js/**", "/img/**", "/uploads/**",
                     "/favicon.ico", "/favicon.svg", "/favicon*.png", "/apple-touch-icon.png"
                 ).permitAll()
-                // Rutas públicas de consulta
+                // Rutas públicas de exploración abierta, auth por código y recuperación
                 .requestMatchers(
                     "/", "/guia", "/eventos", "/eventos/**", "/actividades", "/transporte",
                     "/mapa", "/buscar", "/lugares/**", "/idioma",
-                    "/login", "/registro", "/chatbot/**", "/api/**",
+                    "/proponer-lugar", "/proponer-actividad", "/proponer-evento",
+                    "/login", "/registro", "/recuperar-password", "/auth/codigo/**",
+                    "/suscripciones/**", "/chatbot/**", "/api/**",
                     "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**"
                 ).permitAll()
                 // Rutas de administración
                 .requestMatchers("/admin/**").hasRole("ADMIN")
-                // Rutas de usuario autenticado
+                // El inicio de sesión solo es fundamental para dejar reseñas y panel personal de novedades
                 .requestMatchers(
-                    "/menu", "/proponer-lugar", "/proponer-actividad",
-                    "/proponer-evento", "/resenas/**"
+                    "/menu", "/resenas/**"
                 ).hasAnyRole("USUARIO", "ADMIN")
-                .anyRequest().authenticated()
+                .anyRequest().permitAll()
             )
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/chatbot/respuesta", "/api/**")
+                .ignoringRequestMatchers("/chatbot/respuesta", "/api/**", "/auth/codigo/**", "/suscripciones/**")
             )
             .formLogin(form -> form
                 .loginPage("/login")

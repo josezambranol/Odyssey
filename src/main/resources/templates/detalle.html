@@ -1,27 +1,41 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title th:text="${lugar.nombre + ' — ODYSSEY'}">Detalle — ODYSSEY</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
     <style>
-        .resena-card { background:#fff; border-radius:14px; padding:20px; margin-bottom:14px; box-shadow:0 2px 12px rgba(11,45,107,.07); border-left:3px solid var(--gold); }
-        .user-avatar { width:42px; height:42px; border-radius:50%; background:linear-gradient(135deg,var(--azul-mid),var(--azul)); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem; }
+        .resena-card { background:#fff; border-radius:16px; padding:22px; margin-bottom:14px; box-shadow:0 4px 18px rgba(11,45,107,.07); border-left:4px solid var(--gold); transition: transform .25s ease; }
+        .resena-card:hover { transform: translateY(-2px); }
+        .user-avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--azul-mid),var(--azul)); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem; }
         .star-filled { color:var(--gold); }
         .star-empty  { color:#ddd; }
-        .info-sidebar-card { background:#fff; border-radius:16px; padding:28px; box-shadow:0 4px 20px rgba(11,45,107,.1); position:sticky; top:90px; }
+        .info-sidebar-card { background:#fff; border-radius:20px; padding:26px; box-shadow:0 8px 28px rgba(11,45,107,.1); margin-bottom:24px; border:1px solid rgba(11,45,107,.06); }
         .info-row { display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:1px solid rgba(11,45,107,.06); }
         .info-row:last-child { border-bottom:none; }
-        .info-icon-sm { width:36px; height:36px; border-radius:10px; background:var(--gold-pale); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        .info-icon-sm i { color:var(--gold); font-size:.9rem; }
+        .info-icon-sm { width:38px; height:38px; border-radius:11px; background:var(--gold-pale); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .info-icon-sm i { color:var(--gold); font-size:.95rem; }
+        .alert-sub-card {
+            background: linear-gradient(135deg, #071630 0%, #0b2d6b 100%);
+            color: #fff;
+            border-radius: 20px;
+            padding: 24px;
+            border: 1px solid rgba(212, 166, 74, 0.4);
+            box-shadow: 0 14px 34px rgba(7, 22, 48, 0.22);
+        }
+        #miniMapaDetalle {
+            height: 220px;
+            width: 100%;
+            border-radius: 14px;
+            margin-top: 14px;
+            border: 1px solid rgba(11,45,107,.12);
+        }
     </style>
-    <!-- Favicon ODYSSEY -->
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
-    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
-    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
-    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
 </head>
 <body>
 <div th:replace="fragments :: topbar"></div>
@@ -33,18 +47,25 @@
     <div class="detalle-hero-caption">
         <nav aria-label="breadcrumb" class="mb-3">
             <ol class="breadcrumb mb-0" style="background:none; padding:0;">
-                <li class="breadcrumb-item"><a href="/menu" class="text-white-50 text-decoration-none">Inicio</a></li>
+                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">Inicio</a></li>
                 <li class="breadcrumb-item">
                     <a class="text-white-50 text-decoration-none"
                        th:href="@{/lugares(categoriaId=${lugar.categoria.id})}"
-                       th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Cat</a>
+                       th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</a>
                 </li>
                 <li class="breadcrumb-item active text-white" th:text="${lugar.nombre}">Lugar</li>
             </ol>
         </nav>
-        <span class="badge rounded-pill mb-2 px-3 py-2" style="background:var(--gold); font-size:.75rem;" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</span>
+        <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
+            <span class="badge rounded-pill px-3 py-2" style="background:var(--gold); font-size:.75rem;"
+                  th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</span>
+            <span class="badge rounded-pill px-3 py-2" style="background:rgba(255,255,255,0.18);backdrop-filter:blur(6px);font-size:.75rem;"
+                  th:if="${visitasLugar != null && visitasLugar > 0}">
+                <i class="fas fa-fire text-warning me-1"></i><span th:text="${visitasLugar}">1</span> visitas recientes
+            </span>
+        </div>
         <h1 data-db class="fw-bold mb-2" style="font-family:'Cormorant Garamond',serif; font-size:2.8rem; line-height:1.1;" th:text="${lugar.nombre}">Nombre</h1>
-        <p class="mb-0 fs-6" style="color:rgba(255,255,255,.85);">
+        <p class="mb-0 fs-6" style="color:rgba(255,255,255,.88);">
             <i class="fa fa-map-marker-alt me-2" style="color:var(--gold);"></i>
             <span data-db th:text="${lugar.ubicacion}">Ubicación</span>
             <span class="ms-3" th:if="${lugar.esOficial}">
@@ -62,26 +83,28 @@
 
             <!-- Descripción -->
             <div class="p-4 rounded-3 mb-4" style="background:var(--cream); border-left:4px solid var(--gold);">
-                <h4 class="fw-bold mb-3" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.5rem;">
+                <h4 class="fw-bold mb-3" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.55rem;">
                     <i class="fa fa-info-circle me-2" style="color:var(--gold);"></i><span th:text="#{detalle.sobre}">Sobre este lugar</span>
                 </h4>
-                <p data-db class="text-muted lh-lg mb-0" style="font-size:1.02rem;" th:text="${lugar.descripcion}">Descripción</p>
+                <p data-db class="text-muted lh-lg mb-0" style="font-size:1.03rem;" th:text="${lugar.descripcion}">Descripción</p>
             </div>
 
             <!-- Botones de acción -->
-            <div class="d-flex flex-wrap gap-2 mb-5" th:if="${lugar.urlMapa != null}">
-                <a th:href="${lugar.urlMapa}" target="_blank" class="btn btn-primary rounded-pill px-4 py-2">
-                    <i class="fa fa-map-marker-alt me-2"></i><span th:text="#{detalle.googlemaps}">Ver en Google Maps</span>
+            <div class="d-flex flex-wrap gap-2 mb-5">
+                <a th:if="${lugar.urlMapa != null}"
+                   th:href="${lugar.urlMapa.startsWith('http') ? lugar.urlMapa : 'https://www.google.com/maps/search/?api=1&query=' + lugar.urlMapa}"
+                   target="_blank" class="btn btn-primary rounded-pill px-4 py-2">
+                    <i class="fa fa-map-marker-alt me-2"></i><span th:text="#{detalle.googlemaps}">Cómo llegar en Google Maps</span>
                 </a>
                 <a href="/mapa" class="btn btn-outline-primary rounded-pill px-4 py-2">
-                    <i class="fa fa-globe me-2"></i>Mapa interactivo ODYSSEY
+                    <i class="fa fa-compass me-2"></i>Abrir en Mapa Cartográfico 2dsphere
                 </a>
             </div>
 
             <!-- RESEÑAS -->
             <div>
                 <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h4 class="fw-bold mb-0" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.5rem;">
+                    <h4 class="fw-bold mb-0" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.55rem;">
                         <i class="fa fa-comments me-2" style="color:var(--gold);"></i><span th:text="#{detalle.resenas}">Reseñas de viajeros</span>
                     </h4>
                     <span class="badge rounded-pill px-3 py-2" style="background:var(--azul); color:#fff; font-size:.82rem;"
@@ -138,8 +161,7 @@
                         <div class="mb-3">
                             <label class="form-label fw-semibold" style="color:var(--azul);" th:text="#{detalle.resena.comentario}">Comentario</label>
                             <textarea name="comentario" class="form-control" rows="3"
-                                      th:placeholder="#{detalle.resena.placeholder}"
-                                      placeholder="Comparte tu experiencia en este lugar..." required
+                                      placeholder="Comparte tu experiencia y consejos para otros viajeros..." required
                                       style="border-color:rgba(11,45,107,.2); border-radius:12px;"></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary rounded-pill px-5">
@@ -152,14 +174,14 @@
                 <div class="p-4 rounded-3 mt-4 text-center" style="background:var(--cream); border:1px dashed rgba(200,150,62,.4);"
                      th:if="${session.usuarioId == null}">
                     <div style="font-size:2rem; margin-bottom:8px;">⭐</div>
-                    <h5 class="fw-bold mb-2" style="color:var(--azul); font-family:'Cormorant Garamond',serif;">¿Has visitado este lugar?</h5>
-                    <p class="text-muted small mb-4">Inicia sesión o crea tu cuenta gratuita para calificar, compartir tu opinión y guardar tus sitios favoritos de Cartagena.</p>
+                    <h5 class="fw-bold mb-2" style="color:var(--azul); font-family:'Cormorant Garamond',serif;">¿Visitaste este lugar o deseas recibir sus novedades?</h5>
+                    <p class="text-muted small mb-4">En ODYSSEY toda la exploración es libre. Inicia sesión (con contraseña o código de 6 dígitos al correo) únicamente para publicar reseñas y suscribirte a alertas de tus sitios favoritos.</p>
                     <div class="d-flex justify-content-center gap-3 flex-wrap">
                         <a href="/login" class="btn btn-primary rounded-pill px-4 py-2 small">
-                            <i class="fa fa-sign-in-alt me-1"></i> Iniciar sesión
+                            <i class="fa fa-sign-in-alt me-1"></i> Iniciar sesión / Código OTP
                         </a>
                         <a href="/registro" class="btn btn-outline-primary rounded-pill px-4 py-2 small">
-                            <i class="fa fa-user-plus me-1"></i> Registrarme gratis
+                            <i class="fa fa-user-plus me-1"></i> Crear cuenta gratis
                         </a>
                     </div>
                 </div>
@@ -168,9 +190,45 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
+
+            <!-- WIDGET DE SUSCRIPCIÓN A NOVEDADES DEL SITIO -->
+            <div class="alert-sub-card mb-4">
+                <div class="d-flex align-items-center justify-content-between mb-2">
+                    <span class="badge rounded-pill px-3 py-1" style="background:rgba(212,166,74,0.22);color:#f3c86b;font-size:0.7rem;">
+                        <i class="fas fa-bell me-1"></i> ALERTAS POR CORREO
+                    </span>
+                    <span class="small text-white-50" id="subCountLabel" th:text="${totalSuscriptores + ' suscritos'}">0 suscritos</span>
+                </div>
+                <h5 class="fw-bold mb-2 text-white" style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;">
+                    Recibir novedades de este sitio
+                </h5>
+                <p class="small mb-3" style="color:rgba(255,255,255,0.78);line-height:1.5;">
+                    Entérate en tu Gmail o correo cuando haya eventos culturales, cambios de tarifa o festivales en <strong th:text="${lugar.nombre}">este lugar</strong>.
+                </p>
+                <div id="subAlertToast"></div>
+
+                <div th:if="${session.usuarioId != null}">
+                    <button type="button" id="btnToggleSub"
+                            th:data-id="${lugar.id}"
+                            th:data-active="${estaSuscrito}"
+                            onclick="alternarSuscripcionSitio(this)"
+                            class="btn w-100 rounded-pill py-2 fw-bold"
+                            th:style="${estaSuscrito ? 'background:#2ecc71;color:#fff;' : 'background:#d4a64a;color:#071630;'}">
+                        <i th:class="${estaSuscrito ? 'fas fa-check-circle me-2' : 'fas fa-bell me-2'}"></i>
+                        <span th:text="${estaSuscrito ? 'Suscrito a novedades (Activo)' : 'Activar alertas en mi correo'}">Activar alertas</span>
+                    </button>
+                </div>
+                <div th:if="${session.usuarioId == null}">
+                    <a href="/login" class="btn w-100 rounded-pill py-2 fw-bold" style="background:#d4a64a;color:#071630;">
+                        <i class="fas fa-envelope me-2"></i>Inicia sesión para recibir alertas
+                    </a>
+                </div>
+            </div>
+
+            <!-- Ficha de Información + Mini-Mapa Geoespacial -->
             <div class="info-sidebar-card">
-                <h5 class="fw-bold mb-4" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.2rem; border-bottom:2px solid var(--gold-pale); padding-bottom:12px;">
-                    📍 <span th:text="#{detalle.info.titulo}">Información del lugar</span>
+                <h5 class="fw-bold mb-3" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.25rem; border-bottom:2px solid var(--gold-pale); padding-bottom:12px;">
+                    📍 <span th:text="#{detalle.info.titulo}">Información y Ubicación</span>
                 </h5>
                 <div class="info-row">
                     <div class="info-icon-sm"><i class="fa fa-tag"></i></div>
@@ -187,6 +245,10 @@
                     <div><strong class="d-block small" style="color:var(--azul);" th:text="#{detalle.estado}">Estado</strong>
                         <span class="text-muted small" th:text="#{detalle.verificado.check}">Verificado por ODYSSEY ✓</span></div>
                 </div>
+
+                <!-- Mini-Mapa Interactivo del Lugar -->
+                <div id="miniMapaDetalle" th:data-coords="${lugar.urlMapa}" th:data-nombre="${lugar.nombre}"></div>
+            </div>
         </div>
 
     </div>
@@ -194,5 +256,53 @@
 
 <div th:replace="fragments :: footer-interno"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+// Inicializar Mini-Mapa en la ficha de detalle
+(function(){
+    const el = document.getElementById('miniMapaDetalle');
+    if (!el) return;
+    const raw = (el.dataset.coords || '10.4233,-75.5489').trim();
+    let lat = 10.4233, lng = -75.5489;
+    const parts = raw.split(',');
+    if (parts.length === 2 && !isNaN(parseFloat(parts[0])) && !isNaN(parseFloat(parts[1]))) {
+        lat = parseFloat(parts[0]);
+        lng = parseFloat(parts[1]);
+    }
+    const m = L.map('miniMapaDetalle').setView([lat, lng], 16);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png', {
+        attribution: '© CARTO', maxZoom: 19
+    }).addTo(m);
+    L.marker([lat, lng]).addTo(m).bindPopup(`<strong>${el.dataset.nombre || 'Cartagena'}</strong>`).openPopup();
+})();
+
+async function alternarSuscripcionSitio(btn) {
+    const lugarId = btn.dataset.id;
+    const toast = document.getElementById('subAlertToast');
+    btn.disabled = true;
+    try {
+        const res = await fetch('/suscripciones/lugar/' + lugarId, { method: 'POST' });
+        const data = await res.json();
+        btn.disabled = false;
+        if (data.requiereLogin) {
+            window.location.href = '/login';
+            return;
+        }
+        if (data.exito) {
+            const activo = data.suscrito;
+            btn.style.background = activo ? '#2ecc71' : '#d4a64a';
+            btn.style.color = activo ? '#fff' : '#071630';
+            btn.innerHTML = activo
+                ? '<i class="fas fa-check-circle me-2"></i><span>Suscrito a novedades (Activo)</span>'
+                : '<i class="fas fa-bell me-2"></i><span>Activar alertas en mi correo</span>';
+            document.getElementById('subCountLabel').textContent = (data.totalSuscriptores || 0) + ' suscritos';
+            toast.innerHTML = `<div class="alert alert-success py-2 small mb-2">${data.mensaje}</div>`;
+        }
+    } catch (e) {
+        btn.disabled = false;
+        toast.innerHTML = '<div class="alert alert-danger py-2 small mb-2">Error al actualizar tu suscripción.</div>';
+    }
+}
+</script>
 </body>
 </html>

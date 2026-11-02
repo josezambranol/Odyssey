@@ -15,6 +15,66 @@
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
     <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
     <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+    <style>
+        /* ── Animaciones Envolventes & Micro-interacciones ── */
+        .reveal-item {
+            opacity: 0;
+            transform: translateY(32px);
+            transition: opacity 0.75s cubic-bezier(0.16, 1, 0.3, 1), transform 0.75s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .reveal-item.is-visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .hero-mosaic figure {
+            transition: transform 0.55s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.55s ease;
+        }
+        .hero-mosaic figure:hover {
+            transform: translateY(-8px) scale(1.025);
+            box-shadow: 0 22px 48px rgba(0, 0, 0, 0.42);
+            z-index: 3;
+        }
+        .destination-card, .service-card, .hotel-card, .event-card {
+            transition: transform 0.38s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.38s ease !important;
+        }
+        .destination-card:hover, .service-card:hover, .hotel-card:hover, .event-card:hover {
+            transform: translateY(-8px) !important;
+            box-shadow: 0 22px 45px rgba(11, 45, 107, 0.16) !important;
+        }
+
+        /* Sección interactiva de Planificador IA en Vivo */
+        .itinerary-ai-showcase {
+            background: linear-gradient(135deg, #071630 0%, #0b2d6b 100%);
+            color: #fff;
+            border-radius: 28px;
+            padding: 42px 36px;
+            border: 1px solid rgba(212, 166, 74, 0.35);
+            box-shadow: 0 26px 64px rgba(7, 22, 48, 0.28);
+            position: relative;
+            overflow: hidden;
+        }
+        .itinerary-ai-showcase::before {
+            content: '';
+            position: absolute;
+            top: -120px; right: -120px;
+            width: 340px; height: 340px;
+            background: radial-gradient(circle, rgba(212,166,74,0.22), transparent 70%);
+            pointer-events: none;
+        }
+        .itin-day-card {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(212, 166, 74, 0.28);
+            border-radius: 18px;
+            padding: 20px;
+            height: 100%;
+            backdrop-filter: blur(8px);
+            animation: fadeInUp 0.45s ease forwards;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(14px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
 </head>
 <body class="odyssey-home">
 
@@ -34,7 +94,7 @@
                 <a href="/eventos" th:text="#{nav.eventos}">Eventos</a>
                 <a href="/actividades" th:text="#{nav.actividades}">Actividades</a>
                 <a href="/transporte" th:text="#{nav.transporte}">Transporte</a>
-                <a href="/mapa" th:text="#{nav.mapa}">Mapa</a>
+                <a href="/mapa" th:text="#{nav.mapa}">Mapa 2dsphere</a>
             </div>
             <th:block th:if="${session.usuarioId == null}"><a href="/login" class="home-nav-cta" th:text="#{nav.iniciarSesion}">Iniciar sesión</a></th:block>
             <th:block th:if="${session.usuarioId != null}"><a href="/menu" class="home-nav-cta"><i class="fas fa-compass me-2"></i><span th:text="#{nav.miPanel}">Mi panel</span></a></th:block>
@@ -47,12 +107,12 @@
         <div class="editorial-hero-backdrop"></div>
         <div class="container editorial-hero-grid">
             <div class="editorial-hero-copy">
-                <span class="eyebrow eyebrow-light"><i class="fas fa-certificate"></i> <span th:text="#{hero.slide1.badge}">Patrimonio UNESCO</span></span>
+                <span class="eyebrow eyebrow-light"><i class="fas fa-certificate"></i> <span th:text="#{hero.slide1.badge}">Patrimonio UNESCO 1984</span></span>
                 <h1 id="hero-title"><span>La Ciudad Heroica</span><span>donde el Caribe</span><span>abraza la</span><em>Historia</em></h1>
-                <p th:text="#{hero.slide1.sub}">Cartagena de Indias, una ciudad donde las murallas, el mar y la cultura cuentan historias inolvidables.</p>
+                <p th:text="#{hero.slide1.sub}">Explora libremente los 26 sitios emblemáticos, playas e islas de Cartagena. Sin registros obligatorios: tu cuenta solo es necesaria para dejar reseñas y recibir novedades de tus lugares favoritos.</p>
                 <div class="hero-actions">
-                    <a href="#destinos" class="button button-gold"><span th:text="#{hero.slide1.btn1}">Explorar ahora</span><i class="fas fa-arrow-down"></i></a>
-                    <a href="/guia" class="button button-glass"><i class="far fa-play-circle"></i><span th:text="#{hero.slide1.btn2}">Leer la guía</span></a>
+                    <a href="#destinos" class="button button-gold"><span th:text="#{hero.slide1.btn1}">Explorar destinos</span><i class="fas fa-arrow-down"></i></a>
+                    <a href="/mapa" class="button button-glass"><i class="fas fa-satellite-dish"></i><span>Radar Cerca de Mí</span></a>
                 </div>
             </div>
             <div class="hero-mosaic" aria-label="Postales de Cartagena">
@@ -65,103 +125,210 @@
         <div class="container hero-search-wrap">
             <form class="hero-search" action="/buscar" method="get" data-search-form>
                 <label class="search-category"><span>Explorar por</span><select name="categoriaId" aria-label="Categoría"><option value="">Todas las categorías</option><option th:each="cat : ${categorias}" th:value="${cat.id}" th:text="${#messages.msg('cat.' + cat.nombreClave)}">Categoría</option></select></label>
-                <label class="search-query"><span class="visually-hidden">Buscar en Odyssey</span><i class="fas fa-search"></i><input type="search" name="q" placeholder="¿Qué quieres descubrir en Cartagena?" autocomplete="off"></label>
+                <label class="search-query"><span class="visually-hidden">Buscar en Odyssey</span><i class="fas fa-search"></i><input type="search" name="q" placeholder="¿Qué quieres descubrir en Cartagena? (Ej: San Felipe, Barú, Celele...)" autocomplete="off"></label>
                 <button type="submit" class="button button-primary">Buscar</button>
             </form>
-            <div class="quick-searches"><span>Búsquedas rápidas</span><a href="/buscar?q=Torre%20del%20Reloj">Torre del Reloj</a><a href="/buscar?q=Islas%20del%20Rosario">Islas del Rosario</a><a href="/buscar?q=Caf%C3%A9%20del%20Mar">Café del Mar</a></div>
+            <div class="quick-searches"><span>Tendencias hoy:</span><a href="/buscar?q=Torre%20del%20Reloj">Torre del Reloj</a><a href="/buscar?q=Islas%20del%20Rosario">Islas del Rosario</a><a href="/buscar?q=Getseman%C3%AD">Getsemaní</a><a href="#planificador-ia" class="text-warning fw-bold"><i class="fas fa-magic me-1"></i>Crear Itinerario IA</a></div>
         </div>
     </section>
 
-    <section class="nautical-stats" aria-label="Cartagena en cifras"><div class="container stats-grid">
-        <article><i class="fas fa-landmark"></i><strong>492</strong><span>Años de historia</span></article>
+    <section class="nautical-stats reveal-item" aria-label="Cartagena en cifras"><div class="container stats-grid">
+        <article><i class="fas fa-landmark"></i><strong data-count="493">493</strong><span>Años de historia</span></article>
         <article><i class="fas fa-ruler-horizontal"></i><strong>11 km</strong><span>Murallas intactas</span></article>
-        <article><i class="fas fa-water"></i><strong>28+</strong><span>Islas y cayos</span></article>
-        <article><i class="fas fa-unlock-alt"></i><strong>100%</strong><span>Acceso libre</span></article>
+        <article><i class="fas fa-water"></i><strong data-count="28">28+</strong><span>Islas y cayos</span></article>
+        <article><i class="fas fa-unlock-alt"></i><strong>100%</strong><span>Exploración libre</span></article>
     </div></section>
 
-    <section class="home-section about-editorial"><div class="container about-editorial-grid">
-        <div class="about-visual"><div class="about-frame-new"><img src="/img/about-torre-reloj.jpg" alt="Arquitectura colonial de Cartagena"></div><div class="history-seal"><strong>490+</strong><span>años de historia</span></div><div class="photo-caption"><span>Centro histórico</span><strong>Patrimonio vivo del Caribe</strong></div></div>
-        <div class="about-copy"><span class="eyebrow" th:text="#{about.tag}">Sobre Cartagena</span><h2>La llave maestra para vivir Cartagena como un <em>habitante ilustre</em></h2><p th:text="#{about.p1}">Odyssey es tu guía para descubrir una ciudad extraordinaria.</p><p th:text="#{about.p2}">Historia, gastronomía, cultura y mar reunidos en una experiencia abierta.</p>
-            <div class="about-checks"><div><i class="fas fa-check"></i><span th:text="#{about.check1}">Lugares verificados</span></div><div><i class="fas fa-check"></i><span th:text="#{about.check2}">Hoteles seleccionados</span></div><div><i class="fas fa-check"></i><span th:text="#{about.check3}">Playas y sitios históricos</span></div><div><i class="fas fa-check"></i><span th:text="#{about.check4}">Mapa interactivo</span></div><div><i class="fas fa-check"></i><span th:text="#{about.check5}">Chatbot Odyssey 24/7</span></div><div><i class="fas fa-check"></i><span th:text="#{about.check6}">Eventos y festivales</span></div></div>
-            <a href="/guia" class="text-link">Conocer la historia de Cartagena <i class="fas fa-arrow-right"></i></a>
+    <section class="home-section about-editorial reveal-item"><div class="container about-editorial-grid">
+        <div class="about-visual"><div class="about-frame-new"><img src="/img/about-torre-reloj.jpg" alt="Arquitectura colonial de Cartagena"></div><div class="history-seal"><strong>493</strong><span>años de historia</span></div><div class="photo-caption"><span>Centro histórico</span><strong>Patrimonio vivo del Caribe</strong></div></div>
+        <div class="about-copy"><span class="eyebrow" th:text="#{about.tag}">Sobre Cartagena</span><h2>La llave maestra para vivir Cartagena como un <em>habitante ilustre</em></h2><p th:text="#{about.p1}">Odyssey reúne información oficial verificada, cartografía geoespacial y asistencia con inteligencia artificial.</p><p>Navega sin barreras por toda la plataforma. Inicia sesión con contraseña o código único al correo únicamente cuando desees calificar un sitio o suscribirte a sus novedades culturales.</p>
+            <div class="about-checks"><div><i class="fas fa-check"></i><span>26 Sitios georreferenciados</span></div><div><i class="fas fa-check"></i><span>Tarifas oficiales DATT y Transcaribe</span></div><div><i class="fas fa-check"></i><span>Alertas de sitios al correo</span></div><div><i class="fas fa-check"></i><span>Mapa con radar 2dsphere</span></div><div><i class="fas fa-check"></i><span>Concierge IA 24/7</span></div><div><i class="fas fa-check"></i><span>Acceso con Código OTP</span></div></div>
+            <a href="/guia" class="text-link">Conocer la guía maestra de Cartagena <i class="fas fa-arrow-right"></i></a>
         </div>
     </div></section>
 
-    <section class="home-section services-editorial"><div class="container">
-        <div class="section-heading centered"><span class="eyebrow" th:text="#{services.tag}">Servicios</span><h2>Ocho servicios diseñados para el <em>navegante moderno</em></h2><p th:text="#{services.sub}">Todo lo necesario para vivir Cartagena con información clara y confiable.</p></div>
+    <section class="home-section services-editorial reveal-item"><div class="container">
+        <div class="section-heading centered"><span class="eyebrow" th:text="#{services.tag}">Servicios</span><h2>Ocho módulos diseñados para el <em>navegante moderno</em></h2><p th:text="#{services.sub}">Todo lo necesario para vivir Cartagena con información clara y confiable.</p></div>
         <div class="services-grid">
             <a href="/lugares" class="service-card"><span>Catálogo 01</span><i class="fas fa-map-marked-alt"></i><h3 th:text="#{services.s1.title}">Guía de lugares</h3><p th:text="#{services.s1.desc}">Explora lugares.</p><b>Explorar <i class="fas fa-arrow-right"></i></b></a>
-            <a href="/lugares" class="service-card"><span>Catálogo 02</span><i class="fas fa-hotel"></i><h3 th:text="#{services.s2.title}">Hoteles</h3><p th:text="#{services.s2.desc}">Encuentra alojamiento.</p><b>Descubrir <i class="fas fa-arrow-right"></i></b></a>
+            <a href="/lugares?categoriaId=4" class="service-card"><span>Catálogo 02</span><i class="fas fa-hotel"></i><h3 th:text="#{services.s2.title}">Hoteles</h3><p th:text="#{services.s2.desc}">Encuentra alojamiento.</p><b>Descubrir <i class="fas fa-arrow-right"></i></b></a>
             <a href="/guia" class="service-card"><span>Catálogo 03</span><i class="fas fa-book-open"></i><h3 th:text="#{services.s3.title}">Guía completa</h3><p th:text="#{services.s3.desc}">Conoce la ciudad.</p><b>Leer guía <i class="fas fa-arrow-right"></i></b></a>
             <a href="/chatbot" class="service-card"><span>Catálogo 04</span><i class="fas fa-robot"></i><h3 th:text="#{services.s4.title}">Asistente Odyssey</h3><p th:text="#{services.s4.desc}">Pregunta en cualquier momento.</p><b>Conversar <i class="fas fa-arrow-right"></i></b></a>
             <a href="/eventos" class="service-card"><span>Catálogo 05</span><i class="fas fa-calendar-alt"></i><h3 th:text="#{services.s5.title}">Eventos</h3><p th:text="#{services.s5.desc}">Consulta la agenda.</p><b>Ver agenda <i class="fas fa-arrow-right"></i></b></a>
             <a href="/transporte" class="service-card"><span>Catálogo 06</span><i class="fas fa-bus-alt"></i><h3 th:text="#{services.s6.title}">Transporte</h3><p th:text="#{services.s6.desc}">Muévete por Cartagena.</p><b>Planear ruta <i class="fas fa-arrow-right"></i></b></a>
             <a href="/mapa" class="service-card"><span>Catálogo 07</span><i class="fas fa-map"></i><h3 th:text="#{services.s7.title}">Mapa interactivo</h3><p th:text="#{services.s7.desc}">Ubica cada experiencia.</p><b>Abrir mapa <i class="fas fa-arrow-right"></i></b></a>
-            <a href="/lugares" class="service-card"><span>Catálogo 08</span><i class="fas fa-star"></i><h3 th:text="#{services.s8.title}">Reseñas</h3><p th:text="#{services.s8.desc}">Lee experiencias reales.</p><b>Ver reseñas <i class="fas fa-arrow-right"></i></b></a>
+            <a href="/lugares" class="service-card"><span>Catálogo 08</span><i class="fas fa-bell"></i><h3>Alertas y Reseñas</h3><p>Recibe novedades de tus sitios favoritos en tu correo y comparte tu experiencia.</p><b>Suscribirme <i class="fas fa-arrow-right"></i></b></a>
         </div>
     </div></section>
 
-    <section class="home-section destinations-editorial" id="destinos"><div class="container">
-        <div class="section-heading split-heading"><div><span class="eyebrow" th:text="#{section.destinations.community}">Selección de la comunidad</span><h2>Destinos que definen el <em>Caribe</em></h2></div><a href="/lugares?categoriaId=0" class="text-link" th:text="#{section.verTodosLugares}">Ver todos los lugares</a></div>
-        <ul class="nav category-pills" role="tablist"><li><button class="active" data-bs-toggle="tab" data-bs-target="#places-all" type="button" th:text="#{section.filterAll}">Todos</button></li><li th:each="cat : ${categorias}"><button data-bs-toggle="tab" th:data-bs-target="${'#places-' + cat.id}" type="button" th:text="${#messages.msg('cat.' + cat.nombreClave)}">Categoría</button></li></ul>
+    <section class="home-section destinations-editorial reveal-item" id="destinos"><div class="container">
+        <div class="section-heading split-heading"><div><span class="eyebrow" th:text="#{section.destinations.community}">Catálogo Oficial Verificado</span><h2>Destinos que definen el <em>Caribe</em></h2></div><a href="/lugares?categoriaId=0" class="text-link" th:text="#{section.verTodosLugares}">Ver los 26 lugares</a></div>
+        <ul class="nav category-pills" role="tablist"><li><button class="active" data-bs-toggle="tab" data-bs-target="#places-all" type="button" th:text="#{section.filterAll}">Todos</button></li><li th:each="cat : ${categorias}"><button data-bs-toggle="tab" data-bs-target="${'#places-' + cat.id}" type="button" th:text="${#messages.msg('cat.' + cat.nombreClave)}">Categoría</button></li></ul>
         <div class="tab-content"><div id="places-all" class="tab-pane fade show active"><div class="destination-grid">
-            <a th:each="lugar, iterStat : ${lugares}" th:if="${iterStat.index < 6}" th:href="@{/lugares/{id}(id=${lugar.id})}" class="destination-card"><div class="destination-card-image"><img th:if="${lugar.imagenUrl != null}" th:src="${lugar.imagenUrl}" th:alt="${lugar.nombre}"><img th:unless="${lugar.imagenUrl != null}" src="/img/hero-murallas.jpg" alt="Cartagena de Indias"><span class="destination-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</span><span class="verified-badge" th:if="${lugar.esOficial}"><i class="fas fa-check-circle"></i> <span th:text="#{lugares.verificado}">Verificado</span></span></div><div class="destination-card-body"><h3 data-db th:text="${lugar.nombre}">Lugar</h3><p><i class="fas fa-map-marker-alt"></i><span data-db th:text="${lugar.ubicacion}">Ubicación</span></p><span th:text="#{lugares.verDetalles}">Ver detalles</span></div></a>
+            <a th:each="lugar, iterStat : ${lugares}" th:if="${iterStat.index < 6}" th:href="@{/lugares/{id}(id=${lugar.id})}" class="destination-card"><div class="destination-card-image"><img th:if="${lugar.imagenUrl != null}" th:src="${lugar.imagenUrl}" th:alt="${lugar.nombre}"><img th:unless="${lugar.imagenUrl != null}" src="/img/hero-murallas.jpg" alt="Cartagena de Indias"><span class="destination-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</span><span class="verified-badge" th:if="${lugar.esOficial}"><i class="fas fa-check-circle"></i> <span th:text="#{lugares.verificado}">Verificado</span></span></div><div class="destination-card-body"><h3 data-db th:text="${lugar.nombre}">Lugar</h3><p><i class="fas fa-map-marker-alt"></i><span data-db th:text="${lugar.ubicacion}">Ubicación</span></p><span>Ver detalles y activar alertas <i class="fas fa-arrow-right ms-1"></i></span></div></a>
         </div></div>
         <div th:each="cat : ${categorias}" th:id="${'places-' + cat.id}" class="tab-pane fade"><div class="destination-grid"><a th:each="lugar : ${lugares}" th:if="${lugar.categoria.id == cat.id}" th:href="@{/lugares/{id}(id=${lugar.id})}" class="destination-card"><div class="destination-card-image"><img th:src="${lugar.imagenEfectiva}" th:alt="${lugar.nombre}"><span class="destination-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</span></div><div class="destination-card-body"><h3 data-db th:text="${lugar.nombre}">Lugar</h3><p><i class="fas fa-map-marker-alt"></i><span data-db th:text="${lugar.ubicacion}">Ubicación</span></p><span th:text="#{lugares.verDetalles}">Ver detalles</span></div></a></div><div class="section-action"><a th:href="@{/lugares(categoriaId=${cat.id})}" class="button button-primary" th:text="${#messages.msg('section.viewAll') + ': ' + #messages.msg('cat.' + cat.nombreClave)}">Ver categoría</a></div></div>
         </div>
     </div></section>
 
-    <section class="home-section gastronomy-editorial"><div class="container">
+    <!-- NUEVO: GENERADOR INTERACTIVO DE ITINERARIOS IA EN TIEMPO REAL -->
+    <section class="home-section reveal-item" id="planificador-ia">
+        <div class="container">
+            <div class="itinerary-ai-showcase">
+                <div class="row align-items-center g-4">
+                    <div class="col-lg-5">
+                        <span class="badge rounded-pill px-3 py-1 mb-2" style="background:rgba(212,166,74,0.22);color:#f3c86b;font-weight:700;font-size:.75rem;">
+                            <i class="fas fa-magic me-1"></i> MOTOR DE ITINERARIOS NOSQL + IA
+                        </span>
+                        <h2 class="fw-bold text-white mb-2" style="font-family:'Playfair Display',serif;font-size:2.1rem;">
+                            Diseña tu ruta ideal por <em style="color:#d4a64a;">Cartagena</em> en segundos
+                        </h2>
+                        <p class="small mb-4" style="color:rgba(255,255,255,0.8);line-height:1.6;">
+                            Selecciona tus días de estancia, estilo de viaje y presupuesto. Nuestro motor construirá y almacenará en MongoDB un plan detallado con costos estimados en COP.
+                        </p>
+                        <div class="row g-2 mb-3">
+                            <div class="col-4">
+                                <label class="small text-warning fw-bold mb-1">Duración</label>
+                                <select id="itinDias" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                    <option value="1">1 Día</option>
+                                    <option value="2">2 Días</option>
+                                    <option value="3" selected>3 Días</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label class="small text-warning fw-bold mb-1">Estilo</label>
+                                <select id="itinEstilo" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                    <option value="CULTURAL">Cultural &amp; Historia</option>
+                                    <option value="ROMANTICO">Romántico</option>
+                                    <option value="AVENTURA">Playas &amp; Islas</option>
+                                    <option value="GASTRONOMICO">Gastronómico</option>
+                                </select>
+                            </div>
+                            <div class="col-4">
+                                <label class="small text-warning fw-bold mb-1">Presupuesto</label>
+                                <select id="itinPresupuesto" class="form-select form-select-sm bg-dark text-white border-secondary">
+                                    <option value="ECONOMICO">Económico</option>
+                                    <option value="MEDIO" selected>Confort Medio</option>
+                                    <option value="PREMIUM">Premium Lujo</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="button" id="btnGenerarItinHome" onclick="generarItinerarioEnVivo()" class="btn rounded-pill px-4 py-2 fw-bold w-100" style="background:#d4a64a;color:#071630;">
+                            <i class="fas fa-compass me-2"></i>Generar Mi Itinerario Personalizado
+                        </button>
+                    </div>
+                    <div class="col-lg-7">
+                        <div id="itinResultadoGrid" class="row g-3">
+                            <div class="col-12">
+                                <div class="itin-day-card text-center py-4">
+                                    <i class="fas fa-map-signs fa-2x mb-2" style="color:#d4a64a;"></i>
+                                    <h5 class="fw-bold text-white mb-1">Tu plan día por día aparecerá aquí</h5>
+                                    <p class="small text-white-50 mb-0">Haz clic en "Generar Mi Itinerario Personalizado" para obtener horarios de mañana, tarde y noche con costos reales en Cartagena.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="home-section gastronomy-editorial reveal-item"><div class="container">
         <div class="section-heading centered"><span class="eyebrow" th:text="#{gastro.tag}">Gastronomía</span><h2>Sabores del Caribe y <em>cocina de fogón</em></h2><p th:text="#{gastro.sub}">La cocina cartagenera cuenta historias.</p></div>
         <div class="gastronomy-grid">
             <article style="--food-image:url('/img/gastro-arepa.jpg')"><span>Frito tradicional</span><h3 th:text="#{gastro.g1.name}">Arepa de huevo</h3><p th:text="#{gastro.g1.desc}">Sabor cartagenero.</p></article><article style="--food-image:url('/img/gastro-arroz-mariscos.jpg')"><span>Cocina marina</span><h3 th:text="#{gastro.g2.name}">Arroz con mariscos</h3><p th:text="#{gastro.g2.desc}">Tradición frente al mar.</p></article><article style="--food-image:url('/img/gastro-jugos.jpg')"><span>Frutas tropicales</span><h3 th:text="#{gastro.g3.name}">Jugos tropicales</h3><p th:text="#{gastro.g3.desc}">Frescura del Caribe.</p></article><article style="--food-image:url('/img/gastro-carimaniola.jpg')"><span>Cocina de fogón</span><h3 th:text="#{gastro.g4.name}">Carimañola</h3><p th:text="#{gastro.g4.desc}">Herencia costeña.</p></article><article style="--food-image:url('/img/gastro-ceviche.jpg')"><span>Fresco y local</span><h3 th:text="#{gastro.g5.name}">Ceviche cartagenero</h3><p th:text="#{gastro.g5.desc}">Mar en cada bocado.</p></article><article style="--food-image:url('/img/gastro-ron.jpg')"><span>Degustación</span><h3 th:text="#{gastro.g6.name}">Ron y chocolate</h3><p th:text="#{gastro.g6.desc}">Notas del Caribe.</p></article>
-        </div><div class="section-action"><a href="/actividades?cat=GASTRONOMIA" class="button button-primary" th:text="#{gastro.cta.btn}">Ver experiencias gastronómicas</a></div>
+        </div><div class="section-action"><a href="/actividades?categoria=GASTRONOMIA" class="button button-primary" th:text="#{gastro.cta.btn}">Ver experiencias gastronómicas</a></div>
     </div></section>
 
-    <section class="home-section seasons-editorial"><div class="container">
+    <section class="home-section seasons-editorial reveal-item"><div class="container">
         <div class="section-heading centered"><span class="eyebrow" th:text="#{clima.tag}">Clima</span><h2>Planifica según las <em>brisas del Caribe</em></h2><p th:text="#{clima.sub}">Cartagena disfruta un clima tropical durante todo el año.</p></div>
         <div class="seasons-grid"><article><i class="fas fa-sun"></i><span>Diciembre — abril</span><h3 th:text="#{clima.q1.title}">Temporada seca</h3><strong>29°C · 74%</strong><p th:text="#{clima.q1.desc}">Días soleados.</p></article><article><i class="fas fa-cloud-sun"></i><span>Mayo — junio</span><h3 th:text="#{clima.q2.title}">Inicio de lluvias</h3><strong>30°C · 79%</strong><p th:text="#{clima.q2.desc}">Lluvias breves.</p></article><article><i class="fas fa-cloud-rain"></i><span>Agosto — octubre</span><h3 th:text="#{clima.q3.title}">Temporada de lluvias</h3><strong>28°C · 84%</strong><p th:text="#{clima.q3.desc}">Ambiente tropical.</p></article><article class="season-highlight"><i class="fas fa-drum"></i><span>Noviembre</span><h3 th:text="#{clima.q4.title}">Fiestas y eventos</h3><strong>29°C · 80%</strong><p th:text="#{clima.q4.desc}">La ciudad celebra.</p></article></div>
     </div></section>
 
-    <section class="home-section hotels-editorial"><div class="container">
+    <section class="home-section hotels-editorial reveal-item"><div class="container">
         <div class="section-heading split-heading"><div><span class="eyebrow" th:text="#{hotels.tag}">Alojamiento</span><h2>Hoteles de leyenda y <em>claustros virreinales</em></h2></div><a href="/lugares?categoriaId=4" class="text-link" th:text="#{hotels.verTodos}">Ver hoteles</a></div>
-        <div class="hotel-grid"><article class="hotel-card"><img src="/img/hotel-sofitel.jpg" alt="Sofitel Legend Santa Clara"><div><span>Centro histórico</span><h3 th:text="#{hotels.h1.name}">Sofitel Legend Santa Clara</h3><p th:text="#{hotels.h1.desc}">Convento histórico convertido en hotel.</p><a href="/buscar?q=Sofitel%20Legend%20Santa%20Clara">Consultar <i class="fas fa-arrow-right"></i></a></div></article><article class="hotel-card"><img src="/img/hotel-charleston.jpg" alt="Charleston Santa Teresa"><div><span>Plaza Santa Teresa</span><h3 th:text="#{hotels.h2.name}">Charleston Santa Teresa</h3><p th:text="#{hotels.h2.desc}">Hotel boutique colonial.</p><a href="/buscar?q=Charleston%20Santa%20Teresa">Consultar <i class="fas fa-arrow-right"></i></a></div></article><article class="hotel-card"><img src="/img/hotel-bastion.jpg" alt="Bastión Luxury Hotel"><div><span>Ciudad amurallada</span><h3 th:text="#{hotels.h3.name}">Bastión Luxury Hotel</h3><p th:text="#{hotels.h3.desc}">Arquitectura histórica y comodidad contemporánea.</p><a href="/buscar?q=Basti%C3%B3n%20Luxury%20Hotel">Consultar <i class="fas fa-arrow-right"></i></a></div></article></div>
+        <div class="hotel-grid"><article class="hotel-card"><img src="/img/hotel-sofitel.jpg" alt="Sofitel Legend Santa Clara"><div><span>Barrio San Diego</span><h3 th:text="#{hotels.h1.name}">Sofitel Legend Santa Clara</h3><p th:text="#{hotels.h1.desc}">Convento histórico convertido en hotel.</p><a href="/lugares/24">Ver ficha y alertas <i class="fas fa-arrow-right"></i></a></div></article><article class="hotel-card"><img src="/img/hotel-charleston.jpg" alt="Charleston Santa Teresa"><div><span>Plaza Santa Teresa</span><h3 th:text="#{hotels.h2.name}">Charleston Santa Teresa</h3><p th:text="#{hotels.h2.desc}">Hotel boutique colonial.</p><a href="/lugares/25">Ver ficha y alertas <i class="fas fa-arrow-right"></i></a></div></article><article class="hotel-card"><img src="/img/hotel-bastion.jpg" alt="Bastión Luxury Hotel"><div><span>Ciudad amurallada</span><h3 th:text="#{hotels.h3.name}">Bastión Luxury Hotel</h3><p th:text="#{hotels.h3.desc}">Arquitectura histórica y comodidad contemporánea.</p><a href="/lugares/26">Ver ficha y alertas <i class="fas fa-arrow-right"></i></a></div></article></div>
     </div></section>
 
-    <section class="home-section events-editorial"><div class="container">
+    <section class="home-section events-editorial reveal-item"><div class="container">
         <div class="section-heading split-heading"><div><span class="eyebrow" th:text="#{events.tag}">Agenda</span><h2 th:text="#{events.title}">Próximos eventos</h2></div><a href="/eventos" class="text-link" th:text="#{events.cta.btn}">Ver todos los eventos</a></div>
         <div class="event-grid" th:unless="${#lists.isEmpty(eventos)}"><a th:each="ev, iter : ${eventos}" th:if="${iter.index < 3}" href="/eventos" class="event-card"><img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/pf-eventos.jpg'}" th:alt="${ev.nombre}"><div><time th:datetime="${ev.fecha}" th:text="${#temporals.format(ev.fecha,'dd MMM yyyy')}">Fecha</time><span data-db th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}">Cartagena</span><h3 data-db th:text="${ev.nombre}">Evento</h3><p data-db th:text="${#strings.abbreviate(ev.descripcion,130)}">Descripción</p></div></a></div>
         <div class="empty-editorial" th:if="${#lists.isEmpty(eventos)}"><i class="far fa-calendar-check"></i><p>No hay próximos eventos publicados. Consulta la cartelera completa.</p><a href="/eventos" class="button button-primary">Abrir cartelera</a></div>
     </div></section>
 
-    <section class="home-section map-editorial"><div class="container map-panel"><div class="map-copy"><span class="eyebrow eyebrow-light">Exploración georreferenciada</span><h2>Cartografía viva de baluartes y playas</h2><p>Ubica sitios históricos, playas, hoteles y experiencias para construir tu propia ruta por Cartagena.</p><ul><li><i class="fas fa-walking"></i> Distancias y puntos de interés</li><li><i class="fas fa-ship"></i> Accesos a playas e islas</li></ul><a href="/mapa" class="button button-gold"><i class="fas fa-map-marked-alt"></i> Explorar mapa completo</a></div><a href="/mapa" class="map-preview" aria-label="Abrir mapa interactivo"><img src="/img/pf-mapa.jpg" alt="Vista del mapa de Cartagena"><span><small>Vista destacada</small><strong>Centro histórico y bahía</strong></span></a></div></section>
+    <section class="home-section map-editorial reveal-item"><div class="container map-panel"><div class="map-copy"><span class="eyebrow eyebrow-light">Exploración georreferenciada 2dsphere</span><h2>Cartografía viva de baluartes, islas y playas</h2><p>Explora el nuevo Centro Cartográfico con radar de proximidad en tiempo real, selector de capas (Editorial, Nocturno, Satélite) y audioguía integrada.</p><ul><li><i class="fas fa-satellite-dish"></i> Radar MongoDB 2dsphere de distancias exactas</li><li><i class="fas fa-volume-up"></i> Audioguía interactiva en cada punto</li></ul><a href="/mapa" class="button button-gold"><i class="fas fa-map-marked-alt"></i> Abrir Centro Cartográfico</a></div><a href="/mapa" class="map-preview" aria-label="Abrir mapa interactivo"><img src="/img/pf-mapa.jpg" alt="Vista del mapa de Cartagena"><span><small>Radar Activo</small><strong>26 Puntos Georreferenciados</strong></span></a></div></section>
 
-    <section class="home-section testimonials-editorial"><div class="container">
+    <section class="home-section testimonials-editorial reveal-item"><div class="container">
         <div class="section-heading centered"><span class="eyebrow" th:text="#{test.tag}">Viajeros</span><h2 th:text="#{test.title}">La voz de quienes han vivido la magia</h2></div>
         <div class="testimonial-grid"><article><div class="stars">★★★★★</div><blockquote th:text="#{test.t1.quote}">Una experiencia inolvidable.</blockquote><footer><img src="/img/resena-usuario-carlos.jpg" alt="Viajero"><div><strong th:text="#{test.t1.name}">Carlos Mendoza</strong><span>Colombia</span></div></footer></article><article><div class="stars">★★★★★</div><blockquote th:text="#{test.t2.quote}">La guía nos ayudó a descubrir Cartagena.</blockquote><footer><img src="/img/resena-usuario-maria.jpg" alt="Viajera"><div><strong th:text="#{test.t2.name}">María Fernández</strong><span>España</span></div></footer></article><article><div class="stars">★★★★★</div><blockquote th:text="#{test.t3.quote}">Información clara y lugares maravillosos.</blockquote><footer><img src="/img/resena-usuario-james.jpg" alt="Viajero"><div><strong th:text="#{test.t3.name}">James Rodriguez</strong><span>Estados Unidos</span></div></footer></article></div>
     </div></section>
 
-    <section class="ai-banner"><div class="container"><div class="ai-symbol"><i class="fas fa-compass"></i></div><span class="eyebrow eyebrow-light" th:text="#{cta.tag}">Asistente Odyssey</span><h2 th:text="#{cta.title}">¿Dudas con playas, restaurantes o traslados?</h2><p th:text="#{cta.sub}">Conversa con Odyssey y prepara tu visita.</p><div><a href="#" onclick="toggleChat();return false;" class="button button-gold"><i class="fas fa-comment-dots"></i><span th:text="#{cta.btn}">Hablar con Odyssey</span></a><a href="#destinos" class="button button-glass">Explorar más destinos</a></div></div></section>
+    <section class="ai-banner reveal-item"><div class="container"><div class="ai-symbol"><i class="fas fa-compass"></i></div><span class="eyebrow eyebrow-light" th:text="#{cta.tag}">Asistente Odyssey</span><h2 th:text="#{cta.title}">¿Dudas con playas, restaurantes o traslados?</h2><p th:text="#{cta.sub}">Conversa con Odyssey y prepara tu visita.</p><div><a href="#" onclick="toggleChat();return false;" class="button button-gold"><i class="fas fa-comment-dots"></i><span th:text="#{cta.btn}">Hablar con Odyssey</span></a><a href="/chatbot" class="button button-glass">Abrir Consola Completa IA</a></div></div></section>
 </main>
 
 <div th:replace="fragments :: footer-interno"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
+    // Búsqueda por categoría
     document.querySelector('[data-search-form]').addEventListener('submit', function (event) {
         var query = this.querySelector('[name="q"]').value.trim();
         var category = this.querySelector('[name="categoriaId"]').value;
         if (!query && category) { event.preventDefault(); window.location.href = '/lugares?categoriaId=' + encodeURIComponent(category); }
     });
-    const backToTop = document.querySelector('.back-to-top');
-    if (backToTop) {
-        const updateBackToTop = () => { backToTop.style.display = window.scrollY > 320 ? 'flex' : 'none'; };
-        updateBackToTop();
-        window.addEventListener('scroll', updateBackToTop, { passive: true });
-        backToTop.addEventListener('click', function (event) {
-            event.preventDefault();
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // IntersectionObserver para animaciones envolventes al hacer scroll
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('is-visible');
+            }
         });
+    }, { threshold: 0.12 });
+
+    document.querySelectorAll('.reveal-item').forEach(el => observer.observe(el));
+
+    // Generador de Itinerarios en vivo desde el Home
+    async function generarItinerarioEnVivo() {
+        const dias = parseInt(document.getElementById('itinDias').value || '3', 10);
+        const estilo = document.getElementById('itinEstilo').value;
+        const presupuesto = document.getElementById('itinPresupuesto').value;
+        const btn = document.getElementById('btnGenerarItinHome');
+        const grid = document.getElementById('itinResultadoGrid');
+
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Diseñando ruta en MongoDB...';
+
+        try {
+            const res = await fetch('/api/v1/itinerarios/generar', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json; charset=utf-8' },
+                body: JSON.stringify({ dias: dias, estiloViaje: estilo, presupuesto: presupuesto })
+            });
+            const json = await res.json();
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-compass me-2"></i>Generar Mi Itinerario Personalizado';
+
+            if (json.success && json.data && Array.isArray(json.data.planDias)) {
+                grid.innerHTML = json.data.planDias.map(d => `
+                    <div class="col-md-${json.data.planDias.length === 1 ? '12' : '6'}">
+                        <div class="itin-day-card">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-warning text-dark fw-bold">DÍA ${d.numeroDia}</span>
+                                <span class="small text-warning fw-semibold">${d.costoAproximadoCop}</span>
+                            </div>
+                            <h6 class="fw-bold text-white mb-2" style="font-family:'Playfair Display',serif;">${d.tituloDia}</h6>
+                            <p class="small mb-1" style="color:rgba(255,255,255,0.82);font-size:0.77rem;"><strong>☀️ Mañana:</strong> ${d.manana}</p>
+                            <p class="small mb-1" style="color:rgba(255,255,255,0.82);font-size:0.77rem;"><strong>🌤️ Tarde:</strong> ${d.tarde}</p>
+                            <p class="small mb-0" style="color:rgba(255,255,255,0.82);font-size:0.77rem;"><strong>🌙 Noche:</strong> ${d.noche}</p>
+                        </div>
+                    </div>
+                `).join('');
+            }
+        } catch (e) {
+            btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-compass me-2"></i>Generar Mi Itinerario Personalizado';
+        }
     }
 </script>
 </body>
