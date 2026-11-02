@@ -163,7 +163,12 @@
 
     <section class="home-section destinations-editorial reveal-item" id="destinos"><div class="container">
         <div class="section-heading split-heading"><div><span class="eyebrow" th:text="#{section.destinations.community}">Catálogo Oficial Verificado</span><h2>Destinos que definen el <em>Caribe</em></h2></div><a href="/lugares?categoriaId=0" class="text-link" th:text="#{section.verTodosLugares}">Ver los 26 lugares</a></div>
-        <ul class="nav category-pills" role="tablist"><li><button class="active" data-bs-toggle="tab" data-bs-target="#places-all" type="button" th:text="#{section.filterAll}">Todos</button></li><li th:each="cat : ${categorias}"><button data-bs-toggle="tab" data-bs-target="${'#places-' + cat.id}" type="button" th:text="${#messages.msg('cat.' + cat.nombreClave)}">Categoría</button></li></ul>
+        <ul class="nav category-pills" role="tablist">
+            <li><button class="active" data-bs-toggle="tab" data-bs-target="#places-all" type="button" th:text="#{section.filterAll}">Todos</button></li>
+            <li th:each="cat : ${categorias}">
+                <button data-bs-toggle="tab" th:data-bs-target="${'#places-' + cat.id}" type="button" th:text="${#messages.msg('cat.' + cat.nombreClave)}">Categoría</button>
+            </li>
+        </ul>
         <div class="tab-content"><div id="places-all" class="tab-pane fade show active"><div class="destination-grid">
             <a th:each="lugar, iterStat : ${lugares}" th:if="${iterStat.index < 6}" th:href="@{/lugares/{id}(id=${lugar.id})}" class="destination-card"><div class="destination-card-image"><img th:if="${lugar.imagenUrl != null}" th:src="${lugar.imagenUrl}" th:alt="${lugar.nombre}"><img th:unless="${lugar.imagenUrl != null}" src="/img/hero-murallas.jpg" alt="Cartagena de Indias"><span class="destination-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</span><span class="verified-badge" th:if="${lugar.esOficial}"><i class="fas fa-check-circle"></i> <span th:text="#{lugares.verificado}">Verificado</span></span></div><div class="destination-card-body"><h3 data-db th:text="${lugar.nombre}">Lugar</h3><p><i class="fas fa-map-marker-alt"></i><span data-db th:text="${lugar.ubicacion}">Ubicación</span></p><span>Ver detalles y activar alertas <i class="fas fa-arrow-right ms-1"></i></span></div></a>
         </div></div>

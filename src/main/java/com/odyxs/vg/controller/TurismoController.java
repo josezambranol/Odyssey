@@ -63,13 +63,17 @@ public class TurismoController {
     // ── Actividades (Web) ─────────────────────────────────────────
 
     @GetMapping("/actividades")
-    public String actividades(@RequestParam(required = false) String categoria, Model model) {
+    public String actividades(@RequestParam(required = false, name = "cat") String cat,
+                              @RequestParam(required = false, name = "categoria") String categoria,
+                              Model model) {
+        String filtro = (cat != null && !cat.isBlank()) ? cat : categoria;
         List<Actividad> lista;
-        if (categoria != null && !categoria.isBlank()) {
+        if (filtro != null && !filtro.isBlank()) {
             try {
-                Actividad.CategoriaActividad cat = Actividad.CategoriaActividad.valueOf(categoria.toUpperCase());
-                lista = actividadRepo.findByCategoriaAndEstado(cat, Actividad.Estado.APROBADO);
-                model.addAttribute("categoriaSeleccionada", cat.name());
+                Actividad.CategoriaActividad catEnum = Actividad.CategoriaActividad.valueOf(filtro.trim().toUpperCase());
+                lista = actividadRepo.findByCategoriaAndEstado(catEnum, Actividad.Estado.APROBADO);
+                model.addAttribute("catActiva", catEnum.name());
+                model.addAttribute("categoriaSeleccionada", catEnum.name());
             } catch (IllegalArgumentException e) {
                 lista = actividadRepo.findByEstado(Actividad.Estado.APROBADO);
             }

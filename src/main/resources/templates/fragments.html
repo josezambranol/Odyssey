@@ -33,9 +33,11 @@
             <div class="d-inline-flex align-items-center" style="height:44px; gap:10px;">
                 <div class="lang-switcher">
                     <a th:href="@{/idioma(lang='es')}" class="lang-btn"
+                       onclick="document.cookie='googtrans=/es/es;path=/;'; document.cookie='googtrans=/es/es;path=/;domain='+window.location.hostname;"
                        th:classappend="${#locale.language == 'es'} ? ' lang-active' : ''">🇨🇴 ES</a>
                     <span class="lang-sep">|</span>
                     <a th:href="@{/idioma(lang='en')}" class="lang-btn"
+                       onclick="document.cookie='googtrans=/es/en;path=/;'; document.cookie='googtrans=/es/en;path=/;domain='+window.location.hostname;"
                        th:classappend="${#locale.language == 'en'} ? ' lang-active' : ''">🇺🇸 EN</a>
                 </div>
             </div>
@@ -123,8 +125,10 @@
             <!-- Móvil: selector idioma dentro del menú -->
             <div class="d-lg-none px-2 py-2 d-flex gap-2">
                 <a th:href="@{/idioma(lang='es')}" class="lang-btn-mobile"
+                   onclick="document.cookie='googtrans=/es/es;path=/;'; document.cookie='googtrans=/es/es;path=/;domain='+window.location.hostname;"
                    th:classappend="${#locale.language == 'es'} ? ' lang-active' : ''">🇨🇴 ES</a>
                 <a th:href="@{/idioma(lang='en')}" class="lang-btn-mobile"
+                   onclick="document.cookie='googtrans=/es/en;path=/;'; document.cookie='googtrans=/es/en;path=/;domain='+window.location.hostname;"
                    th:classappend="${#locale.language == 'en'} ? ' lang-active' : ''">🇺🇸 EN</a>
             </div>
             <th:block th:if="${session.usuarioId != null}">
@@ -449,51 +453,33 @@
         }
     </script>
 
-    <!-- ── Traducción automática BD → EN (activa cuando idioma=en) ── -->
+    <!-- ── Traductor Global de Todo el Sitio (Google Translate Integrado) ── -->
+    <div id="google_translate_element" style="display:none;"></div>
+    <script type="text/javascript">
+        function googleTranslateElementInit() {
+            new google.translate.TranslateElement({
+                pageLanguage: 'es',
+                includedLanguages: 'en,es',
+                autoDisplay: false
+            }, 'google_translate_element');
+        }
+    </script>
+    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
+    <style>
+        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon, .goog-te-gadget-simple, .goog-tooltip, .goog-te-balloon-frame {
+            display: none !important;
+        }
+        body { top: 0px !important; }
+        .goog-text-highlight { background: none !important; box-shadow: none !important; }
+    </style>
     <div th:if="${#locale.language == 'en'}">
     <script>
-    (function(){
-        var cache = {};
-
-        function translateNode(node) {
-            var children = node.childNodes, hasEl = false;
-            for (var i = 0; i < children.length; i++) {
-                if (children[i].nodeType === 1) { hasEl = true; break; }
+        // Disparar traducción si aún no se ha ejecutado
+        (function() {
+            if (!document.cookie.includes('googtrans=/es/en')) {
+                document.cookie = "googtrans=/es/en;path=/;";
             }
-            var txt = node.textContent.trim();
-            if (!hasEl && txt.length > 1 && !/^\d/.test(txt)) {
-                if (cache[txt]) { node.textContent = cache[txt]; return; }
-                fetch('https://api.mymemory.translated.net/get?q=' + encodeURIComponent(txt) +
-                      '&langpair=es|en&de=odyxsvirtualguide@gmail.com')
-                .then(function(r){ return r.json(); })
-                .then(function(d){
-                    if (d.responseStatus === 200) {
-                        cache[txt] = d.responseData.translatedText;
-                        node.textContent = d.responseData.translatedText;
-                    }
-                })
-                .catch(function(){});
-            }
-        }
-
-        function run() {
-            var targets = document.querySelectorAll('[data-db], .lct-badge');
-            var queue = Array.from(targets).filter(function(el) {
-                if (el.closest('.notranslate, nav, .topbar-odyssey, .footer-interno, .lang-switcher, [translate="no"]')) return false;
-                return el.textContent.trim().length > 1;
-            });
-            function batch(i) {
-                if (i >= queue.length) return;
-                queue.slice(i, i + 5).forEach(translateNode);
-                setTimeout(function(){ batch(i + 5); }, 600);
-            }
-            batch(0);
-        }
-
-        document.readyState === 'loading'
-            ? document.addEventListener('DOMContentLoaded', run)
-            : run();
-    })();
+        })();
     </script>
     </div>
 </div>
