@@ -170,7 +170,20 @@
             </li>
         </ul>
         <div class="tab-content"><div id="places-all" class="tab-pane fade show active"><div class="destination-grid">
-            <a th:each="lugar, iterStat : ${lugares}" th:if="${iterStat.index < 6}" th:href="@{/lugares/{id}(id=${lugar.id})}" class="destination-card"><div class="destination-card-image"><img th:if="${lugar.imagenUrl != null}" th:src="${lugar.imagenUrl}" th:alt="${lugar.nombre}"><img th:unless="${lugar.imagenUrl != null}" src="/img/hero-murallas.jpg" alt="Cartagena de Indias"><span class="destination-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</span><span class="verified-badge" th:if="${lugar.esOficial}"><i class="fas fa-check-circle"></i> <span th:text="#{lugares.verificado}">Verificado</span></span></div><div class="destination-card-body"><h3 data-db th:text="${lugar.nombre}">Lugar</h3><p><i class="fas fa-map-marker-alt"></i><span data-db th:text="${lugar.ubicacion}">Ubicación</span></p><span>Ver detalles y activar alertas <i class="fas fa-arrow-right ms-1"></i></span></div></a>
+            <a th:each="lugar, iterStat : ${lugares}" th:if="${iterStat.index < 6}" th:href="@{/lugares/{id}(id=${lugar.id})}" class="destination-card">
+                <div class="destination-card-image">
+                    <img th:src="${lugar.imagenEfectiva}" onerror="this.src='/img/hero-murallas.jpg'" th:alt="${lugar.nombre}">
+                    <span class="destination-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</span>
+                    <span class="verified-badge" th:if="${lugar.esOficial}">
+                        <i class="fas fa-check-circle"></i> <span th:text="#{lugares.verificado}">Verificado</span>
+                    </span>
+                </div>
+                <div class="destination-card-body">
+                    <h3 data-db th:text="${lugar.nombre}">Lugar</h3>
+                    <p><i class="fas fa-map-marker-alt"></i><span data-db th:text="${lugar.ubicacion}">Ubicación</span></p>
+                    <span>Ver detalles y activar alertas <i class="fas fa-arrow-right ms-1"></i></span>
+                </div>
+            </a>
         </div></div>
         <div th:each="cat : ${categorias}" th:id="${'places-' + cat.id}" class="tab-pane fade"><div class="destination-grid"><a th:each="lugar : ${lugares}" th:if="${lugar.categoria.id == cat.id}" th:href="@{/lugares/{id}(id=${lugar.id})}" class="destination-card"><div class="destination-card-image"><img th:src="${lugar.imagenEfectiva}" th:alt="${lugar.nombre}"><span class="destination-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</span></div><div class="destination-card-body"><h3 data-db th:text="${lugar.nombre}">Lugar</h3><p><i class="fas fa-map-marker-alt"></i><span data-db th:text="${lugar.ubicacion}">Ubicación</span></p><span th:text="#{lugares.verDetalles}">Ver detalles</span></div></a></div><div class="section-action"><a th:href="@{/lugares(categoriaId=${cat.id})}" class="button button-primary" th:text="${#messages.msg('section.viewAll') + ': ' + #messages.msg('cat.' + cat.nombreClave)}">Ver categoría</a></div></div>
         </div>
