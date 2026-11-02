@@ -7,11 +7,18 @@ target/
 *.iml
 .vscode/
 
-# Variables de entorno y configuraciones locales privadas
+# Variables de entorno y configuraciones locales privadas (NUNCA SUBIR A GIT)
 .env
 *.env
+.env.*
+*.key
+*.token
+*.secret
 application-local.properties
+**/application-local.properties
 src/main/resources/application-local.properties
+src/main/resources/application-*.properties
+!src/main/resources/application.properties
 
 # Uploads locales
 src/main/resources/static/uploads/
