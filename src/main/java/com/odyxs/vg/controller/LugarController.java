@@ -2,6 +2,7 @@ package com.odyxs.vg.controller;
 
 import com.odyxs.vg.entity.*;
 import com.odyxs.vg.service.*;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -16,6 +17,8 @@ public class LugarController {
     @Autowired private LugarService      lugarService;
     @Autowired private ResenaService     resenaService;
     @Autowired private CategoriaService  categoriaService;
+    @Autowired(required = false) private AuthCodigoService authCodigoService;
+    @Autowired(required = false) private RedisMetricsService redisMetricsService;
 
     // ── Listado por categoría (Público) ───────────────────────
     @GetMapping("/lugares")
@@ -39,21 +42,39 @@ public class LugarController {
             }
         }
 
-        model.addAttribute("lugares",       lista);
-        model.addAttribute("categorias",    categoriaService.obtenerTodas());
-        model.addAttribute("categoriaId",   categoriaId);
-        model.addAttribute("catNombre",     catNombre);
+        model.addAttribute("lugares",        lista);
+        model.addAttribute("categorias",     categoriaService.obtenerTodas());
+        model.addAttribute("categoriaId",    categoriaId);
+        model.addAttribute("catNombre",      catNombre);
         model.addAttribute("catNombreClave", catNombreClave);
         return "lugares";
     }
 
     // ── Detalle del lugar (Público) ───────────────────────────
     @GetMapping("/lugares/{id}")
-    public String detalle(@PathVariable Long id, Model model) {
+    public String detalle(@PathVariable Long id, HttpSession session, Model model) {
         Lugar lugar = lugarService.obtenerPorId(id);
         if (lugar == null) return "redirect:/lugares";
-        model.addAttribute("lugar",   lugar);
-        model.addAttribute("resenas", resenaService.obtenerPorLugar(id));
+
+        if (redisMetricsService != null) {
+            redisMetricsService.registrarVisitaLugar(id);
+            model.addAttribute("visitasLugar", redisMetricsService.obtenerVisitas(id));
+        }
+
+        boolean estaSuscrito = false;
+        long totalSuscriptores = 0L;
+        if (authCodigoService != null) {
+            Object usuarioIdObj = session != null ? session.getAttribute("usuarioId") : null;
+            if (usuarioIdObj != null) {
+                estaSuscrito = authCodigoService.estaSuscrito(Long.valueOf(usuarioIdObj.toString()), id);
+            }
+            totalSuscriptores = authCodigoService.contarSuscriptores(id);
+        }
+
+        model.addAttribute("lugar",             lugar);
+        model.addAttribute("resenas",           resenaService.obtenerPorLugar(id));
+        model.addAttribute("estaSuscrito",      estaSuscrito);
+        model.addAttribute("totalSuscriptores", totalSuscriptores);
         return "detalle";
     }
 
@@ -68,7 +89,7 @@ public class LugarController {
         return "buscar";
     }
 
-    // ── Proponer lugar (Usuarios autenticados) ─────────────────
+    // ── Proponer lugar ────────────────────────────────────────
     @GetMapping("/proponer-lugar")
     public String proponerForm(Model model) {
         model.addAttribute("categorias", categoriaService.obtenerTodas());

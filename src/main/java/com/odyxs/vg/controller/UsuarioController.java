@@ -1,7 +1,7 @@
 package com.odyxs.vg.controller;
 
 import com.odyxs.vg.dto.UsuarioRegistroDto;
-import com.odyxs.vg.entity.Usuario;
+import com.odyxs.vg.service.AuthCodigoService;
 import com.odyxs.vg.service.UsuarioService;
 import jakarta.servlet.http.HttpSession;
 import jakarta.validation.Valid;
@@ -15,12 +15,16 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import java.security.Principal;
+import java.util.List;
 
 @Controller
 public class UsuarioController {
 
     @Autowired
     private UsuarioService usuarioService;
+
+    @Autowired(required = false)
+    private AuthCodigoService authCodigoService;
 
     @GetMapping("/registro")
     public String mostrarRegistro(Model model) {
@@ -51,6 +55,7 @@ public class UsuarioController {
     public String mostrarLogin(@RequestParam(required = false) String error,
                                @RequestParam(required = false) String logout,
                                @RequestParam(required = false) String registered,
+                               @RequestParam(required = false) String reset,
                                Model model) {
         if (error != null) {
             model.addAttribute("error", "Correo o contraseña incorrectos.");
@@ -59,7 +64,10 @@ public class UsuarioController {
             model.addAttribute("mensaje", "Has cerrado sesión correctamente.");
         }
         if (registered != null) {
-            model.addAttribute("mensaje", "¡Registro exitoso! Por favor inicia sesión con tu cuenta.");
+            model.addAttribute("mensaje", "¡Registro exitoso! Inicia sesión con tu contraseña o mediante un código al correo.");
+        }
+        if (reset != null) {
+            model.addAttribute("mensaje", "¡Contraseña restablecida con éxito! Ya puedes ingresar.");
         }
         return "login";
     }
@@ -85,7 +93,14 @@ public class UsuarioController {
         if (nombre == null && principal != null) {
             nombre = principal.getName();
         }
-        model.addAttribute("nombre", nombre != null ? nombre : "Usuario");
+        Object usuarioIdObj = session.getAttribute("usuarioId");
+        if (usuarioIdObj != null && authCodigoService != null) {
+            Long uid = Long.valueOf(usuarioIdObj.toString());
+            model.addAttribute("suscripciones", authCodigoService.obtenerSuscripcionesUsuario(uid));
+        } else {
+            model.addAttribute("suscripciones", List.of());
+        }
+        model.addAttribute("nombre", nombre != null ? nombre : "Viajero");
         return "menu";
     }
 }

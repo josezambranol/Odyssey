@@ -1,0 +1,15 @@
+**/.git
+**/.gitignore
+**/.github
+**/.idea
+**/.vscode
+**/.sts4
+target/test-classes
+target/generated-sources
+target/surefire-reports
+target/odyssey-0.0.1-SNAPSHOT.jar.original
+*.md
+docs/
+sql/
+*.zip
+*.log

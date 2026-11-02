@@ -1,134 +1,667 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Mapa Interactivo — ODYSSEY</title>
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title>Mapa Cartográfico Interactivo — ODYSSEY Cartagena</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
-    <style>
-        #mapa { height:580px; border-radius:16px; box-shadow:0 8px 32px rgba(11,45,107,.18); z-index:1; }
-        .mapa-filtros { display:flex; flex-wrap:wrap; gap:8px; justify-content:center; margin-bottom:20px; }
-        .mapa-btn { font-family:'DM Sans',sans-serif; font-size:.8rem; font-weight:700; padding:8px 18px; border-radius:40px; border:1.5px solid rgba(11,45,107,.2); color:var(--azul); background:#fff; cursor:pointer; transition:.25s; }
-        .mapa-btn:hover, .mapa-btn.active { background:var(--azul); color:#fff; border-color:var(--azul); }
-        .lugar-panel { border-radius:14px; overflow:hidden; box-shadow:0 4px 20px rgba(11,45,107,.1); background:#fff; transition:.3s; cursor:pointer; margin-bottom:12px; }
-        .lugar-panel:hover { box-shadow:0 8px 28px rgba(11,45,107,.2); transform:translateX(4px); border-left:3px solid var(--gold); }
-        .lugar-panel-img { width:70px; height:70px; object-fit:cover; flex-shrink:0; }
-        .panel-scroll { max-height:580px; overflow-y:auto; padding-right:4px; }
-        .panel-scroll::-webkit-scrollbar { width:4px; }
-        .panel-scroll::-webkit-scrollbar-thumb { background:var(--gold-pale); border-radius:4px; }
-    </style>
-    <!-- Favicon ODYSSEY -->
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
-    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
-    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
-    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
+    <style>
+        body { background: #071329; color: #f8fafc; overflow-x: hidden; }
+        .cartography-shell {
+            position: relative;
+            padding: 20px 0 40px;
+            background: radial-gradient(circle at 15% 15%, rgba(200,150,62,0.14), transparent 45%),
+                        linear-gradient(180deg, #071630 0%, #0b224a 100%);
+        }
+        .map-command-stage {
+            position: relative;
+            height: 700px;
+            border-radius: 24px;
+            overflow: hidden;
+            box-shadow: 0 28px 70px rgba(0, 0, 0, 0.45);
+            border: 1px solid rgba(212, 166, 74, 0.32);
+        }
+        #mapa {
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* ── WIDGETS FLOTANTES GLASSMORPHISM SOBRE EL MAPA ── */
+        .map-hud-widget {
+            position: absolute;
+            z-index: 500;
+            background: rgba(7, 22, 48, 0.84);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(212, 166, 74, 0.35);
+            border-radius: 18px;
+            color: #fff;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, 0.35);
+            transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        /* Top-Left: Buscador + Filtros */
+        .hud-top-left {
+            top: 16px;
+            left: 16px;
+            right: 290px;
+            padding: 12px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .hud-search-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .hud-search-box {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 999px;
+            padding: 7px 15px;
+        }
+        .hud-search-box input {
+            background: transparent;
+            border: 0;
+            color: #fff;
+            width: 100%;
+            font-size: 0.85rem;
+            outline: none;
+        }
+        .hud-search-box input::placeholder { color: rgba(255, 255, 255, 0.6); }
+
+        .hud-filter-pills {
+            display: flex;
+            gap: 6px;
+            overflow-x: auto;
+            padding-bottom: 2px;
+        }
+        .hud-filter-pills::-webkit-scrollbar { height: 3px; }
+        .hud-filter-pills::-webkit-scrollbar-thumb { background: rgba(212, 166, 74, 0.4); border-radius: 4px; }
+
+        .hud-pill {
+            white-space: nowrap;
+            font-size: 0.74rem;
+            font-weight: 700;
+            padding: 6px 13px;
+            border-radius: 999px;
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            background: rgba(255, 255, 255, 0.07);
+            color: rgba(255, 255, 255, 0.88);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .hud-pill:hover, .hud-pill.active {
+            background: linear-gradient(135deg, #d4a64a, #b8862d);
+            color: #071630;
+            border-color: #f3c86b;
+            transform: translateY(-1px);
+        }
+
+        /* Top-Right: Selector de Capas + Telemetría Solar */
+        .hud-top-right {
+            top: 16px;
+            right: 16px;
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            min-width: 255px;
+        }
+        .layer-switch-group {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.07);
+            padding: 4px;
+            border-radius: 12px;
+        }
+        .layer-btn {
+            border: 0;
+            background: transparent;
+            color: rgba(255, 255, 255, 0.75);
+            font-size: 0.72rem;
+            font-weight: 700;
+            padding: 6px 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .layer-btn.active {
+            background: #d4a64a;
+            color: #071630;
+        }
+
+        /* Bottom-Left: Radar Geoespacial 2dsphere */
+        .hud-bottom-left {
+            bottom: 18px;
+            left: 16px;
+            width: 340px;
+            padding: 14px 16px;
+        }
+        .radar-preset-btn {
+            font-size: 0.71rem;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+        .radar-preset-btn:hover, .radar-preset-btn.active {
+            background: #d4a64a;
+            color: #071630;
+            border-color: #d4a64a;
+        }
+
+        /* Bottom-Right: Tarjeta Inspectora Flotante del Lugar Seleccionado */
+        .hud-place-inspector {
+            bottom: 18px;
+            right: 16px;
+            width: 370px;
+            padding: 0;
+            overflow: hidden;
+            display: none;
+            animation: inspectorIn 0.32s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        @keyframes inspectorIn {
+            from { opacity: 0; transform: translateY(18px) scale(0.96); }
+            to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        .inspector-hero {
+            position: relative;
+            height: 155px;
+            width: 100%;
+        }
+        .inspector-hero img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .inspector-close {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: rgba(7, 22, 48, 0.8);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        /* Panel lateral derecho de listado */
+        .drawer-card {
+            background: rgba(11, 34, 74, 0.75);
+            border: 1px solid rgba(212, 166, 74, 0.25);
+            border-radius: 24px;
+            height: 700px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            backdrop-filter: blur(12px);
+        }
+        .drawer-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 14px;
+        }
+        .drawer-list::-webkit-scrollbar { width: 5px; }
+        .drawer-list::-webkit-scrollbar-thumb { background: rgba(212, 166, 74, 0.4); border-radius: 4px; }
+
+        .place-item-card {
+            display: flex;
+            gap: 12px;
+            padding: 11px;
+            border-radius: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+        .place-item-card:hover, .place-item-card.active {
+            background: rgba(212, 166, 74, 0.18);
+            border-color: #d4a64a;
+            transform: translateX(4px);
+        }
+        .place-item-img {
+            width: 68px;
+            height: 68px;
+            border-radius: 12px;
+            object-fit: cover;
+            flex-shrink: 0;
+        }
+
+        /* Pin personalizado en el mapa */
+        .odyssey-pin {
+            width: 40px;
+            height: 40px;
+            border-radius: 50% 50% 50% 4px;
+            background: linear-gradient(135deg, #0b2d6b, #071630);
+            border: 2.5px solid #d4a64a;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transform: rotate(-45deg);
+            transition: transform 0.25s ease;
+        }
+        .odyssey-pin span {
+            transform: rotate(45deg);
+            font-size: 1.05rem;
+        }
+        .odyssey-pin:hover {
+            transform: rotate(-45deg) scale(1.18);
+            border-color: #fff;
+        }
+
+        @media (max-width: 991px) {
+            .hud-top-left { right: 16px; }
+            .hud-top-right { top: auto; bottom: 16px; right: 16px; display: none; }
+            .hud-bottom-left { width: calc(100% - 32px); }
+            .hud-place-inspector { width: calc(100% - 32px); left: 16px; bottom: 16px; }
+            .map-command-stage { height: 560px; }
+        }
+    </style>
 </head>
 <body>
 <div th:replace="fragments :: topbar"></div>
 <div th:replace="fragments :: navbar-interno"></div>
-<div class="page-breadcrumb-hero">
-    <div style="position:relative;z-index:1;">
-        <h1 style="font-style:italic;">Mapa Interactivo</h1>
-        <div class="gold-line"></div>
-        <p>Explora Cartagena y todos sus puntos turísticos</p>
-    </div>
-</div>
-<div class="container py-5">
-    <div class="mapa-filtros">
-        <button class="mapa-btn active" onclick="filtrarMapa('todos', this)">🌟 Todos</button>
-        <button class="mapa-btn" onclick="filtrarMapa('historia', this)">🏰 Historia</button>
-        <button class="mapa-btn" onclick="filtrarMapa('playa', this)">🏖️ Playas</button>
-        <button class="mapa-btn" onclick="filtrarMapa('cultura', this)">🎨 Cultura</button>
-        <button class="mapa-btn" onclick="filtrarMapa('gastronomia', this)">🍽️ Gastronomía</button>
-        <button class="mapa-btn" onclick="filtrarMapa('hotel', this)">🏨 Hoteles</button>
-    </div>
-    <div class="row g-4">
-        <div class="col-lg-8">
-            <div id="mapa"></div>
+
+<section class="cartography-shell">
+    <div class="container-fluid px-3 px-xl-5">
+
+        <!-- Cabecera compacta del Centro Cartográfico -->
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-3 gap-2">
+            <div>
+                <span class="badge rounded-pill px-3 py-1 mb-1" style="background:rgba(212,166,74,0.2);color:#f3c86b;border:1px solid rgba(212,166,74,0.4);font-size:0.72rem;">
+                    <i class="fas fa-satellite-dish me-1"></i> MOTOR GEOESPACIAL MONGODB 2DSPHERE EN VIVO
+                </span>
+                <h2 class="mb-0 fw-bold text-white" style="font-family:'Cormorant Garamond',serif;font-size:2.1rem;">
+                    Cartografía Interactiva de <em style="color:#d4a64a;">Cartagena de Indias</em>
+                </h2>
+            </div>
+            <div class="d-flex gap-2 align-items-center">
+                <button class="btn btn-sm rounded-pill px-3 py-2 fw-bold" style="background:#d4a64a;color:#071630;" onclick="activarMiGps()">
+                    <i class="fas fa-location-arrow me-1"></i> Detectar Mi Ubicación
+                </button>
+                <button class="btn btn-sm btn-outline-light rounded-pill px-3 py-2" onclick="resetearVistaCartagena()">
+                    <i class="fas fa-compress-arrows-alt me-1"></i> Vista General
+                </button>
+            </div>
         </div>
-        <div class="col-lg-4">
-            <h6 class="fw-bold mb-3" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.1rem;">📍 Puntos turísticos</h6>
-            <div class="panel-scroll" id="listaLugares"></div>
+
+        <div class="row g-3">
+            <!-- Escenario Principal del Mapa con Widgets Flotantes -->
+            <div class="col-lg-8 col-xl-9">
+                <div class="map-command-stage">
+
+                    <!-- WIDGET 1 (TOP-LEFT): Buscador Instantáneo y Filtros de Categoría -->
+                    <div class="map-hud-widget hud-top-left">
+                        <div class="hud-search-row">
+                            <div class="hud-search-box">
+                                <i class="fas fa-search me-2" style="color:#d4a64a;font-size:0.85rem;"></i>
+                                <input type="text" id="mapSearchInput" placeholder="Buscar baluarte, playa, museo, restaurante o barrio..." oninput="aplicarFiltrosMapa()">
+                            </div>
+                            <span class="badge rounded-pill px-3 py-2" style="background:#d4a64a;color:#071630;font-weight:800;" id="contadorMapaBadge">26 sitios</span>
+                        </div>
+                        <div class="hud-filter-pills">
+                            <button class="hud-pill active" onclick="seleccionarCategoriaMapa('TODOS', this)">🌟 Todos</button>
+                            <button class="hud-pill" onclick="seleccionarCategoriaMapa('Sitios Históricos', this)">🏰 Sitios Históricos</button>
+                            <button class="hud-pill" onclick="seleccionarCategoriaMapa('Playas', this)">🏖️ Playas e Islas</button>
+                            <button class="hud-pill" onclick="seleccionarCategoriaMapa('Gastronomía', this)">🍽️ Gastronomía</button>
+                            <button class="hud-pill" onclick="seleccionarCategoriaMapa('Museos', this)">🏛️ Museos</button>
+                            <button class="hud-pill" onclick="seleccionarCategoriaMapa('Cultura y Arte', this)">🎨 Cultura y Barrios</button>
+                            <button class="hud-pill" onclick="seleccionarCategoriaMapa('Hoteles', this)">🏨 Hoteles</button>
+                            <button class="hud-pill" onclick="seleccionarCategoriaMapa('Naturaleza y Aventura', this)">🌿 Naturaleza</button>
+                        </div>
+                    </div>
+
+                    <!-- WIDGET 2 (TOP-RIGHT): Selector de Capas Cartográficas & Estado Caribe -->
+                    <div class="map-hud-widget hud-top-right">
+                        <div class="d-flex justify-content-between align-items-center px-1">
+                            <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#d4a64a;font-weight:700;">Estilo de Mapa</span>
+                            <span style="font-size:0.72rem;color:rgba(255,255,255,0.75);"><i class="fas fa-sun text-warning me-1"></i>Atardecer ~6:05 PM</span>
+                        </div>
+                        <div class="layer-switch-group">
+                            <button class="layer-btn active" onclick="cambiarCapaMapa('voyager', this)">🗺️ Editorial</button>
+                            <button class="layer-btn" onclick="cambiarCapaMapa('dark', this)">🌙 Nocturno</button>
+                            <button class="layer-btn" onclick="cambiarCapaMapa('satelite', this)">🛰️ Satélite</button>
+                        </div>
+                    </div>
+
+                    <!-- WIDGET 3 (BOTTOM-LEFT): Radar Geoespacial MongoDB 2dsphere -->
+                    <div class="map-hud-widget hud-bottom-left">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <span class="fw-bold small" style="color:#f3c86b;">
+                                <i class="fas fa-bullseye me-1"></i> Radar Proximidad (2dsphere)
+                            </span>
+                            <span class="badge bg-warning text-dark fw-bold" id="radioLabelBadge">Radio: 5.0 km</span>
+                        </div>
+                        <input type="range" class="form-range mb-2" id="radarRadiusRange" min="0.5" max="30" step="0.5" value="5"
+                               oninput="actualizarRadioRadar(this.value)">
+                        <div class="d-flex flex-wrap gap-1">
+                            <button class="radar-preset-btn active" onclick="moverCentroRadar(10.4233, -75.5489, 'Torre del Reloj', this)">🕐 Torre del Reloj</button>
+                            <button class="radar-preset-btn" onclick="moverCentroRadar(10.4201, -75.5458, 'Getsemaní', this)">🎨 Getsemaní</button>
+                            <button class="radar-preset-btn" onclick="moverCentroRadar(10.4022, -75.5567, 'Bocagrande', this)">🏖️ Bocagrande</button>
+                            <button class="radar-preset-btn" onclick="moverCentroRadar(10.2281, -75.6148, 'Isla Barú', this)">🏝️ Barú (25km)</button>
+                        </div>
+                    </div>
+
+                    <!-- WIDGET 4 (BOTTOM-RIGHT): Tarjeta Inspectora Flotante del Sitio Seleccionado -->
+                    <div class="map-hud-widget hud-place-inspector" id="inspectorCard">
+                        <div class="inspector-hero">
+                            <img id="inspImg" src="/img/hero-murallas.jpg" alt="Sitio">
+                            <button class="inspector-close" onclick="cerrarInspector()"><i class="fas fa-times"></i></button>
+                            <span id="inspCatBadge" class="badge rounded-pill position-absolute bottom-0 start-0 m-3 px-3 py-1"
+                                  style="background:#d4a64a;color:#071630;font-weight:800;">Categoría</span>
+                        </div>
+                        <div class="p-3">
+                            <div class="d-flex justify-content-between align-items-start mb-1">
+                                <h5 class="fw-bold mb-0 text-white" style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;" id="inspNombre">Lugar</h5>
+                                <span class="badge bg-light text-dark small" id="inspDistancia">0 m</span>
+                            </div>
+                            <p class="small mb-3" style="color:rgba(255,255,255,0.78);line-height:1.45;" id="inspDesc">Descripción</p>
+                            <div class="d-flex flex-wrap gap-2">
+                                <a id="inspDetailLink" href="/lugares/1" class="btn btn-sm rounded-pill px-3 fw-bold" style="background:#d4a64a;color:#071630;">
+                                    <i class="fas fa-star me-1"></i>Ficha &amp; Reseñas
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="narrarLugarActivo()">
+                                    <i class="fas fa-volume-up me-1"></i>Audioguía
+                                </button>
+                                <a id="inspGmapsLink" href="#" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-3">
+                                    <i class="fas fa-directions me-1"></i>Ruta
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lienzo Leaflet -->
+                    <div id="mapa"></div>
+                </div>
+            </div>
+
+            <!-- Columna Derecha: Explorador de Puntos Georreferenciados -->
+            <div class="col-lg-4 col-xl-3">
+                <div class="drawer-card">
+                    <div class="p-3 border-bottom" style="border-color:rgba(212,166,74,0.2) !important;">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h5 class="mb-0 fw-bold text-white" style="font-family:'Cormorant Garamond',serif;font-size:1.25rem;">
+                                🧭 Puntos en el Radar
+                            </h5>
+                            <span class="small" style="color:#d4a64a;" id="origenRadarTexto">Desde Torre del Reloj</span>
+                        </div>
+                        <small class="text-white-50">Haz clic en cualquier punto para volar hacia él</small>
+                    </div>
+                    <div class="drawer-list" id="listaLugares"></div>
+                </div>
+            </div>
         </div>
+
     </div>
-</div>
+</section>
+
 <div th:replace="fragments :: footer-interno"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
-const puntos = [
-    {nombre:"Castillo San Felipe de Barajas",lat:10.4231,lng:-75.5397,tipo:"historia",icon:"🏰",desc:"La fortaleza más grande de América española. Siglo XVII."},
-    {nombre:"Ciudad Amurallada",lat:10.4236,lng:-75.5494,tipo:"historia",icon:"🧱",desc:"Centro histórico Patrimonio UNESCO 1984. 11 km de murallas."},
-    {nombre:"Torre del Reloj (Puerta del Reloj)",lat:10.4244,lng:-75.5479,tipo:"historia",icon:"🕐",desc:"Entrada principal al Centro Histórico. Construida en 1631."},
-    {nombre:"Palacio de la Inquisición",lat:10.4246,lng:-75.5497,tipo:"historia",icon:"⚖️",desc:"Sede del Tribunal del Santo Oficio. Museo histórico hoy."},
-    {nombre:"Playa de Bocagrande",lat:10.3972,lng:-75.5558,tipo:"playa",icon:"🏖️",desc:"La playa más accesible de Cartagena. Restaurantes y ambiente caribeño."},
-    {nombre:"Barrio Getsemaní",lat:10.4218,lng:-75.5500,tipo:"cultura",icon:"🎨",desc:"El barrio bohemio de Cartagena. Murales, champeta y vida nocturna."},
-    {nombre:"Mercado de Bazurto",lat:10.4097,lng:-75.5327,tipo:"gastronomia",icon:"🛒",desc:"El mercado popular más auténtico. Frutas tropicales y mariscos frescos."},
-    {nombre:"Plaza Santo Domingo",lat:10.4249,lng:-75.5499,tipo:"cultura",icon:"⛪",desc:"La plaza más animada del centro histórico. Restaurantes y música en vivo."},
-    {nombre:"Café del Mar",lat:10.4265,lng:-75.5519,tipo:"gastronomia",icon:"🌅",desc:"El mejor lugar para ver el atardecer sobre las murallas. Cocteles caribeños."},
-    {nombre:"Sofitel Legend Santa Clara",lat:10.4254,lng:-75.5514,tipo:"hotel",icon:"🏨",desc:"El hotel más icónico de Cartagena. Convento del siglo XVII."},
-    {nombre:"Muelle de la Bodeguita",lat:10.4268,lng:-75.5503,tipo:"historia",icon:"⛵",desc:"Puerto de donde salen las lanchas a las Islas del Rosario."},
-    {nombre:"Las Bóvedas",lat:10.4274,lng:-75.5481,tipo:"cultura",icon:"🏺",desc:"23 bóvedas coloniales del siglo XVIII. Mercado de artesanías."},
-];
+// Iconos por categoría
+const ICONOS_CAT = {
+    'Sitios Históricos': '🏰',
+    'Playas': '🏖️',
+    'Gastronomía': '🍽️',
+    'Museos': '🏛️',
+    'Cultura y Arte': '🎨',
+    'Hoteles': '🏨',
+    'Naturaleza y Aventura': '🌿'
+};
 
-const map = L.map('mapa').setView([10.4236, -75.5490], 14);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution:'© OpenStreetMap', maxZoom:19
+let todosLosPuntos = [];
+let puntosFiltrados = [];
+let categoriaActiva = 'TODOS';
+let centroRadar = { lat: 10.4233, lng: -75.5489, nombre: 'Torre del Reloj' };
+let radioRadarKm = 5.0;
+let lugarSeleccionado = null;
+
+// Inicialización del mapa Leaflet
+const map = L.map('mapa', { zoomControl: false }).setView([10.4236, -75.5489], 15);
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+const CAPAS = {
+    voyager: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors', maxZoom: 19
+    }),
+    dark: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri · Dark Gray Canvas', maxZoom: 16
+    }),
+    satelite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '© Esri World Imagery', maxZoom: 19
+    })
+};
+let capaActual = CAPAS.voyager.addTo(map);
+
+// Círculo de radar geoespacial
+let radarCircle = L.circle([centroRadar.lat, centroRadar.lng], {
+    radius: radioRadarKm * 1000,
+    color: '#d4a64a',
+    weight: 2,
+    dashArray: '6, 6',
+    fillColor: '#d4a64a',
+    fillOpacity: 0.08
 }).addTo(map);
 
-let marcadores = [];
+let marcadoresLayer = L.layerGroup().addTo(map);
 
-function crearIcono(emoji) {
-    return L.divIcon({
-        html: `<div style="background:var(--azul,#0B2D6B);color:white;width:36px;height:36px;border-radius:50% 50% 50% 0;display:flex;align-items:center;justify-content:center;font-size:1rem;box-shadow:0 3px 12px rgba(0,0,0,.3);border:2px solid white;transform:rotate(-45deg);"><span style="transform:rotate(45deg);">${emoji}</span></div>`,
-        iconSize:[36,36], iconAnchor:[18,36], popupAnchor:[0,-36], className:''
-    });
-}
-
-function renderLista(pts) {
-    const lista = document.getElementById('listaLugares');
-    lista.innerHTML = pts.map((p,i) => `
-        <div class="lugar-panel" onclick="focusMap(${i})">
-            <div class="d-flex align-items-center gap-0">
-                <img src="${p.img}" class="lugar-panel-img" onerror="this.style.display='none'">
-                <div class="p-3">
-                    <div style="font-size:1.1rem; margin-bottom:2px;">${p.icon}</div>
-                    <h6 class="mb-1 fw-bold" style="color:#0B2D6B; font-size:.88rem; font-family:'Cormorant Garamond',serif;">${p.nombre}</h6>
-                    <p class="mb-0 text-muted" style="font-size:.72rem; line-height:1.4;">${p.desc.substring(0,60)}...</p>
-                </div>
-            </div>
-        </div>`).join('');
-}
-
-let puntosActivos = [...puntos];
-
-puntos.forEach((p,i) => {
-    const m = L.marker([p.lat,p.lng], {icon: crearIcono(p.icon)})
-        .bindPopup(`<div style="min-width:180px;"><img src="${p.img}" style="width:100%;height:100px;object-fit:cover;border-radius:8px;margin-bottom:8px;" onerror="this.style.display='none'"><strong style="color:#0B2D6B;font-family:'Cormorant Garamond',serif;">${p.nombre}</strong><p style="font-size:.82rem;color:#666;margin:4px 0 0;">${p.desc}</p></div>`)
-        .addTo(map);
-    marcadores.push({marcador:m, tipo:p.tipo, idx:i});
-});
-renderLista(puntos);
-
-function filtrarMapa(tipo, btn) {
-    document.querySelectorAll('.mapa-btn').forEach(b=>b.classList.remove('active'));
+function cambiarCapaMapa(clave, btn) {
+    document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    puntosActivos = tipo === 'todos' ? [...puntos] : puntos.filter(p=>p.tipo===tipo);
-    marcadores.forEach(({marcador, tipo:t}) => {
-        if(tipo === 'todos' || t === tipo) { map.addLayer(marcador); }
-        else { map.removeLayer(marcador); }
-    });
-    renderLista(puntosActivos);
+    map.removeLayer(capaActual);
+    capaActual = CAPAS[clave];
+    map.addLayer(capaActual);
 }
 
-function focusMap(idx) {
-    const p = puntosActivos[idx];
-    const real = puntos.findIndex(x=>x.nombre===p.nombre);
-    map.setView([p.lat, p.lng], 16);
-    marcadores[real].marcador.openPopup();
+function crearPinHtml(emoji) {
+    return L.divIcon({
+        html: `<div class="odyssey-pin"><span>${emoji}</span></div>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 40],
+        popupAnchor: [0, -38],
+        className: ''
+    });
 }
+
+// Cargar puntos desde el motor geoespacial MongoDB 2dsphere
+async function cargarPuntosGeoespaciales() {
+    try {
+        const url = `/api/v1/lugares/cerca-de-mi?lng=${centroRadar.lng}&lat=${centroRadar.lat}&radioKm=${radioRadarKm}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        if (json.success && Array.isArray(json.data)) {
+            todosLosPuntos = json.data.map(p => ({
+                lugarId: p.lugarId || 1,
+                nombre: p.nombre,
+                descripcion: p.descripcion,
+                categoria: p.categoria || 'Sitios Históricos',
+                imagenUrl: p.imagenUrl || '/img/hero-murallas.jpg',
+                lat: p.latitud,
+                lng: p.longitud,
+                distanciaKm: p.distanciaKm,
+                distanciaTexto: p.distanciaTexto || 'En Cartagena',
+                icono: ICONOS_CAT[p.categoria] || '📍'
+            }));
+            aplicarFiltrosMapa();
+        }
+    } catch (e) {
+        console.error('Error cargando puntos geoespaciales:', e);
+    }
+}
+
+function seleccionarCategoriaMapa(cat, btn) {
+    categoriaActiva = cat;
+    document.querySelectorAll('.hud-pill').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    aplicarFiltrosMapa();
+}
+
+function aplicarFiltrosMapa() {
+    const q = (document.getElementById('mapSearchInput').value || '').toLowerCase().trim();
+    puntosFiltrados = todosLosPuntos.filter(p => {
+        const coincideCat = (categoriaActiva === 'TODOS') || (p.categoria.toLowerCase() === categoriaActiva.toLowerCase());
+        const coincideTexto = !q || p.nombre.toLowerCase().includes(q) || p.descripcion.toLowerCase().includes(q) || p.categoria.toLowerCase().includes(q);
+        return coincideCat && coincideTexto;
+    });
+
+    document.getElementById('contadorMapaBadge').textContent = `${puntosFiltrados.length} sitios`;
+    renderizarMarcadoresYLista();
+}
+
+function renderizarMarcadoresYLista() {
+    marcadoresLayer.clearLayers();
+    const listaEl = document.getElementById('listaLugares');
+
+    if (puntosFiltrados.length === 0) {
+        listaEl.innerHTML = `<div class="text-center py-5 text-white-50 small">
+            <i class="fas fa-compass fa-2x mb-2 d-block" style="color:#d4a64a;"></i>
+            No hay sitios en este radio o filtro. Amplía el deslizador del radar (km).
+        </div>`;
+        return;
+    }
+
+    listaEl.innerHTML = puntosFiltrados.map((p, idx) => `
+        <div class="place-item-card" id="card-item-${idx}" onclick="enfocarPunto(${idx})">
+            <img src="${p.imagenUrl}" class="place-item-img" onerror="this.src='/img/hero-murallas.jpg'" alt="${p.nombre}">
+            <div class="flex-grow-1 min-w-0">
+                <div class="d-flex justify-content-between align-items-center mb-1">
+                    <span class="badge rounded-pill px-2 py-1" style="background:rgba(212,166,74,0.2);color:#f3c86b;font-size:0.65rem;">
+                        ${p.icono} ${p.categoria}
+                    </span>
+                    <span class="text-warning fw-bold" style="font-size:0.7rem;">${p.distanciaTexto}</span>
+                </div>
+                <h6 class="mb-1 text-white fw-bold text-truncate" style="font-size:0.9rem;font-family:'Cormorant Garamond',serif;">${p.nombre}</h6>
+                <p class="mb-0 text-white-50 text-truncate" style="font-size:0.73rem;">${p.descripcion}</p>
+            </div>
+        </div>
+    `).join('');
+
+    puntosFiltrados.forEach((p, idx) => {
+        const marker = L.marker([p.lat, p.lng], { icon: crearPinHtml(p.icono) });
+        marker.on('click', () => enfocarPunto(idx));
+        marcadoresLayer.addLayer(marker);
+    });
+}
+
+function enfocarPunto(idx) {
+    const p = puntosFiltrados[idx];
+    if (!p) return;
+    lugarSeleccionado = p;
+
+    document.querySelectorAll('.place-item-card').forEach(el => el.classList.remove('active'));
+    const card = document.getElementById(`card-item-${idx}`);
+    if (card) {
+        card.classList.add('active');
+        card.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+
+    map.flyTo([p.lat, p.lng], 17, { duration: 1.1 });
+
+    // Poblar tarjeta inspectora flotante
+    document.getElementById('inspImg').src = p.imagenUrl;
+    document.getElementById('inspCatBadge').textContent = `${p.icono} ${p.categoria}`;
+    document.getElementById('inspNombre').textContent = p.nombre;
+    document.getElementById('inspDistancia').textContent = p.distanciaTexto;
+    document.getElementById('inspDesc').textContent = p.descripcion;
+    document.getElementById('inspDetailLink').href = `/lugares/${p.lugarId}`;
+    document.getElementById('inspGmapsLink').href = `https://www.google.com/maps/dir/?api=1&destination=${p.lat},${p.lng}`;
+    document.getElementById('inspectorCard').style.display = 'block';
+}
+
+function cerrarInspector() {
+    document.getElementById('inspectorCard').style.display = 'none';
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+}
+
+function narrarLugarActivo() {
+    if (!lugarSeleccionado || !('speechSynthesis' in window)) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(`${lugarSeleccionado.nombre}. ${lugarSeleccionado.descripcion}`);
+    utter.lang = 'es-CO';
+    utter.rate = 1.0;
+    window.speechSynthesis.speak(utter);
+}
+
+function actualizarRadioRadar(val) {
+    radioRadarKm = parseFloat(val);
+    document.getElementById('radioLabelBadge').textContent = `Radio: ${radioRadarKm.toFixed(1)} km`;
+    radarCircle.setRadius(radioRadarKm * 1000);
+    cargarPuntosGeoespaciales();
+}
+
+function moverCentroRadar(lat, lng, nombre, btn) {
+    if (btn) {
+        document.querySelectorAll('.radar-preset-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    }
+    centroRadar = { lat, lng, nombre };
+    document.getElementById('origenRadarTexto').textContent = `Desde ${nombre}`;
+    radarCircle.setLatLng([lat, lng]);
+
+    if (nombre.includes('Barú') && radioRadarKm < 25) {
+        document.getElementById('radarRadiusRange').value = 30;
+        actualizarRadioRadar(30);
+        map.flyTo([lat, lng], 12, { duration: 1.2 });
+    } else {
+        map.flyTo([lat, lng], 15, { duration: 1.1 });
+        cargarPuntosGeoespaciales();
+    }
+}
+
+function activarMiGps() {
+    if (!navigator.geolocation) {
+        alert('Tu navegador no soporta geolocalización.');
+        return;
+    }
+    navigator.geolocation.getCurrentPosition(
+        (pos) => {
+            moverCentroRadar(pos.coords.latitude, pos.coords.longitude, 'Mi Ubicación GPS', null);
+        },
+        () => {
+            moverCentroRadar(10.4233, -75.5489, 'Torre del Reloj (Centro)', null);
+        }
+    );
+}
+
+function resetearVistaCartagena() {
+    cerrarInspector();
+    document.getElementById('radarRadiusRange').value = 30;
+    radioRadarKm = 30;
+    document.getElementById('radioLabelBadge').textContent = 'Radio: 30.0 km';
+    radarCircle.setRadius(30000);
+    map.flyTo([10.4236, -75.5489], 14, { duration: 1.0 });
+    cargarPuntosGeoespaciales();
+}
+
+// Carga inicial con radio amplio para mostrar todos los sitios de Cartagena
+document.getElementById('radarRadiusRange').value = 30;
+radioRadarKm = 30.0;
+document.getElementById('radioLabelBadge').textContent = 'Radio: 30.0 km';
+radarCircle.setRadius(30000);
+cargarPuntosGeoespaciales();
 </script>
 </body>
 </html>

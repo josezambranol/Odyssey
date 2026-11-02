@@ -4,8 +4,9 @@ import com.odyxs.vg.entity.*;
 import com.odyxs.vg.repository.*;
 import com.odyxs.vg.service.EventoSyncService;
 import com.odyxs.vg.service.FileStorageService;
+import com.odyxs.vg.service.GeminiAiService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.i18n.LocaleContextHolder;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -23,11 +24,11 @@ public class TurismoController {
 
     @Autowired private EventoRepository     eventoRepo;
     @Autowired private ActividadRepository  actividadRepo;
-    @Autowired private ChatbotRespuestaRepository chatbotRepo;
     @Autowired private FileStorageService   fileStorageService;
     @Autowired private EventoSyncService    eventoSyncService;
+    @Autowired private GeminiAiService      geminiAiService;
 
-    // ── Eventos (Web) ─────────────────────────────────────────
+    // ── Eventos (Web) ─────────────────────────────────────────────
 
     @GetMapping("/eventos")
     public String eventos(@RequestParam(required = false) String desde,
@@ -59,38 +60,72 @@ public class TurismoController {
         return "eventos";
     }
 
-    @GetMapping("/eventos/sincronizar")
-    public String sincronizarEventosWeb(RedirectAttributes redirectAttributes) {
-        Map<String, Object> res = eventoSyncService.sincronizarEventosCartagena();
-        redirectAttributes.addFlashAttribute("mensajeExito", "Cartelera cultural actualizada. Nuevos eventos agregados: " + res.get("nuevosEventos"));
-        return "redirect:/eventos";
+    // ── Actividades (Web) ─────────────────────────────────────────
+
+    @GetMapping("/actividades")
+    public String actividades(@RequestParam(required = false, name = "cat") String cat,
+                              @RequestParam(required = false, name = "categoria") String categoria,
+                              Model model) {
+        String filtro = (cat != null && !cat.isBlank()) ? cat : categoria;
+        List<Actividad> lista;
+        if (filtro != null && !filtro.isBlank()) {
+            try {
+                Actividad.CategoriaActividad catEnum = Actividad.CategoriaActividad.valueOf(filtro.trim().toUpperCase());
+                lista = actividadRepo.findByCategoriaAndEstado(catEnum, Actividad.Estado.APROBADO);
+                model.addAttribute("catActiva", catEnum.name());
+                model.addAttribute("categoriaSeleccionada", catEnum.name());
+            } catch (IllegalArgumentException e) {
+                lista = actividadRepo.findByEstado(Actividad.Estado.APROBADO);
+            }
+        } else {
+            lista = actividadRepo.findByEstado(Actividad.Estado.APROBADO);
+        }
+        model.addAttribute("actividades", lista);
+        model.addAttribute("categorias", Actividad.CategoriaActividad.values());
+        return "actividades";
     }
 
-    // ── API REST: Eventos en Tiempo Real (JSON) ───────────────
+    // ── Proponer Actividad (Usuario) ──────────────────────────────
 
-    @GetMapping("/api/eventos")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> apiObtenerEventos() {
-        Map<String, List<Evento>> clasificados = eventoSyncService.obtenerEventosClasificados();
-        Map<String, Object> resp = new LinkedHashMap<>();
-        resp.put("status", "success");
-        resp.put("ciudad", "Cartagena de Indias");
-        resp.put("fechaServidor", LocalDate.now().toString());
-        resp.put("hoy", clasificados.get("hoy"));
-        resp.put("proximos", clasificados.get("proximos"));
-        resp.put("finalizados", clasificados.get("finalizados"));
-        resp.put("totalActivos", clasificados.get("hoy").size() + clasificados.get("proximos").size());
-        return ResponseEntity.ok(resp);
+    @GetMapping("/proponer-actividad")
+    public String proponerActividadForm(Model model) {
+        model.addAttribute("categorias", Actividad.CategoriaActividad.values());
+        return "proponer-actividad";
     }
 
-    @PostMapping("/api/eventos/sincronizar")
-    @ResponseBody
-    public ResponseEntity<Map<String, Object>> apiSincronizarEventos() {
-        Map<String, Object> resultado = eventoSyncService.sincronizarEventosCartagena();
-        return ResponseEntity.ok(resultado);
+    @PostMapping("/proponer-actividad")
+    public String guardarPropuestaActividad(
+            @RequestParam String nombre,
+            @RequestParam(required = false) String descripcion,
+            @RequestParam(required = false) String duracion,
+            @RequestParam(required = false) String precioAprox,
+            @RequestParam String categoria,
+            @RequestParam(value = "imagen", required = false) MultipartFile imagen,
+            RedirectAttributes redirectAttributes) {
+
+        try {
+            Actividad.CategoriaActividad cat = Actividad.CategoriaActividad.valueOf(categoria.toUpperCase());
+            Actividad a = new Actividad();
+            a.setNombre(nombre.trim());
+            a.setDescripcion(descripcion != null ? descripcion.trim() : null);
+            a.setDuracion(duracion != null ? duracion.trim() : null);
+            a.setPrecioAprox(precioAprox != null ? precioAprox.trim() : null);
+            a.setCategoria(cat);
+            a.setEsOficial(false);
+            a.setEstado(Actividad.Estado.PENDIENTE);
+            a.setImagenUrl(fileStorageService.guardarImagen(imagen, "actividades"));
+
+            actividadRepo.save(a);
+            redirectAttributes.addFlashAttribute("mensaje",
+                "¡Tu propuesta de actividad fue enviada! Será revisada por el equipo Odyssey.");
+        } catch (IllegalArgumentException e) {
+            redirectAttributes.addFlashAttribute("error", "Categoría no válida.");
+            return "redirect:/proponer-actividad";
+        }
+        return "redirect:/actividades";
     }
 
-    // ── Proponer evento (usuarios) ────────────────────────────
+    // ── Proponer Evento (Usuario) ─────────────────────────────────
 
     @GetMapping("/proponer-evento")
     public String proponerEventoForm() {
@@ -98,12 +133,14 @@ public class TurismoController {
     }
 
     @PostMapping("/proponer-evento")
-    public String proponerEvento(@RequestParam String nombre,
-                                 @RequestParam(required = false) String descripcion,
-                                 @RequestParam String fecha,
-                                 @RequestParam(required = false) String lugar,
-                                 @RequestParam(required = false) MultipartFile imagen,
-                                 Model model) {
+    public String guardarPropuestaEvento(
+            @RequestParam String nombre,
+            @RequestParam(required = false) String descripcion,
+            @RequestParam String fecha,
+            @RequestParam(required = false) String lugar,
+            @RequestParam(value = "imagen", required = false) MultipartFile imagen,
+            Model model) {
+
         try {
             Evento e = new Evento();
             e.setNombre(nombre.trim());
@@ -142,135 +179,41 @@ public class TurismoController {
         return "mapa";
     }
 
-    // ── Chatbot ───────────────────────────────────────────────
+    // ── Chatbot ODYSSEY con Google Gemini & Telemetría NoSQL ──
 
     @GetMapping("/chatbot")
-    public String chatbotPage() {
+    public String chatbotPage(Model model) {
+        model.addAttribute("geminiActivo", geminiAiService.tieneGeminiKeyConfigurada());
         return "chatbot";
     }
 
-    @Value("${gemini.api.key:}")
-    private String geminiApiKey;
-
-    private static final String ODYSSEY_SYSTEM_ES =
-        "Eres Odyssey, asistente turístico de Cartagena de Indias. " +
-        "Responde SIEMPRE en español, de forma amigable y concisa (máx. 3 párrafos). " +
-        "Eres experto en: playas (Bocagrande, Barú, Islas del Rosario, Playa Blanca), " +
-        "historia colonial (Castillo de San Felipe, murallas, Getsemaní), " +
-        "transporte (taxis, Transcaribe, lanchas, aeropuerto Rafael Núñez), " +
-        "hoteles y hospedaje, gastronomía caribeña (ceviche, patacón, arepas de huevo, langosta), " +
-        "festivales (Hay Festival enero, FICCI marzo, Fiestas Independencia 11 de noviembre, Concurso Nacional de Belleza), " +
-        "actividades (buceo, snorkel, chiva rumbera, kayak, tours en velero). " +
-        "Usa emojis con moderación.";
-
-    private static final String ODYSSEY_SYSTEM_EN =
-        "You are Odyssey, the Cartagena tourist assistant for Cartagena de Indias, Colombia. " +
-        "ALWAYS respond in English, in a friendly and concise way (max. 3 paragraphs). " +
-        "You are an expert in: beaches (Bocagrande, Barú, Islas del Rosario, Playa Blanca), " +
-        "colonial history (Castillo de San Felipe, city walls, Getsemaní neighborhood), " +
-        "transport (taxis, Transcaribe bus, boats, Rafael Núñez Airport), " +
-        "hotels and accommodation, Caribbean gastronomy (ceviche, patacón, arepas de huevo, lobster), " +
-        "festivals (Hay Festival in January, FICCI in March, Independence Day November 11, National Beauty Pageant), " +
-        "activities (diving, snorkeling, chiva rumbera, kayak, sailboat tours). " +
-        "Use emojis in moderation.";
-
     @PostMapping("/chatbot/respuesta")
     @ResponseBody
-    public ResponseEntity<Map<String, String>> responderChatbot(@RequestBody Map<String, String> body) {
+    public ResponseEntity<Map<String, String>> responderChatbot(@RequestBody Map<String, String> body,
+                                                                 HttpServletRequest request) {
         String mensaje = body.getOrDefault("mensaje", "").trim();
-        if (mensaje.isBlank()) {
-            return ResponseEntity.ok(Map.of("respuesta", "¿En qué puedo ayudarte? 😊"));
-        }
-
         Locale locale = LocaleContextHolder.getLocale();
         boolean enIngles = "en".equalsIgnoreCase(locale.getLanguage());
-        String systemPrompt = enIngles ? ODYSSEY_SYSTEM_EN : ODYSSEY_SYSTEM_ES;
+        String clientIp = request.getRemoteAddr();
 
-        if (geminiApiKey != null && !geminiApiKey.isBlank()) {
-            try {
-                String respIA = llamarGeminiAPI(mensaje, systemPrompt);
-                return ResponseEntity.ok(Map.of("respuesta", respIA));
-            } catch (Exception ex) {
-                System.err.println("[ODYSSEY] Error Gemini API: " + ex.getMessage());
-            }
-        }
-
-        String clave = detectarClave(mensaje.toLowerCase());
-        Optional<ChatbotRespuesta> opt = chatbotRepo.findByClave(clave);
-        String respuesta = opt.isPresent() ? opt.get().getRespuesta()
-            : (enIngles
-                ? "🤔 Try asking me about: weather, beaches, transport, hotels, history, activities, events or gastronomy."
-                : "🤔 Prueba preguntarme sobre: clima, playas, transporte, hoteles, historia, actividades, eventos o gastronomía.");
-        return ResponseEntity.ok(Map.of("respuesta", respuesta));
+        String respuesta = geminiAiService.responder(mensaje, enIngles, clientIp);
+        return ResponseEntity.ok(Map.of(
+                "respuesta", respuesta,
+                "motor", geminiAiService.tieneGeminiKeyConfigurada() ? "Google Gemini 2.5 Flash + RAG" : "Odyssey Cloud AI + RAG Cartagena"
+        ));
     }
 
-    private String llamarGeminiAPI(String mensaje, String systemPrompt) throws Exception {
-        com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
-
-        Map<String, Object> systemPart = Map.of("text", systemPrompt);
-        Map<String, Object> systemInstruction = Map.of("parts", List.of(systemPart));
-
-        Map<String, Object> userPart = Map.of("text", mensaje);
-        Map<String, Object> userContent = Map.of("role", "user", "parts", List.of(userPart));
-
-        Map<String, Object> generationConfig = Map.of("maxOutputTokens", 600, "temperature", 0.7);
-
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("systemInstruction", systemInstruction);
-        payload.put("contents", List.of(userContent));
-        payload.put("generationConfig", generationConfig);
-
-        String requestJson = mapper.writeValueAsString(payload);
-        String url = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=" + geminiApiKey;
-
-        java.net.http.HttpClient client = java.net.http.HttpClient.newBuilder()
-            .connectTimeout(java.time.Duration.ofSeconds(15))
-            .build();
-
-        java.net.http.HttpRequest request = java.net.http.HttpRequest.newBuilder()
-            .uri(java.net.URI.create(url))
-            .timeout(java.time.Duration.ofSeconds(30))
-            .header("Content-Type", "application/json; charset=utf-8")
-            .POST(java.net.http.HttpRequest.BodyPublishers.ofString(
-                requestJson, java.nio.charset.StandardCharsets.UTF_8))
-            .build();
-
-        java.net.http.HttpResponse<String> resp = client.send(
-            request, java.net.http.HttpResponse.BodyHandlers.ofString());
-
-        if (resp.statusCode() != 200) {
-            System.err.println("[ODYSSEY] Gemini body: " + resp.body());
-            throw new RuntimeException("Gemini API HTTP " + resp.statusCode());
+    @PostMapping("/chatbot/config-key")
+    @ResponseBody
+    public ResponseEntity<Map<String, Object>> configurarGeminiKey(@RequestBody Map<String, String> body) {
+        String key = body.getOrDefault("apiKey", "").trim();
+        if (key.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("exito", false, "mensaje", "La API Key no puede estar vacía."));
         }
-
-        com.fasterxml.jackson.databind.JsonNode root = mapper.readTree(resp.body());
-        return root.path("candidates").get(0)
-                   .path("content").path("parts").get(0)
-                   .path("text").asText();
-    }
-
-    private String detectarClave(String msg) {
-        if (msg.matches("hola|buenos días|buenas|hi|hey|saludos|hello|good morning")) return "saludo";
-        if (msg.contains("clima") || msg.contains("lluvi") || msg.contains("temperatur") || msg.contains("cuando visit")
-            || msg.contains("weather") || msg.contains("rain") || msg.contains("when to visit")) return "clima";
-        if (msg.contains("playa") || msg.contains("baru") || msg.contains("rosario") || msg.contains("bocagrande")
-            || msg.contains("beach") || msg.contains("island")) return "playas";
-        if (msg.contains("transport") || msg.contains("mover") || msg.contains("llegar") || msg.contains("bus") || msg.contains("taxi") || msg.contains("yate")
-            || msg.contains("get around") || msg.contains("boat") || msg.contains("airport")) return "transporte";
-        if (msg.contains("hotel") || msg.contains("aloj") || msg.contains("hostal") || msg.contains("donde dormir")
-            || msg.contains("stay") || msg.contains("sleep") || msg.contains("accommodation")) return "hoteles";
-        if (msg.contains("histor") || msg.contains("coloni") || msg.contains("murall") || msg.contains("castill") || msg.contains("fundaci")
-            || msg.contains("wall") || msg.contains("castle") || msg.contains("fort")) return "historico";
-        if (msg.contains("actividad") || msg.contains("hacer") || msg.contains("tour") || msg.contains("buceo") || msg.contains("kayak")
-            || msg.contains("activity") || msg.contains("diving") || msg.contains("things to do")) return "actividades";
-        if (msg.contains("evento") || msg.contains("festival") || msg.contains("hay festival") || msg.contains("ficci")
-            || msg.contains("event") || msg.contains("festival")) return "eventos";
-        if (msg.contains("costo") || msg.contains("precio") || msg.contains("caro") || msg.contains("barato") || msg.contains("dinero")
-            || msg.contains("cost") || msg.contains("price") || msg.contains("budget") || msg.contains("cheap")) return "costo";
-        if (msg.contains("comer") || msg.contains("comida") || msg.contains("gastronom") || msg.contains("restaur") || msg.contains("ceviche")
-            || msg.contains("food") || msg.contains("eat") || msg.contains("restaurant") || msg.contains("gastronomy")) return "gastronomia";
-        if (msg.contains("adios") || msg.contains("gracias") || msg.contains("bye") || msg.contains("chao")
-            || msg.contains("goodbye") || msg.contains("thank")) return "despedida";
-        return "saludo";
+        geminiAiService.actualizarApiKey(key);
+        return ResponseEntity.ok(Map.of(
+                "exito", true,
+                "mensaje", "Google Gemini API Key activada en tiempo real para esta sesión."
+        ));
     }
 }

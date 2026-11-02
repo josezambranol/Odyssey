@@ -1,8 +1,15 @@
 package com.odyxs.vg.service;
 
+import com.odyxs.vg.domain.mongo.EventoScrapingLog;
 import com.odyxs.vg.entity.Evento;
 import com.odyxs.vg.repository.EventoRepository;
+import com.odyxs.vg.repository.mongo.EventoScrapingLogRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
@@ -11,15 +18,21 @@ import java.util.*;
 @Service
 public class EventoSyncService {
 
+    private static final Logger log = LoggerFactory.getLogger(EventoSyncService.class);
+
     @Autowired
     private EventoRepository eventoRepository;
 
+    @Autowired(required = false)
+    private EventoScrapingLogRepository scrapingLogRepository;
+
+    @Autowired
+    private ExternalEventCrawlerService crawlerService;
+
     /**
-     * Obtiene los eventos clasificados en 3 categorías dinámicas:
-     * - Hoy: fecha igual al día actual.
-     * - Próximos: fecha futura ordenada cronológicamente.
-     * - Finalizados: eventos de fechas anteriores.
+     * Obtiene los eventos clasificados con soporte de caché en Redis (15 min).
      */
+    @Cacheable(value = "eventosClasificados", key = "'agenda'")
     public Map<String, List<Evento>> obtenerEventosClasificados() {
         LocalDate hoy = LocalDate.now();
         Map<String, List<Evento>> mapa = new LinkedHashMap<>();
@@ -32,105 +45,81 @@ public class EventoSyncService {
     }
 
     /**
-     * Sincroniza la cartelera de eventos en tiempo real con la agenda cultural oficial
-     * de Cartagena de Indias, asegurando eventos activos para hoy, próximas fechas y registro histórico.
+     * 🌐 Sincronización Avanzada con Web Scraping e Ingesta Externa de Eventos Culturales.
+     * Rastrea portales y agendas externas, deduplica por nombre y fecha,
+     * persiste los eventos nuevos en MySQL y guarda la auditoría de scraping en MongoDB.
      */
-    public Map<String, Object> sincronizarEventosCartagena() {
-        LocalDate hoy = LocalDate.now();
-        int creados = 0;
+    @CacheEvict(value = "eventosClasificados", allEntries = true)
+    public Map<String, Object> sincronizarEventosExternos() {
+        long inicio = System.currentTimeMillis();
+        log.info("[EVENTO_SYNC] Iniciando rastreo y sincronización de eventos externos de Cartagena...");
 
-        List<EventoPlantilla> catalogoEnVivo = Arrays.asList(
-            // ── Eventos de Hoy ─────────────────────────────────
-            new EventoPlantilla(
-                "Noche de Gaitas y Tambores en Plaza de la Trinidad",
-                "Presentación en vivo de agrupaciones folclóricas tradicionales de cumbia y bullerengue en el corazón de Getsemaní.",
-                hoy,
-                "Plaza de la Trinidad, Getsemaní",
-                "/img/act-getsemani.jpg"
-            ),
-            new EventoPlantilla(
-                "Atardecer Acústico en el Baluarte de Santo Domingo",
-                "Música lounge y caribeña en vivo con vista panorámica de 360 grados sobre el Mar Caribe y las murallas históricas.",
-                hoy,
-                "Baluarte de Santo Domingo, Centro Histórico",
-                "/img/hero-murallas.jpg"
-            ),
+        List<Evento> recolectados = crawlerService.rastrearEventosExternos();
+        int nuevos = 0;
+        int duplicados = 0;
+        List<Map<String, String>> muestra = new ArrayList<>();
 
-            // ── Próximos Eventos (Próximos días y meses) ───────
-            new EventoPlantilla(
-                "Festival Internacional de Música Clásica de Cartagena",
-                "Conciertos magistrales de orquestas sinfónicas y solistas internacionales en capillas coloniales y teatros.",
-                hoy.plusDays(5),
-                "Teatro Adolfo Mejía y Capilla Santa Clara",
-                "/img/hotel-sofitel.jpg"
-            ),
-            new EventoPlantilla(
-                "Regata Náutica Internacional del Caribe",
-                "Embarcaciones a vela de más de 10 países compiten en la hermosa Bahía de Cartagena.",
-                hoy.plusDays(12),
-                "Bahía de Cartagena y Club Naval",
-                "/img/act-islas-rosario.jpg"
-            ),
-            new EventoPlantilla(
-                "Festival del Frito y la Gastronomía Tradicional Cartagenera",
-                "La fiesta culinaria más sabrosa: arepas de huevo, carimañolas, empanadas y buñuelos de frijol preparados por matronas ancestrales.",
-                hoy.plusDays(20),
-                "Monumento a las Botas Viejas",
-                "/img/gastro-arepa.jpg"
-            ),
-            new EventoPlantilla(
-                "Festival Internacional de Cine de Cartagena (FICCI)",
-                "Proyecciones de cine independiente, documental y latinoamericano en plazas públicas y salas amuralladas.",
-                hoy.plusMonths(2),
-                "Centro Histórico y Salas de Cine",
-                "/img/pf-eventos.jpg"
-            ),
-            new EventoPlantilla(
-                "Fiestas de la Independencia de Cartagena del 11 de Noviembre",
-                "Desfiles de comparsas folclóricas, reinado popular y fiesta comunitaria en toda la ciudad amurallada.",
-                hoy.plusMonths(3),
-                "Avenida Santander y Centro Histórico",
-                "/img/hero-getsemani.jpg"
-            ),
-
-            // ── Eventos Finalizados (Histórico cultural) ───────
-            new EventoPlantilla(
-                "Hay Festival Cartagena — Encuentro de Ideas y Letras",
-                "Celebración literaria y de pensamiento que congregó a premios Nobel, escritores, cineastas y periodistas de 20 países.",
-                hoy.minusDays(15),
-                "Centro de Convenciones Cartagena de Indias",
-                "/img/about-torre-reloj.jpg"
-            ),
-            new EventoPlantilla(
-                "Feria Náutica y Festival del Mar Caribe",
-                "Exhibición de deportes acuáticos extremos, kayak y competencias en las playas de Bocagrande.",
-                hoy.minusDays(30),
-                "Playas de Bocagrande y Castillogrande",
-                "/img/act-playa-bocagrande.jpg"
-            )
-        );
-
-        for (EventoPlantilla p : catalogoEnVivo) {
-            if (!eventoRepository.existsByNombreIgnoreCaseAndFecha(p.nombre, p.fecha)) {
-                Evento e = new Evento();
-                e.setNombre(p.nombre);
-                e.setDescripcion(p.descripcion);
-                e.setFecha(p.fecha);
-                e.setLugar(p.lugar);
-                e.setImagenUrl(p.imagenUrl);
-                e.setActivo(true);
+        for (Evento e : recolectados) {
+            boolean yaExiste = eventoRepository.existsByNombreIgnoreCaseAndFecha(e.getNombre(), e.getFecha());
+            if (!yaExiste) {
                 eventoRepository.save(e);
-                creados++;
+                nuevos++;
+                if (muestra.size() < 5) {
+                    Map<String, String> item = new HashMap<>();
+                    item.put("nombre", e.getNombre() != null ? e.getNombre() : "");
+                    item.put("fecha", e.getFecha() != null ? e.getFecha().toString() : "");
+                    item.put("lugar", e.getLugar() != null ? e.getLugar() : "");
+                    muestra.add(item);
+                }
+            } else {
+                duplicados++;
             }
         }
 
-        Map<String, Object> resultado = new HashMap<>();
-        resultado.put("status", "success");
-        resultado.put("mensaje", "Sincronización completada exitosamente.");
-        resultado.put("nuevosEventos", creados);
-        resultado.put("fechaReferencia", hoy.toString());
+        long duracionMs = System.currentTimeMillis() - inicio;
+
+        // Registro de telemetría y auditoría de scraping en MongoDB
+        guardarLogScrapingEnMongo("https://cartagena.gov.co/cultura-y-turismo", "Cartagena Cultural Agendas & Web Feeds",
+                recolectados.size(), nuevos, duplicados, duracionMs, muestra);
+
+        Map<String, Object> resultado = new LinkedHashMap<>();
+        resultado.put("status", "SUCCESS");
+        resultado.put("mensaje", "Sincronización externa de eventos completada con éxito.");
+        resultado.put("eventosRastreados", recolectados.size());
+        resultado.put("nuevosEventosAgregados", nuevos);
+        resultado.put("eventosDuplicadosOmitidos", duplicados);
+        resultado.put("tiempoProcesamientoMs", duracionMs);
+        resultado.put("fechaSincronizacion", LocalDate.now().toString());
+
+        log.info("[EVENTO_SYNC] Finalizado con éxito en {} ms. Nuevos: {}, Duplicados: {}", duracionMs, nuevos, duplicados);
         return resultado;
     }
 
-    private record EventoPlantilla(String nombre, String descripcion, LocalDate fecha, String lugar, String imagenUrl) {}
+    /**
+     * Tarea programada: Sincroniza automáticamente la cartelera todos los días a las 5:00 AM.
+     */
+    @Scheduled(cron = "0 0 5 * * ?")
+    public void tareaProgramadaSincronizacion() {
+        log.info("[CRON] Ejecutando sincronización automática diaria de eventos de Cartagena...");
+        sincronizarEventosExternos();
+    }
+
+    private void guardarLogScrapingEnMongo(String url, String fuente, int total, int nuevos, int duplicados,
+                                           long latenciaMs, List<Map<String, String>> muestra) {
+        if (scrapingLogRepository == null) return;
+        try {
+            EventoScrapingLog logDoc = new EventoScrapingLog();
+            logDoc.setFuenteUrl(url);
+            logDoc.setNombreFuente(fuente);
+            logDoc.setEventosExtraidos(total);
+            logDoc.setEventosNuevos(nuevos);
+            logDoc.setEventosDuplicados(duplicados);
+            logDoc.setLatenciaMs(latenciaMs);
+            logDoc.setEventosMuestra(muestra);
+            logDoc.setExito(true);
+            scrapingLogRepository.save(logDoc);
+        } catch (Exception ex) {
+            log.warn("[EVENTO_SYNC] No se pudo guardar el log de scraping en MongoDB: {}", ex.getMessage());
+        }
+    }
 }

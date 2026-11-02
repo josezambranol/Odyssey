@@ -1,158 +1,283 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
-<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title th:text="#{chatbot.title} + ' — ODYSSEY'">Chatbot ODYSSEY — ODYSSEY</title>
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <title th:text="#{chatbot.title} + ' — ODYSSEY'">Asistente IA ODYSSEY — Cartagena</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
     <style>
-        body { background:var(--cream); }
-        .chat-wrap { max-width:820px; margin:0 auto; padding:40px 16px 80px; }
-        .chat-head { background:linear-gradient(135deg, var(--azul-dark) 0%, var(--azul-mid) 100%); border-radius:20px 20px 0 0; padding:24px 28px; display:flex; align-items:center; gap:16px; }
-        .bot-av { width:54px; height:54px; border-radius:50%; background:rgba(200,150,62,.2); border:2px solid rgba(200,150,62,.5); display:flex; align-items:center; justify-content:center; font-size:1.8rem; flex-shrink:0; }
-        .chat-head h4 { font-family:'Cormorant Garamond',serif; font-weight:700; color:#fff; margin:0; font-size:1.3rem; }
-        .chat-head p { color:rgba(255,255,255,.65); font-size:.82rem; margin:0; }
-        .online-dot { width:9px; height:9px; background:#2ecc71; border-radius:50%; display:inline-block; margin-right:5px; box-shadow:0 0 0 3px rgba(46,204,113,.25); animation:blink 1.5s infinite; }
+        body { background: var(--cream); }
+        .chat-wrap { max-width: 900px; margin: 0 auto; padding: 36px 16px 80px; }
+        .chat-head {
+            background: linear-gradient(135deg, #071630 0%, #0b2d6b 100%);
+            border-radius: 22px 22px 0 0;
+            padding: 22px 26px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-bottom: 2px solid rgba(212, 166, 74, 0.4);
+        }
+        .bot-av {
+            width: 54px; height: 54px; border-radius: 50%;
+            background: rgba(212, 166, 74, 0.18);
+            border: 2px solid #d4a64a;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; color: #f3c86b; flex-shrink: 0;
+        }
+        .chat-head h4 { font-family: 'Cormorant Garamond', serif; font-weight: 700; color: #fff; margin: 0; font-size: 1.4rem; }
+        .chat-head p { color: rgba(255,255,255,.72); font-size: .82rem; margin: 0; }
+        .online-dot {
+            width: 9px; height: 9px; background: #2ecc71; border-radius: 50%;
+            display: inline-block; margin-right: 6px;
+            box-shadow: 0 0 0 3px rgba(46,204,113,.25); animation: blink 1.5s infinite;
+        }
         @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.4} }
-        .chat-box { background:#fff; min-height:420px; max-height:460px; overflow-y:auto; padding:24px 20px; display:flex; flex-direction:column; gap:16px; border-left:1px solid rgba(11,45,107,.08); border-right:1px solid rgba(11,45,107,.08); scroll-behavior:smooth; }
-        .chat-box::-webkit-scrollbar { width:4px; }
-        .chat-box::-webkit-scrollbar-thumb { background:var(--gold-pale); border-radius:4px; }
-        .msg { display:flex; gap:10px; align-items:flex-end; max-width:84%; }
-        .msg.bot { align-self:flex-start; }
-        .msg.user { align-self:flex-end; flex-direction:row-reverse; }
-        .msg-av { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:.95rem; flex-shrink:0; }
-        .msg.bot .msg-av { background:var(--azul); color:#fff; }
-        .msg.user .msg-av { background:var(--gold); color:var(--azul-dark); }
-        .bubble { padding:12px 16px; border-radius:18px; font-size:.93rem; line-height:1.65; white-space:pre-wrap; }
-        .msg.bot .bubble { background:#f0f4ff; color:var(--azul); border-bottom-left-radius:4px; border:1px solid #dce5ff; }
-        .msg.user .bubble { background:var(--azul); color:#fff; border-bottom-right-radius:4px; }
-        .sugs-wrap { background:#fff; padding:10px 20px 14px; border-left:1px solid rgba(11,45,107,.08); border-right:1px solid rgba(11,45,107,.08); }
-        .sugs { display:flex; gap:7px; flex-wrap:wrap; }
-        .sug { font-family:'DM Sans',sans-serif; font-size:.73rem; font-weight:700; text-transform:uppercase; letter-spacing:.04em; background:#fff; border:1.5px solid rgba(11,45,107,.15); color:var(--azul); padding:6px 14px; border-radius:40px; cursor:pointer; transition:.2s; }
-        .sug:hover { background:var(--azul); color:#fff; border-color:var(--azul); }
-        .typing-row { display:none; align-items:center; gap:10px; padding:8px 20px 10px; background:#fff; border-left:1px solid rgba(11,45,107,.08); border-right:1px solid rgba(11,45,107,.08); }
-        .typing-row.show { display:flex; }
-        .dot { width:7px; height:7px; border-radius:50%; background:var(--azul); opacity:.25; animation:pulse 1.2s infinite; }
+        .chat-box {
+            background: #fff; min-height: 440px; max-height: 500px;
+            overflow-y: auto; padding: 24px 22px;
+            display: flex; flex-direction: column; gap: 16px;
+            border-left: 1px solid rgba(11,45,107,.08);
+            border-right: 1px solid rgba(11,45,107,.08);
+            scroll-behavior: smooth;
+        }
+        .msg { display: flex; gap: 11px; align-items: flex-end; max-width: 85%; animation: msgPop 0.25s ease; }
+        @keyframes msgPop { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        .msg.bot { align-self: flex-start; }
+        .msg.user { align-self: flex-end; flex-direction: row-reverse; }
+        .msg-av {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: .95rem; flex-shrink: 0;
+        }
+        .msg.bot .msg-av { background: var(--azul); color: #f3c86b; }
+        .msg.user .msg-av { background: var(--gold); color: #071630; }
+        .bubble {
+            padding: 13px 18px; border-radius: 18px;
+            font-size: .93rem; line-height: 1.65;
+        }
+        .msg.bot .bubble {
+            background: #f4f7ff; color: #1e293b;
+            border-bottom-left-radius: 4px; border: 1px solid #dce5ff;
+        }
+        .msg.user .bubble {
+            background: linear-gradient(135deg, #0b2d6b, #071630);
+            color: #fff; border-bottom-right-radius: 4px;
+        }
+        .sugs-wrap {
+            background: #fcfdff; padding: 12px 20px 14px;
+            border-left: 1px solid rgba(11,45,107,.08);
+            border-right: 1px solid rgba(11,45,107,.08);
+            border-top: 1px solid #eef2ff;
+        }
+        .sugs { display: flex; gap: 7px; flex-wrap: wrap; }
+        .sug {
+            font-family: 'DM Sans', sans-serif; font-size: .74rem; font-weight: 700;
+            background: #fff; border: 1.5px solid rgba(11,45,107,.15);
+            color: var(--azul); padding: 6px 14px; border-radius: 40px;
+            cursor: pointer; transition: .2s;
+        }
+        .sug:hover { background: var(--azul); color: #fff; border-color: var(--azul); transform: translateY(-1px); }
+        .typing-row {
+            display: none; align-items: center; gap: 10px;
+            padding: 8px 20px 10px; background: #fff;
+            border-left: 1px solid rgba(11,45,107,.08);
+            border-right: 1px solid rgba(11,45,107,.08);
+        }
+        .typing-row.show { display: flex; }
+        .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--azul); opacity: .25; animation: pulse 1.2s infinite; }
         .dot:nth-child(2){animation-delay:.2s;} .dot:nth-child(3){animation-delay:.4s;}
         @keyframes pulse{0%,80%,100%{opacity:.2}40%{opacity:1}}
-        .chat-inp { display:flex; gap:10px; background:#fff; padding:14px 18px; border:1px solid rgba(11,45,107,.1); border-top:0; border-radius:0 0 20px 20px; box-shadow:0 8px 24px rgba(11,45,107,.08); }
-        .chat-inp textarea { flex:1; border:1.5px solid rgba(11,45,107,.15); border-radius:20px; padding:12px 20px; font-size:.93rem; color:var(--azul); outline:none; transition:.2s; font-family:'DM Sans',sans-serif; resize:none; overflow-y:hidden; min-height:46px; max-height:160px; line-height:1.5; }
-        .chat-inp textarea:focus { border-color:var(--azul); box-shadow:0 0 0 3px rgba(11,45,107,.08); }
-        .chat-inp button { border-radius:40px; padding:10px 22px; }
+        .chat-inp {
+            display: flex; gap: 10px; background: #fff; padding: 14px 18px;
+            border: 1px solid rgba(11,45,107,.1); border-top: 0;
+            border-radius: 0 0 22px 22px; box-shadow: 0 12px 32px rgba(11,45,107,.09);
+        }
+        .chat-inp textarea {
+            flex: 1; border: 1.5px solid rgba(11,45,107,.18); border-radius: 20px;
+            padding: 11px 18px; font-size: .93rem; color: var(--azul); outline: none;
+            resize: none; overflow-y: hidden; min-height: 46px; max-height: 150px;
+        }
+        .chat-inp textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,150,62,.15); }
     </style>
-    <!-- Favicon ODYSSEY -->
-    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
-    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
-    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
-    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
 </head>
 <body>
 <div th:replace="fragments :: topbar"></div>
 <div th:replace="fragments :: navbar-interno"></div>
 
-<div class="container py-5">
+<div class="container">
     <div class="chat-wrap">
 
         <!-- Header -->
         <div class="chat-head">
-            <div class="bot-av">🤖</div>
+            <div class="bot-av"><i class="fas fa-compass"></i></div>
             <div class="flex-grow-1">
-                <h4><span class="online-dot"></span><span th:text="#{chatbot.title}">ODYSSEY — Guía de Cartagena</span></h4>
-                <p th:text="#{chatbot.subtitle}">Disponible 24/7 · Clima · Playas · Transporte · Hoteles</p>
+                <h4><span class="online-dot"></span><span>ODYSSEY AI — Concierge de Cartagena</span></h4>
+                <p>Conectado al catálogo en vivo · Playas · Historia · Tarifas DATT &amp; Transcaribe · Gastronomía</p>
             </div>
-            <div class="d-none d-md-flex flex-column text-end">
-                <span style="font-size:.68rem; color:rgba(255,255,255,.5); text-transform:uppercase; letter-spacing:1.5px;">Powered by</span>
-                <span style="font-family:'Cormorant Garamond',serif; color:var(--gold-light); font-size:.95rem; font-weight:700;">ODYSSEY AI</span>
+            <div class="d-flex align-items-center gap-2">
+                <button class="btn btn-sm rounded-pill px-3" style="background:rgba(212,166,74,0.2);color:#f3c86b;border:1px solid rgba(212,166,74,0.45);font-size:0.75rem;"
+                        data-bs-toggle="modal" data-bs-target="#geminiKeyModal">
+                    <i class="fas fa-key me-1"></i> Motor IA
+                </button>
             </div>
         </div>
 
         <!-- Chat box -->
         <div class="chat-box" id="chatBox">
             <div class="msg bot">
-                <div class="msg-av">🤖</div>
-                <!-- Mensaje de bienvenida traducido vía i18n -->
-                <div class="bubble" th:text="#{chatbot.welcome}">¡Hola! 👋 Soy ODYSSEY, tu guía de Cartagena. ¿En qué te ayudo?</div>
+                <div class="msg-av"><i class="fas fa-compass"></i></div>
+                <div class="bubble">
+                    ¡Hola! 🌊 Soy <strong>ODYSSEY AI</strong>, tu asistente inteligente de Cartagena de Indias.<br><br>
+                    Puedo responder <strong>cualquier pregunta abierta</strong> sobre sitios históricos, playas e islas, tarifas oficiales de taxis DATT y Transcaribe, restaurantes o armarte un itinerario a medida. ¿Qué deseas explorar hoy?
+                </div>
             </div>
         </div>
 
-        <!-- Sugerencias (traducidas) -->
+        <!-- Sugerencias rápidas sin errores de sintaxis -->
         <div class="sugs-wrap">
+            <div class="small text-muted fw-semibold mb-2" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;">
+                ⚡ Consultas frecuentes y generador IA:
+            </div>
             <div class="sugs">
-                <button class="sug" th:onclick="|enviar('[[#{chatbot.sug.clima.q}]]')|" th:text="#{chatbot.sug.clima}">🌤️ Clima</button>
-                <button class="sug" th:onclick="|enviar('[[#{chatbot.sug.playas.q}]]')|" th:text="#{chatbot.sug.playas}">🏖️ Playas</button>
-                <button class="sug" th:onclick="|enviar('[[#{chatbot.sug.transporte.q}]]')|" th:text="#{chatbot.sug.transporte}">🚌 Transporte</button>
-                <button class="sug" th:onclick="|enviar('[[#{chatbot.sug.hoteles.q}]]')|" th:text="#{chatbot.sug.hoteles}">🏨 Hoteles</button>
-                <button class="sug" th:onclick="|enviar('[[#{chatbot.sug.actividades.q}]]')|" th:text="#{chatbot.sug.actividades}">🎯 Actividades</button>
-                <button class="sug" th:onclick="|enviar('[[#{chatbot.sug.costos.q}]]')|" th:text="#{chatbot.sug.costos}">💰 Costos</button>
-                <button class="sug" th:onclick="|enviar('[[#{chatbot.sug.historia.q}]]')|" th:text="#{chatbot.sug.historia}">🏰 Historia</button>
-                <button class="sug" th:onclick="|enviar('[[#{chatbot.sug.gastro.q}]]')|" th:text="#{chatbot.sug.gastro}">🍽️ Gastronomía</button>
-                <button class="sug" th:onclick="|enviar('[[#{chatbot.sug.epoca.q}]]')|" th:text="#{chatbot.sug.epoca}">📅 Mejor época</button>
+                <button class="sug" onclick="enviar('¿Cuáles son las mejores playas e islas de Cartagena y cómo llegar?')">🏖️ Playas e Islas</button>
+                <button class="sug" onclick="enviar('¿Cómo moverme en Transcaribe y cuánto cobran los taxis oficiales DATT?')">🚌 Transporte y Tarifas</button>
+                <button class="sug" onclick="enviar('Ármame un itinerario romántico y cultural de 2 días en Cartagena')">✨ Itinerario 2 Días</button>
+                <button class="sug" onclick="enviar('¿Qué platos típicos debo probar y qué restaurantes recomiendas en Getsemaní?')">🍽️ Gastronomía</button>
+                <button class="sug" onclick="enviar('¿Cuáles son los sitios históricos imprescindibles de la Ciudad Amurallada?')">🏰 Historia Colonial</button>
+                <button class="sug" onclick="enviar('¿Qué consejos de seguridad y precios justos debo tener en cuenta en las playas?')">🛡️ Seguridad y Precios</button>
+                <button class="sug" onclick="enviar('¿Qué festivales y eventos culturales hay en Cartagena?')">🎉 Eventos y Fiestas</button>
             </div>
         </div>
 
-        <!-- Typing -->
+        <!-- Indicador de escritura -->
         <div class="typing-row" id="typingRow">
-            <div class="msg-av" style="width:34px;height:34px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;">🤖</div>
+            <div class="msg-av" style="background:var(--azul);color:#f3c86b;"><i class="fas fa-compass fa-spin"></i></div>
             <div style="background:#f0f4ff;border:1px solid #dce5ff;padding:10px 16px;border-radius:18px;border-bottom-left-radius:4px;display:flex;gap:5px;align-items:center;">
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div>
+                <span class="small text-muted ms-2" style="font-size:0.75rem;">Consultando base de datos de Cartagena...</span>
             </div>
         </div>
 
         <!-- Input -->
         <div class="chat-inp">
-            <textarea id="chatInput" th:placeholder="#{chatbot.placeholder}" rows="1"
+            <textarea id="chatInput" placeholder="Pregúntame lo que quieras sobre Cartagena (ej: ¿Dónde ver el mejor atardecer? ¿Cuánto vale la lancha a Barú?)..." rows="1"
                       onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();enviarInput();}"
-                      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,160)+'px'"></textarea>
-            <button class="btn btn-primary" onclick="enviarInput()">
-                <i class="fa fa-paper-plane me-1"></i> <span th:text="#{chatbot.send}">Enviar</span>
+                      oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,150)+'px'"></textarea>
+            <button class="btn btn-primary rounded-pill px-4 fw-semibold" onclick="enviarInput()">
+                <i class="fa fa-paper-plane me-1"></i> Enviar
             </button>
         </div>
 
     </div>
 </div>
 
+<!-- Modal para configurar Google Gemini API Key opcional -->
+<div class="modal fade" id="geminiKeyModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius:18px;overflow:hidden;">
+            <div class="modal-header" style="background:#071630;color:#fff;">
+                <h5 class="modal-title fw-bold"><i class="fas fa-microchip text-warning me-2"></i>Configuración del Motor IA</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4">
+                <p class="small text-muted mb-3">
+                    ODYSSEY cuenta con un <strong>Motor Híbrido de 3 Niveles (Gemini 2.5 Flash + Cloud Generative AI + RAG Local)</strong> que funciona automáticamente sin necesidad de configuración adicional. Si tienes tu propia clave de <em>Google AI Studio</em>, puedes ingresarla aquí:
+                </p>
+                <div id="keyModalAlert"></div>
+                <div class="mb-3">
+                    <label class="form-label fw-semibold small">Google Gemini API Key (Opcional)</label>
+                    <input type="password" id="geminiKeyInput" class="form-control" placeholder="AIzaSy...">
+                </div>
+                <button type="button" class="btn btn-primary w-100 rounded-pill fw-semibold" onclick="guardarGeminiKey()">
+                    <i class="fas fa-check me-2"></i>Activar Clave en Tiempo Real
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div th:replace="fragments :: footer-interno"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const chatBox  = document.getElementById('chatBox');
+const chatBox = document.getElementById('chatBox');
 const typingRow = document.getElementById('typingRow');
 
-function agregarMsg(texto, tipo) {
+function formatearMarkdownLigero(texto) {
+    if (!texto) return '';
+    let html = texto
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+        .replace(/\*(.*?)\*/g, '<em>$1</em>')
+        .replace(/\n/g, '<br>');
+    return html;
+}
+
+function agregarMsg(texto, tipo, motor) {
     const div = document.createElement('div');
     div.className = 'msg ' + tipo;
+    const icono = tipo === 'bot' ? '<i class="fas fa-compass"></i>' : '<i class="fas fa-user"></i>';
+    const badgeMotor = (tipo === 'bot' && motor)
+        ? `<div class="mt-2 pt-1 border-top" style="font-size:0.68rem;color:#64748b;"><i class="fas fa-bolt text-warning me-1"></i>${motor}</div>`
+        : '';
     div.innerHTML =
-        '<div class="msg-av">' + (tipo === 'bot' ? '🤖' : '👤') + '</div>' +
-        '<div class="bubble">' + texto.replace(/\n/g, '<br>') + '</div>';
+        `<div class="msg-av">${icono}</div>` +
+        `<div class="bubble">${formatearMarkdownLigero(texto)}${badgeMotor}</div>`;
     chatBox.appendChild(div);
     chatBox.scrollTop = chatBox.scrollHeight;
 }
 
 async function enviar(msg) {
-    if (!msg.trim()) return;
-    agregarMsg(msg, 'user');
-    const inp=document.getElementById('chatInput'); inp.value=''; inp.style.height='46px';
+    if (!msg || !msg.trim()) return;
+    const limpio = msg.replace(/\[\[/g, '').replace(/\]\]/g, '').trim();
+    agregarMsg(limpio, 'user');
+    const inp = document.getElementById('chatInput');
+    inp.value = '';
+    inp.style.height = '46px';
     typingRow.classList.add('show');
     chatBox.scrollTop = chatBox.scrollHeight;
 
     try {
         const res = await fetch('/chatbot/respuesta', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ mensaje: msg })
+            headers: { 'Content-Type': 'application/json; charset=utf-8' },
+            body: JSON.stringify({ mensaje: limpio })
         });
         const data = await res.json();
         typingRow.classList.remove('show');
-        agregarMsg(data.respuesta, 'bot');
+        agregarMsg(data.respuesta, 'bot', data.motor);
     } catch (e) {
         typingRow.classList.remove('show');
-        // Mensaje de error localizado desde el atributo data del body
-        agregarMsg(document.body.dataset.errMsg || 'Connection error. Please try again 🙏', 'bot');
+        agregarMsg('Hubo un inconveniente temporal de red. Por favor intenta de nuevo.', 'bot');
     }
 }
 
 function enviarInput() {
     enviar(document.getElementById('chatInput').value);
+}
+
+async function guardarGeminiKey() {
+    const key = document.getElementById('geminiKeyInput').value.trim();
+    const alertBox = document.getElementById('keyModalAlert');
+    if (!key) {
+        alertBox.innerHTML = '<div class="alert alert-warning py-2 small">Ingresa una clave válida.</div>';
+        return;
+    }
+    try {
+        const res = await fetch('/chatbot/config-key', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ apiKey: key })
+        });
+        const data = await res.json();
+        alertBox.innerHTML = `<div class="alert alert-${data.exito ? 'success' : 'danger'} py-2 small">${data.mensaje}</div>`;
+    } catch (e) {
+        alertBox.innerHTML = '<div class="alert alert-danger py-2 small">Error guardando la clave.</div>';
+    }
 }
 </script>
 </body>
