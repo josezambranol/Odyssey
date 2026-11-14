@@ -3,12 +3,23 @@ package com.odyxs.vg;
 import com.odyxs.vg.dto.UsuarioRegistroDto;
 import com.odyxs.vg.entity.Usuario;
 import com.odyxs.vg.repository.UsuarioRepository;
+import com.odyxs.vg.repository.mongo.ChatbotLogRepository;
+import com.odyxs.vg.repository.mongo.CodigoVerificacionRepository;
+import com.odyxs.vg.repository.mongo.EventoScrapingLogRepository;
+import com.odyxs.vg.repository.mongo.ItinerarioRepository;
+import com.odyxs.vg.repository.mongo.LugarGeoRepository;
+import com.odyxs.vg.repository.mongo.ReporteRepository;
+import com.odyxs.vg.repository.mongo.SuscripcionLugarRepository;
 import com.odyxs.vg.service.UsuarioService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.test.context.support.WithMockUser;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -19,7 +30,18 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @SpringBootTest
 @AutoConfigureMockMvc
+@ActiveProfiles("test")
 public class AuthWorkflowIntegrationTest {
+
+    @MockBean private MongoTemplate mongoTemplate;
+    @MockBean private JavaMailSender javaMailSender;
+    @MockBean private ChatbotLogRepository chatbotLogRepository;
+    @MockBean private CodigoVerificacionRepository codigoVerificacionRepository;
+    @MockBean private EventoScrapingLogRepository eventoScrapingLogRepository;
+    @MockBean private ItinerarioRepository itinerarioRepository;
+    @MockBean private LugarGeoRepository lugarGeoRepository;
+    @MockBean private ReporteRepository reporteRepository;
+    @MockBean private SuscripcionLugarRepository suscripcionLugarRepository;
 
     @Autowired
     private MockMvc mockMvc;
