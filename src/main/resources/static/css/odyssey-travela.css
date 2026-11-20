@@ -361,12 +361,26 @@ h1,h2,h3,h4,h5,.display-1,.display-2,.display-3 {
 .chat-fab:hover { background:var(--azul); color:#fff; transform:scale(1.1); animation:none; }
 
 /* ── Auth pages ──────────────────────────────────────────── */
-.auth-wrapper { min-height:100vh; display:flex; }
-.auth-left { flex:0 0 45%; background-size:cover; background-position:center; position:relative; }
-.auth-left::before { content:''; position:absolute; inset:0; background:linear-gradient(to top,rgba(7,30,74,.9),rgba(7,30,74,.4)); }
+.auth-wrapper { min-height:100vh; display:flex; align-items:stretch; }
+.auth-left { flex:0 0 45%; background-size:cover; background-position:center; position:sticky; top:0; height:100vh; }
+.auth-left::before { content:''; position:absolute; inset:0; background:linear-gradient(to top,rgba(7,30,74,.9),rgba(7,30,74,.35)); }
 .auth-left-content { position:absolute; bottom:40px; left:40px; right:40px; color:#fff; }
-.auth-right { flex:1; display:flex; align-items:center; justify-content:center; background:var(--cream); padding:40px 20px; }
-.auth-form-box { width:100%; max-width:460px; background:#fff; border-radius:20px; padding:44px; box-shadow:0 12px 40px rgba(11,45,107,.12); }
+.auth-right { flex:1; display:flex; align-items:center; justify-content:center; background:var(--cream); padding:32px 20px; }
+.auth-form-box { width:100%; max-width:460px; background:#fff; border-radius:20px; padding:36px 40px; box-shadow:0 12px 40px rgba(11,45,107,.12); }
+.select-pais,
+select.calc-select {
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    appearance: none !important;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%234a5568' d='M2 4l4 4 4-4z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 12px 12px !important;
+    padding-right: 38px !important;
+}
+@media (min-width: 992px) {
+    .odyssey-footer-safe { padding-left: 96px !important; padding-right: 96px !important; }
+}
 .auth-brand { font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:700; color:var(--azul); text-decoration:none; }
 .form-control:focus { border-color:var(--azul); box-shadow:0 0 0 .2rem rgba(11,45,107,.12); }
 .alerta-error { background:#fff0f0; border:1px solid #fcc; color:#c00; padding:12px 16px; border-radius:10px; font-size:.88rem; margin-bottom:16px; }

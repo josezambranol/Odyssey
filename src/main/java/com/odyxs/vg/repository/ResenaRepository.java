@@ -5,4 +5,5 @@ import com.odyxs.vg.entity.Resenas;
 
 public interface ResenaRepository extends JpaRepository<Resenas, Long> {
     List<Resenas> findByLugarId(Long lugarId);
+    void deleteByLugarId(Long lugarId);
 }

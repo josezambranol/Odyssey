@@ -12,14 +12,14 @@
                 </span>
                 <span class="text-white-50 mx-2">|</span>
                 <span class="text-white-50 small">
-                    <i class="fa fa-star me-1" style="color:var(--gold);"></i>Patrimonio UNESCO 1984
+                    <i class="fa fa-star me-1" style="color:var(--gold);"></i><span th:text="#{topbar.unesco}">Patrimonio UNESCO 1984</span>
                 </span>
                 <span class="text-white-50 mx-2">|</span>
                 <!-- Clima en tiempo real -->
                 <span class="d-inline-flex align-items-center gap-2" style="font-size:.78rem;">
                     <span id="tb-clima-icono" style="font-size:1rem; line-height:1;">⏳</span>
                     <span id="tb-clima-temp" style="color:#fff; font-weight:700;">--°C</span>
-                    <span id="tb-clima-desc" style="color:rgba(255,255,255,.55);">Cargando...</span>
+                    <span id="tb-clima-desc" style="color:rgba(255,255,255,.55);" th:text="#{topbar.loading}">Cargando...</span>
                     <span style="color:rgba(255,255,255,.3);">·</span>
                     <span style="color:rgba(255,255,255,.45);">💧</span>
                     <span id="tb-clima-hum" style="color:rgba(255,255,255,.65);">--%</span>
@@ -33,20 +33,21 @@
             <div class="d-inline-flex align-items-center" style="height:44px; gap:10px;">
                 <div class="lang-switcher">
                     <a th:href="@{/idioma(lang='es')}" class="lang-btn"
-                       onclick="document.cookie='googtrans=/es/es;path=/;'; document.cookie='googtrans=/es/es;path=/;domain='+window.location.hostname;"
                        th:classappend="${#locale.language == 'es'} ? ' lang-active' : ''">🇨🇴 ES</a>
                     <span class="lang-sep">|</span>
                     <a th:href="@{/idioma(lang='en')}" class="lang-btn"
-                       onclick="document.cookie='googtrans=/es/en;path=/;'; document.cookie='googtrans=/es/en;path=/;domain='+window.location.hostname;"
                        th:classappend="${#locale.language == 'en'} ? ' lang-active' : ''">🇺🇸 EN</a>
                 </div>
             </div>
         </div>
     </div>
-    <script>
+    <script th:inline="javascript">
     (function(){
+        var lang = /*[[${#locale.language}]]*/ 'es';
         var WMO_ICONS={0:"☀️",1:"🌤️",2:"⛅",3:"☁️",45:"🌫️",48:"🌫️",51:"🌦️",53:"🌦️",55:"🌧️",61:"🌧️",63:"🌧️",65:"🌧️",80:"🌦️",81:"🌧️",82:"⛈️",95:"⛈️",99:"⛈️"};
-        var WMO_DESC={0:"Despejado",1:"Casi despejado",2:"Parcial nublado",3:"Nublado",45:"Neblina",51:"Llovizna",53:"Llovizna",55:"Llovizna",61:"Lluvia leve",63:"Lluvia",65:"Lluvia fuerte",80:"Chubascos",81:"Chubascos",82:"Chubascos",95:"Tormenta",99:"Tormenta"};
+        var WMO_DESC = (lang === 'en')
+            ? {0:"Clear sky",1:"Mostly clear",2:"Partly cloudy",3:"Cloudy",45:"Mist",51:"Light drizzle",53:"Drizzle",55:"Heavy drizzle",61:"Light rain",63:"Rain",65:"Heavy rain",80:"Showers",81:"Showers",82:"Heavy showers",95:"Thunderstorm",99:"Thunderstorm"}
+            : {0:"Despejado",1:"Casi despejado",2:"Parcial nublado",3:"Nublado",45:"Neblina",51:"Llovizna",53:"Llovizna",55:"Llovizna",61:"Lluvia leve",63:"Lluvia",65:"Lluvia fuerte",80:"Chubascos",81:"Chubascos",82:"Chubascos",95:"Tormenta",99:"Tormenta"};
         fetch("https://api.open-meteo.com/v1/forecast?latitude=10.3910&longitude=-75.4794&current=temperature_2m,relative_humidity_2m,wind_speed_10m,weather_code&timezone=America%2FBogota")
         .then(function(r){return r.json();})
         .then(function(d){
@@ -105,7 +106,7 @@
                         <div style="font-family:'DM Sans',sans-serif; font-size:.72rem; font-weight:600; color:var(--gold); letter-spacing:.3px;">cartagena.com.co</div>
                     </div>
                     <div style="width:2px; background:var(--gold); border-radius:2px; margin:1px 0;"></div>
-                    <div style="font-family:'DM Sans',sans-serif; font-size:.6rem; font-weight:700; color:#ffffff; text-transform:uppercase; letter-spacing:1px; line-height:1.25; display:flex; align-items:center;">TU<br>GUÍA</div>
+                    <div style="font-family:'DM Sans',sans-serif; font-size:.6rem; font-weight:700; color:#ffffff; text-transform:uppercase; letter-spacing:1px; line-height:1.25; display:flex; align-items:center;" th:utext="#{nav.tuGuia}">TU<br>GUÍA</div>
                 </div>
             </div>
         </a>
@@ -125,24 +126,22 @@
             <!-- Móvil: selector idioma dentro del menú -->
             <div class="d-lg-none px-2 py-2 d-flex gap-2">
                 <a th:href="@{/idioma(lang='es')}" class="lang-btn-mobile"
-                   onclick="document.cookie='googtrans=/es/es;path=/;'; document.cookie='googtrans=/es/es;path=/;domain='+window.location.hostname;"
                    th:classappend="${#locale.language == 'es'} ? ' lang-active' : ''">🇨🇴 ES</a>
                 <a th:href="@{/idioma(lang='en')}" class="lang-btn-mobile"
-                   onclick="document.cookie='googtrans=/es/en;path=/;'; document.cookie='googtrans=/es/en;path=/;domain='+window.location.hostname;"
                    th:classappend="${#locale.language == 'en'} ? ' lang-active' : ''">🇺🇸 EN</a>
             </div>
             <th:block th:if="${session.usuarioId != null}">
                 <a href="/menu" class="btn btn-primary rounded-pill py-2 px-4 ms-lg-3">
                     <i class="fa fa-compass me-1"></i><span th:text="#{nav.miPanel}">Mi Panel</span>
                 </a>
-                <a href="/logout" class="btn btn-outline-danger rounded-pill py-2 px-3 ms-2"
-                   title="Cerrar sesión" style="font-size:.85rem;">
-                    <i class="fa fa-sign-out-alt me-1"></i>Salir
+                <a href="/logout" class="btn btn-outline-light rounded-pill py-2 px-3 ms-2"
+                   th:title="#{nav.cerrarSesion}" style="font-size:.85rem; border-color:rgba(255,255,255,0.45);">
+                    <i class="fa fa-sign-out-alt me-1"></i><span th:text="#{nav.salir}">Salir</span>
                 </a>
             </th:block>
             <th:block th:if="${session.usuarioId == null}">
                 <a href="/login" class="btn btn-primary rounded-pill py-2 px-4 ms-lg-3"
-                   title="Solo necesario para dejar reseñas o suscribirte a novedades">
+                   th:title="#{nav.loginHint}">
                    <i class="fa fa-bell me-1"></i><span th:text="#{nav.iniciarSesion}">Iniciar sesión</span>
                 </a>
             </th:block>
@@ -155,7 +154,7 @@
 <div th:fragment="footer-interno">
 
     <!-- Footer -->
-    <div class="container-fluid py-4" style="background:var(--azul-dark);">
+    <div class="container-fluid py-4 odyssey-footer-safe" style="background:var(--azul-dark);">
         <div class="container py-3">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-4 text-center text-lg-start">
@@ -174,7 +173,11 @@
                         <span style="color:rgba(255,255,255,.2);">·</span>
                         <a href="/mapa"        class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{nav.mapa}">Mapa</a>
                         <span style="color:rgba(255,255,255,.2);">·</span>
-                        <a href="/chatbot"     class="small text-decoration-none" style="color:var(--gold);">Concierge IA</a>
+                        <a href="/chatbot"     class="small text-decoration-none" style="color:var(--gold);" th:text="#{footer.concierge}">Concierge IA</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="/terminos"    class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{footer.terms}">Términos</a>
+                        <span style="color:rgba(255,255,255,.2);">·</span>
+                        <a href="/privacidad"  class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{footer.privacy}">Privacidad</a>
                     </div>
                 </div>
                 <div class="col-lg-4 text-center text-lg-end">
@@ -452,36 +455,6 @@
             chatEnviar(document.getElementById('chatInputPop').value);
         }
     </script>
-
-    <!-- ── Traductor Global de Todo el Sitio (Google Translate Integrado) ── -->
-    <div id="google_translate_element" style="display:none;"></div>
-    <script type="text/javascript">
-        function googleTranslateElementInit() {
-            new google.translate.TranslateElement({
-                pageLanguage: 'es',
-                includedLanguages: 'en,es',
-                autoDisplay: false
-            }, 'google_translate_element');
-        }
-    </script>
-    <script type="text/javascript" src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"></script>
-    <style>
-        .goog-te-banner-frame.skiptranslate, .goog-te-gadget-icon, .goog-te-gadget-simple, .goog-tooltip, .goog-te-balloon-frame {
-            display: none !important;
-        }
-        body { top: 0px !important; }
-        .goog-text-highlight { background: none !important; box-shadow: none !important; }
-    </style>
-    <div th:if="${#locale.language == 'en'}">
-    <script>
-        // Disparar traducción si aún no se ha ejecutado
-        (function() {
-            if (!document.cookie.includes('googtrans=/es/en')) {
-                document.cookie = "googtrans=/es/en;path=/;";
-            }
-        })();
-    </script>
-    </div>
 </div>
 <!-- ═══ FIN footer-interno ══════════════════════════════════ -->
 

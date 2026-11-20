@@ -1,5 +1,6 @@
 package com.odyxs.vg.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.servlet.LocaleResolver;
@@ -16,6 +17,9 @@ import java.util.Locale;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
+
+    @Value("${odyssey.upload.dir:${user.home}/odyssey-uploads}")
+    private String uploadDir;
 
     @Bean
     public LocaleResolver localeResolver() {
@@ -40,9 +44,13 @@ public class WebConfig implements WebMvcConfigurer {
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
 
-        // Carpeta de uploads externa al jar (persiste entre reinicios)
-        // Se crea automáticamente en user.home/odyxs-uploads/
-        String uploadsExterno = "file:" + System.getProperty("user.home") + "/odyssey-uploads/";
+        String cleanDir = (uploadDir != null && !uploadDir.isBlank())
+                ? uploadDir.trim()
+                : System.getProperty("user.home") + "/odyssey-uploads";
+        if (!cleanDir.endsWith("/") && !cleanDir.endsWith("\\")) {
+            cleanDir += "/";
+        }
+        String uploadsExterno = Paths.get(cleanDir).toAbsolutePath().toUri().toString();
 
         // Rutas classpath para recursos estáticos empaquetados (img, css, js)
         String staticFs = "file:" + Paths.get(System.getProperty("user.dir"),

@@ -1,8 +1,8 @@
 package com.odyxs.vg.service;
 
-import com.odyxs.vg.domain.mongo.Itinerario;
+import com.odyxs.vg.entity.Itinerario;
 import com.odyxs.vg.dto.GenerarItinerarioRequest;
-import com.odyxs.vg.repository.mongo.ItinerarioRepository;
+import com.odyxs.vg.repository.ItinerarioRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;

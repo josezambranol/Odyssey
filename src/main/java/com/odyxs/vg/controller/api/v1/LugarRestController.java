@@ -5,7 +5,7 @@ import com.odyxs.vg.dto.LugarCercanoDto;
 import com.odyxs.vg.entity.Lugar;
 import com.odyxs.vg.service.LugarGeoService;
 import com.odyxs.vg.service.LugarService;
-import com.odyxs.vg.service.RedisMetricsService;
+import com.odyxs.vg.service.MetricsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,20 +18,20 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/lugares")
-@Tag(name = "Catálogo de Lugares (MySQL + Redis Cache + Geo NoSQL)", description = "Endpoints REST del catálogo oficial y geolocalización de Cartagena")
+@Tag(name = "Catálogo de Lugares (MySQL)", description = "Endpoints REST del catálogo oficial y geolocalización de Cartagena")
 public class LugarRestController {
 
     @Autowired
     private LugarService lugarService;
 
     @Autowired
-    private RedisMetricsService redisMetricsService;
+    private MetricsService metricsService;
 
     @Autowired
     private LugarGeoService lugarGeoService;
 
-    @Operation(summary = "Listar lugares aprobados (con Caché en Redis)",
-               description = "Obtiene todos los sitios turísticos aprobados con caché de 15 minutos en Redis para respuesta en < 2ms.")
+    @Operation(summary = "Listar lugares aprobados (con caché en memoria)",
+               description = "Obtiene todos los sitios turísticos aprobados desde MySQL con caché en memoria.")
     @Cacheable(value = "lugares", key = "'aprobados'")
     @GetMapping
     public ResponseEntity<ApiResponse<List<Lugar>>> obtenerAprobados() {
@@ -39,8 +39,8 @@ public class LugarRestController {
         return ResponseEntity.ok(ApiResponse.ok(lugares));
     }
 
-    @Operation(summary = "📍 Búsqueda Geoespacial: Lugares Cerca de Mí (MongoDB 2dsphere)",
-               description = "Devuelve los sitios turísticos más cercanos a las coordenadas del usuario en Cartagena, ordenados por distancia exacta.")
+    @Operation(summary = "Búsqueda Geoespacial: Lugares Cerca de Mí",
+               description = "Devuelve los sitios turísticos más cercanos a las coordenadas del usuario en Cartagena usando fórmula Haversine sobre MySQL.")
     @GetMapping("/cerca-de-mi")
     public ResponseEntity<ApiResponse<List<LugarCercanoDto>>> buscarCercaDeMi(
             @Parameter(description = "Longitud GPS (ej. -75.5489)") @RequestParam double lng,
@@ -52,15 +52,14 @@ public class LugarRestController {
     }
 
     @Operation(summary = "Obtener detalle de un lugar por ID",
-               description = "Devuelve la información de un sitio y registra automáticamente una visita en Redis para el trending topic.")
+               description = "Devuelve la información de un sitio y registra automáticamente una visita en MySQL.")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Lugar>> obtenerPorId(@PathVariable Long id) {
         Lugar lugar = lugarService.obtenerPorId(id);
         if (lugar == null) {
             return ResponseEntity.notFound().build();
         }
-        // Registra la visita en memoria en Redis
-        redisMetricsService.registrarVisitaLugar(id);
+        metricsService.registrarVisitaLugar(id);
         return ResponseEntity.ok(ApiResponse.ok(lugar));
     }
 

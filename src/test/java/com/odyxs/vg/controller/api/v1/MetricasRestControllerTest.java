@@ -1,9 +1,9 @@
 package com.odyxs.vg.controller.api.v1;
 
-import com.odyxs.vg.repository.mongo.ChatbotLogRepository;
+import com.odyxs.vg.repository.ChatbotLogRepository;
 import com.odyxs.vg.security.CustomAuthenticationSuccessHandler;
 import com.odyxs.vg.security.CustomUserDetailsService;
-import com.odyxs.vg.service.RedisMetricsService;
+import com.odyxs.vg.service.MetricsService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -31,7 +31,7 @@ class MetricasRestControllerTest {
     private MockMvc mockMvc;
 
     @MockBean
-    private RedisMetricsService redisMetricsService;
+    private MetricsService metricsService;
 
     @MockBean
     private ChatbotLogRepository chatbotLogRepository;
@@ -49,7 +49,7 @@ class MetricasRestControllerTest {
                 Map.of("lugarId", 1L, "puntosTrending", 124.0),
                 Map.of("lugarId", 2L, "puntosTrending", 98.0)
         );
-        when(redisMetricsService.obtenerTopTrending(5)).thenReturn(trending);
+        when(metricsService.obtenerTopTrending(5)).thenReturn(trending);
 
         mockMvc.perform(get("/api/v1/metricas/trending?limit=5"))
                 .andExpect(status().isOk())
@@ -61,7 +61,7 @@ class MetricasRestControllerTest {
     @Test
     @WithMockUser
     void registrarVisita_IncrementaEnRedis() throws Exception {
-        when(redisMetricsService.obtenerVisitas(5L)).thenReturn(42L);
+        when(metricsService.obtenerVisitas(5L)).thenReturn(42L);
 
         mockMvc.perform(post("/api/v1/metricas/visita/5")
                         .contentType(MediaType.APPLICATION_JSON))
@@ -70,6 +70,6 @@ class MetricasRestControllerTest {
                 .andExpect(jsonPath("$.data.lugarId").value(5))
                 .andExpect(jsonPath("$.data.totalVisitas").value(42));
 
-        verify(redisMetricsService).registrarVisitaLugar(5L);
+        verify(metricsService).registrarVisitaLugar(5L);
     }
 }

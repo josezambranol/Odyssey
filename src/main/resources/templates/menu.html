@@ -2,7 +2,7 @@
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title>Mi Panel — ODYSSEY</title>
+    <title th:text="#{menu.page.title}">Mi Panel — ODYSSEY</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -16,9 +16,9 @@
 <!-- Hero personalizado -->
 <div class="page-breadcrumb-hero" style="min-height:200px; background:linear-gradient(135deg,var(--azul-dark) 0%,var(--azul-mid) 60%, rgba(200,150,62,.3) 100%);">
     <div style="position:relative; z-index:1; text-align:center;">
-        <h1 style="font-style:italic;" th:text="'¡Hola, ' + ${nombre} + '! 👋'">¡Hola!</h1>
+        <h1 style="font-style:italic;" th:text="#{menu.hello(${nombre})}">¡Hola!</h1>
         <div class="gold-line"></div>
-        <p style="color:rgba(255,255,255,.85);">Administra tus alertas de sitios de interés y explora <strong>Cartagena de Indias</strong></p>
+        <p style="color:rgba(255,255,255,.85);" th:utext="#{menu.hero.sub}">Administra tus alertas de sitios de interés y explora <strong>Cartagena de Indias</strong></p>
     </div>
 </div>
 
@@ -31,9 +31,9 @@
                 <span class="input-group-text" style="background:var(--azul); border:none; color:var(--gold); border-radius:40px 0 0 40px;">
                     <i class="fa fa-search"></i>
                 </span>
-                <input name="q" class="form-control" style="border-color:rgba(11,45,107,.2); padding:12px 18px;" placeholder="Buscar en Cartagena...">
+                <input name="q" class="form-control" style="border-color:rgba(11,45,107,.2); padding:12px 18px;" th:placeholder="#{menu.search.placeholder}" placeholder="Buscar en Cartagena...">
             </div>
-            <button type="submit" class="btn btn-primary rounded-pill px-4">Buscar</button>
+            <button type="submit" class="btn btn-primary rounded-pill px-4" th:text="#{index.buscar}">Buscar</button>
         </div>
     </form>
 
@@ -42,12 +42,12 @@
         <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
             <div>
                 <span class="badge rounded-pill px-3 py-1 mb-1" style="background:var(--gold-pale);color:var(--azul);font-weight:700;font-size:.72rem;">
-                    <i class="fas fa-bell me-1" style="color:var(--gold);"></i> NOVEDADES &amp; ALERTAS EN TU CORREO
+                    <i class="fas fa-bell me-1" style="color:var(--gold);"></i> <span th:text="#{menu.subs.badge}">NOVEDADES &amp; ALERTAS EN TU CORREO</span>
                 </span>
-                <h4 class="fw-bold mb-0" style="color:var(--azul);font-family:'Cormorant Garamond',serif;">Mis Sitios de Interés Suscritos</h4>
+                <h4 class="fw-bold mb-0" style="color:var(--azul);font-family:'Cormorant Garamond',serif;" th:text="#{menu.subs.title}">Mis Sitios de Interés Suscritos</h4>
             </div>
             <a href="/lugares" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                <i class="fas fa-plus me-1"></i> Explorar más sitios
+                <i class="fas fa-plus me-1"></i> <span th:text="#{menu.subs.more}">Explorar más sitios</span>
             </a>
         </div>
 
@@ -60,7 +60,7 @@
                         <span class="badge bg-warning text-dark mb-1" style="font-size:0.65rem;" th:text="${sub.categoriaLugar}">Categoría</span>
                         <h6 class="fw-bold mb-1 text-truncate" style="color:var(--azul);" th:text="${sub.nombreLugar}">Nombre</h6>
                         <a th:href="@{/lugares/{id}(id=${sub.lugarId})}" class="small fw-semibold text-decoration-none" style="color:var(--gold);">
-                            Ver ficha y reseñas <i class="fas fa-arrow-right ms-1"></i>
+                            <span th:text="#{menu.subs.view}">Ver ficha y reseñas</span> <i class="fas fa-arrow-right ms-1"></i>
                         </a>
                     </div>
                 </div>
@@ -68,8 +68,8 @@
         </div>
 
         <div class="text-center py-4" th:if="${#lists.isEmpty(suscripciones)}">
-            <p class="text-muted small mb-2">Aún no has activado alertas para ningún sitio turístico. Entra a cualquier lugar de Cartagena y pulsa <strong>"Activar alertas en mi correo"</strong>.</p>
-            <a href="/lugares" class="btn btn-primary btn-sm rounded-pill px-4">Descubrir lugares emblemáticos</a>
+            <p class="text-muted small mb-2" th:utext="#{menu.subs.empty}">Aún no has activado alertas para ningún sitio turístico. Entra a cualquier lugar de Cartagena y pulsa <strong>"Activar alertas en mi correo"</strong>.</p>
+            <a href="/lugares" class="btn btn-primary btn-sm rounded-pill px-4" th:text="#{menu.subs.cta}">Descubrir lugares emblemáticos</a>
         </div>
     </div>
 
@@ -79,8 +79,8 @@
             <a href="/lugares?categoriaId=1" class="menu-card"
                style="background-image:url('/img/hero-playa-blanca.jpg')">
                 <div class="menu-card-body">
-                    <p class="menu-card-title">Playas</p>
-                    <p class="menu-card-sub">Barú · Rosario · Bocagrande</p>
+                    <p class="menu-card-title" th:text="#{menu.c1.title}">Playas</p>
+                    <p class="menu-card-sub" th:text="#{menu.c1.sub}">Barú · Rosario · Bocagrande</p>
                 </div>
             </a>
         </div>
@@ -88,8 +88,8 @@
             <a href="/eventos" class="menu-card"
                style="background-image:url('/img/pf-eventos.jpg')">
                 <div class="menu-card-body">
-                    <p class="menu-card-title">Eventos</p>
-                    <p class="menu-card-sub">Hay Festival · FICCI · Fiestas</p>
+                    <p class="menu-card-title" th:text="#{menu.c2.title}">Eventos</p>
+                    <p class="menu-card-sub" th:text="#{menu.c2.sub}">Hay Festival · FICCI · Fiestas</p>
                 </div>
             </a>
         </div>
@@ -97,8 +97,8 @@
             <a href="/actividades" class="menu-card"
                style="background-image:url('/img/pf-actividades.jpg')">
                 <div class="menu-card-body">
-                    <p class="menu-card-title">Actividades</p>
-                    <p class="menu-card-sub">Tours · Buceo · Manglares</p>
+                    <p class="menu-card-title" th:text="#{menu.c3.title}">Actividades</p>
+                    <p class="menu-card-sub" th:text="#{menu.c3.sub}">Tours · Buceo · Manglares</p>
                 </div>
             </a>
         </div>
@@ -106,8 +106,8 @@
             <a href="/transporte" class="menu-card"
                style="background-image:url('/img/pf-transporte.jpg')">
                 <div class="menu-card-body">
-                    <p class="menu-card-title">Transporte</p>
-                    <p class="menu-card-sub">Transcaribe · Tarifas DATT</p>
+                    <p class="menu-card-title" th:text="#{menu.c4.title}">Transporte</p>
+                    <p class="menu-card-sub" th:text="#{menu.c4.sub}">Transcaribe · Tarifas DATT</p>
                 </div>
             </a>
         </div>
@@ -115,8 +115,8 @@
             <a href="/guia" class="menu-card"
                style="background-image:url('/img/pf-guia.jpg')">
                 <div class="menu-card-body">
-                    <p class="menu-card-title">Guía Turística</p>
-                    <p class="menu-card-sub">Historia · Clima · Consejos</p>
+                    <p class="menu-card-title" th:text="#{menu.c5.title}">Guía Turística</p>
+                    <p class="menu-card-sub" th:text="#{menu.c5.sub}">Historia · Clima · Consejos</p>
                 </div>
             </a>
         </div>
@@ -124,8 +124,8 @@
             <a href="/mapa" class="menu-card"
                style="background-image:url('/img/pf-mapa.jpg')">
                 <div class="menu-card-body">
-                    <p class="menu-card-title">Mapa Cartográfico</p>
-                    <p class="menu-card-sub">Radar 2dsphere en vivo</p>
+                    <p class="menu-card-title" th:text="#{menu.c6.title}">Mapa Cartográfico</p>
+                    <p class="menu-card-sub" th:text="#{menu.c6.sub}">Radar Haversine en vivo</p>
                 </div>
             </a>
         </div>
@@ -133,8 +133,8 @@
             <a href="/chatbot" class="menu-card"
                style="background-image:url('/img/pf-chatbot.jpg')">
                 <div class="menu-card-body">
-                    <p class="menu-card-title" style="color:rgb(255, 255, 255)!important;">Concierge IA</p>
-                    <p class="menu-card-sub" style="color:rgba(255, 255, 255, 0.804)!important;">Asistente 24/7</p>
+                    <p class="menu-card-title" style="color:rgb(255, 255, 255)!important;" th:text="#{menu.c7.title}">Concierge IA</p>
+                    <p class="menu-card-sub" style="color:rgba(255, 255, 255, 0.804)!important;" th:text="#{menu.c7.sub}">Asistente 24/7</p>
                 </div>
             </a>
         </div>
@@ -142,8 +142,8 @@
             <a href="/proponer-lugar" class="menu-card"
                style="background-image:url('/img/pf-proponer-lugar.jpg')">
                 <div class="menu-card-body">
-                    <p class="menu-card-title">Proponer Lugar</p>
-                    <p class="menu-card-sub">Comparte un sitio</p>
+                    <p class="menu-card-title" th:text="#{menu.c8.title}">Proponer Lugar</p>
+                    <p class="menu-card-sub" th:text="#{menu.c8.sub}">Comparte un sitio</p>
                 </div>
             </a>
         </div>
@@ -152,8 +152,8 @@
                style="background:linear-gradient(135deg,#b71c1c 0%,#c62828 100%);">
                 <div class="menu-card-body">
                     <div class="menu-card-icon">⚙️</div>
-                    <p class="menu-card-title">Panel Admin</p>
-                    <p class="menu-card-sub">Gestión completa</p>
+                    <p class="menu-card-title" th:text="#{menu.admin.title}">Panel Admin</p>
+                    <p class="menu-card-sub" th:text="#{menu.admin.sub}">Gestión completa</p>
                 </div>
             </a>
         </div>
@@ -163,10 +163,10 @@
     <div class="mt-5 p-4 rounded-3 d-flex align-items-center gap-4" style="background:var(--cream); border:1px solid rgba(200,150,62,.25);">
         <div style="font-size:2.5rem; flex-shrink:0;">💡</div>
         <div>
-            <h6 class="fw-bold mb-1" style="color:var(--azul);">Consejo del día</h6>
-            <p class="text-muted mb-0 small">El mejor momento para visitar el Castillo San Felipe es temprano (8:00 AM) o después de las 4:00 PM: evitas el sol intenso y disfrutas de la brisa marina sobre la bahía.</p>
+            <h6 class="fw-bold mb-1" style="color:var(--azul);" th:text="#{menu.tip.title}">Consejo del día</h6>
+            <p class="text-muted mb-0 small" th:text="#{menu.tip.body}">El mejor momento para visitar el Castillo San Felipe es temprano (8:00 AM) o después de las 4:00 PM: evitas el sol intenso y disfrutas de la brisa marina sobre la bahía.</p>
         </div>
-        <a href="/guia" class="btn btn-outline-primary rounded-pill px-4 flex-shrink-0" style="white-space:nowrap;">Leer guía</a>
+        <a href="/guia" class="btn btn-outline-primary rounded-pill px-4 flex-shrink-0" style="white-space:nowrap;" th:text="#{menu.tip.btn}">Leer guía</a>
     </div>
 </div>
 

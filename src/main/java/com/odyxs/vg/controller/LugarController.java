@@ -18,7 +18,7 @@ public class LugarController {
     @Autowired private ResenaService     resenaService;
     @Autowired private CategoriaService  categoriaService;
     @Autowired(required = false) private AuthCodigoService authCodigoService;
-    @Autowired(required = false) private RedisMetricsService redisMetricsService;
+    @Autowired(required = false) private MetricsService metricsService;
 
     // ── Listado por categoría (Público) ───────────────────────
     @GetMapping("/lugares")
@@ -56,9 +56,9 @@ public class LugarController {
         Lugar lugar = lugarService.obtenerPorId(id);
         if (lugar == null) return "redirect:/lugares";
 
-        if (redisMetricsService != null) {
-            redisMetricsService.registrarVisitaLugar(id);
-            model.addAttribute("visitasLugar", redisMetricsService.obtenerVisitas(id));
+        if (metricsService != null) {
+            metricsService.registrarVisitaLugar(id);
+            model.addAttribute("visitasLugar", metricsService.obtenerVisitas(id));
         }
 
         boolean estaSuscrito = false;
@@ -102,9 +102,11 @@ public class LugarController {
                                 @RequestParam String ubicacion,
                                 @RequestParam Long categoriaId,
                                 @RequestParam(required = false) String urlMapa,
+                                @RequestParam(required = false) Double latitud,
+                                @RequestParam(required = false) Double longitud,
                                 @RequestParam(required = false) MultipartFile imagen,
                                 Model model) {
-        String resultado = lugarService.guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, false, imagen);
+        String resultado = lugarService.guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, false, imagen, null, latitud, longitud);
 
         if ("Lugar guardado.".equals(resultado)) {
             model.addAttribute("mensaje", "¡Propuesta enviada! Será revisada por el equipo Odyssey.");

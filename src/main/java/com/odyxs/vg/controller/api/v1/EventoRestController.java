@@ -28,12 +28,12 @@ public class EventoRestController {
     @Autowired
     private EventoRepository eventoRepository;
 
-    @Operation(summary = "🌐 Sincronizar eventos con Web Scraping de fuentes externas",
-               description = "Rastrea agendas culturales de Cartagena en tiempo real, deduplica y guarda nuevos eventos en MySQL y auditoría en MongoDB.")
+    @Operation(summary = "Refrescar cartelera de eventos culturales",
+               description = "Invalida caché y actualiza los eventos activos desde MySQL.")
     @PostMapping("/sync-externo")
     public ResponseEntity<ApiResponse<Map<String, Object>>> sincronizarExterno() {
-        Map<String, Object> resultado = eventoSyncService.sincronizarEventosExternos();
-        return ResponseEntity.ok(ApiResponse.ok("Sincronización externa completada", resultado));
+        Map<String, Object> resultado = eventoSyncService.refrescarCarteleraEventos();
+        return ResponseEntity.ok(ApiResponse.ok("Cartelera refrescada desde MySQL", resultado));
     }
 
     @Operation(summary = "Obtener cartelera clasificada (Hoy, Próximos, Finalizados)",

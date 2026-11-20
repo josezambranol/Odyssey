@@ -1,6 +1,6 @@
 package com.odyxs.vg.controller.api.v1;
 
-import com.odyxs.vg.domain.mongo.Reporte;
+import com.odyxs.vg.entity.Reporte;
 import com.odyxs.vg.security.CustomAuthenticationSuccessHandler;
 import com.odyxs.vg.security.CustomUserDetailsService;
 import com.odyxs.vg.service.ReporteService;

@@ -1,34 +1,39 @@
-package com.odyxs.vg.domain.mongo;
+package com.odyxs.vg.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import jakarta.persistence.*;
 import java.time.Instant;
 
-@Document(collection = "suscripciones_lugares")
+@Entity
+@Table(name = "suscripciones_lugares", indexes = {
+    @Index(name = "idx_sub_usuario_lugar", columnList = "usuarioId, lugarId")
+})
 public class SuscripcionLugar {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(length = 36)
     private String id;
 
-    @Indexed
     private Long usuarioId;
 
-    @Indexed
+    @Column(length = 150)
     private String correo;
 
+    @Column(length = 120)
     private String nombreUsuario;
 
-    @Indexed
     private Long lugarId;
 
+    @Column(length = 255)
     private String nombreLugar;
 
+    @Column(length = 100)
     private String categoriaLugar;
 
+    @Column(length = 255)
     private String ubicacionLugar;
 
+    @Column(length = 500)
     private String imagenLugar;
 
     private Instant fechaSuscripcion = Instant.now();

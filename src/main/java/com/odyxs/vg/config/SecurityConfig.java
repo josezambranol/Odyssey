@@ -55,17 +55,28 @@ public class SecurityConfig {
                     "/css/**", "/js/**", "/img/**", "/uploads/**",
                     "/favicon.ico", "/favicon.svg", "/favicon*.png", "/apple-touch-icon.png"
                 ).permitAll()
+                // Endpoints administrativos o de configuración/exportación sensible (evaluar ANTES de rutas públicas)
+                .requestMatchers(
+                    "/admin/**",
+                    "/categorias",
+                    "/chatbot/config-key",
+                    "/api/v1/reportes/benchmark/**",
+                    "/api/v1/reportes/exportar/**",
+                    "/api/v1/eventos/sync-externo"
+                ).hasRole("ADMIN")
+                // Creación de reportes requiere usuario autenticado
+                .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/reportes").hasAnyRole("USUARIO", "ADMIN")
                 // Rutas públicas de exploración abierta, auth por código y recuperación
                 .requestMatchers(
                     "/", "/guia", "/eventos", "/eventos/**", "/actividades", "/transporte",
-                    "/mapa", "/buscar", "/lugares/**", "/idioma",
+                    "/mapa", "/buscar", "/lugares/**", "/idioma", "/terminos", "/privacidad",
                     "/proponer-lugar", "/proponer-actividad", "/proponer-evento",
                     "/login", "/registro", "/recuperar-password", "/auth/codigo/**",
-                    "/suscripciones/**", "/chatbot/**", "/api/**",
+                    "/suscripciones/**", "/chatbot", "/chatbot/respuesta",
                     "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/swagger-resources/**", "/webjars/**"
                 ).permitAll()
-                // Rutas de administración
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                // Resto de API pública de consulta, itinerarios y métricas
+                .requestMatchers("/api/**").permitAll()
                 // El inicio de sesión solo es fundamental para dejar reseñas y panel personal de novedades
                 .requestMatchers(
                     "/menu", "/resenas/**"

@@ -1,22 +1,27 @@
-package com.odyxs.vg.domain.mongo;
+package com.odyxs.vg.entity;
 
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
-
+import jakarta.persistence.*;
 import java.time.Instant;
 
-@Document(collection = "codigos_verificacion")
+@Entity
+@Table(name = "codigos_verificacion", indexes = {
+    @Index(name = "idx_codigo_correo", columnList = "correo")
+})
 public class CodigoVerificacion {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(length = 36)
     private String id;
 
-    @Indexed
+    @Column(nullable = false, length = 150)
     private String correo;
 
+    @Column(nullable = false, length = 16)
     private String codigo;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 32)
     private TipoCodigo tipo;
 
     private Instant fechaCreacion = Instant.now();

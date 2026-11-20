@@ -35,14 +35,14 @@
 
     <div th:if="${!#strings.isEmpty(query)}">
         <h5 class="fw-bold mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.4rem;" th:text="'Resultados para: &quot;' + ${query} + '&quot;'">Resultados</h5>
-        <p class="text-muted mb-4" th:text="${#lists.size(lugares) + ' lugares encontrados'}">N resultados</p>
+        <p class="text-muted mb-4" th:text="${#lists.size(lugares) + ' ' + (#lists.size(lugares) == 1 ? #messages.msg('plural.lugar') : #messages.msg('plural.lugares'))}">N resultados</p>
     </div>
     <div class="row g-4" th:if="${!#lists.isEmpty(lugares)}">
         <div class="col-md-6 col-lg-4" th:each="lugar : ${lugares}">
             <a th:href="@{/lugares/{id}(id=${lugar.id})}" class="lugar-card-travela">
                 <div class="lct-img">
-                    <img th:src="${lugar.imagenUrl != null ? lugar.imagenUrl : '/img/bocagrande.jpg'}"
-                         th:alt="${lugar.nombre}" onerror="this.src='/img/bocagrande.jpg'">
+                    <img th:src="${lugar.imagenUrl != null ? lugar.imagenUrl : '/img/act-playa-bocagrande.jpg'}"
+                         th:alt="${lugar.nombre}" onerror="this.src='/img/act-playa-bocagrande.jpg'">
                     <span class="lct-badge" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Cat</span>
                 </div>
                 <div class="lct-body">

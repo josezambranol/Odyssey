@@ -1,49 +1,82 @@
-package com.odyxs.vg.domain.mongo;
+package com.odyxs.vg.entity;
 
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.Id;
-import org.springframework.data.mongodb.core.index.Indexed;
-import org.springframework.data.mongodb.core.mapping.Document;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.odyxs.vg.common.JsonMapConverter;
+import jakarta.persistence.*;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
-@Document(collection = "itinerarios")
+@Entity
+@Table(name = "itinerarios", indexes = {
+    @Index(name = "idx_itin_usuario", columnList = "usuarioId"),
+    @Index(name = "idx_itin_estilo", columnList = "estiloViaje")
+})
 public class Itinerario {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(length = 36)
     private String id;
 
-    @Indexed(unique = true)
+    @Column(unique = true, nullable = false, length = 64)
     private String codigo;
 
+    @Column(length = 255)
     private String titulo;
 
-    @Indexed
-    private String estiloViaje; // PAREJA, FAMILIA, MOCHILERO, CULTURAL, FIESTA
+    @Column(length = 64)
+    private String estiloViaje;
 
     private int dias;
 
-    private String presupuesto; // ECONOMICO, MEDIO, LUJO
+    @Column(length = 32)
+    private String presupuesto;
 
-    @Indexed
     private Long usuarioId;
 
+    @Column(length = 150)
     private String usuarioEmail;
 
+    @Convert(converter = DiaListConverter.class)
+    @Column(columnDefinition = "TEXT")
     private List<DiaItinerario> planDias = new ArrayList<>();
 
+    @Convert(converter = JsonMapConverter.class)
+    @Column(columnDefinition = "TEXT")
     private Map<String, Object> recomendacionesGenerales = new HashMap<>();
 
-    @CreatedDate
-    @Indexed
     private Instant fechaCreacion;
 
     public Itinerario() {
         this.fechaCreacion = Instant.now();
+    }
+
+    @Converter
+    public static class DiaListConverter implements AttributeConverter<List<DiaItinerario>, String> {
+        private static final ObjectMapper MAPPER = new ObjectMapper();
+
+        @Override
+        public String convertToDatabaseColumn(List<DiaItinerario> attribute) {
+            if (attribute == null || attribute.isEmpty()) return "[]";
+            try {
+                return MAPPER.writeValueAsString(attribute);
+            } catch (JsonProcessingException e) {
+                throw new IllegalArgumentException("Error serializando planDias", e);
+            }
+        }
+
+        @Override
+        public List<DiaItinerario> convertToEntityAttribute(String dbData) {
+            if (dbData == null || dbData.isBlank()) return new ArrayList<>();
+            try {
+                return MAPPER.readValue(dbData, new TypeReference<>() {});
+            } catch (JsonProcessingException e) {
+                return new ArrayList<>();
+            }
+        }
     }
 
     public static class DiaItinerario {

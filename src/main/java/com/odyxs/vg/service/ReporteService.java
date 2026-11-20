@@ -1,7 +1,7 @@
 package com.odyxs.vg.service;
 
-import com.odyxs.vg.domain.mongo.Reporte;
-import com.odyxs.vg.repository.mongo.ReporteRepository;
+import com.odyxs.vg.entity.Reporte;
+import com.odyxs.vg.repository.ReporteRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,11 +11,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.data.mongodb.core.query.TextCriteria;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -25,7 +22,6 @@ import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Stream;
 
 @Service
 public class ReporteService {
@@ -35,15 +31,11 @@ public class ReporteService {
     @Autowired
     private ReporteRepository reporteRepository;
 
-    @Autowired(required = false)
-    private MongoTemplate mongoTemplate;
-
     /**
-     * 📥 Exportación masiva en Streaming CSV con cursor directo a MongoDB.
-     * Soporta +15,000 a +100,000 registros con consumo mínimo de RAM (< 20MB).
+     * Exportación masiva paginada en CSV desde MySQL con consumo mínimo de memoria.
      */
+    @Transactional(readOnly = true)
     public void exportarReportesCsvStreaming(OutputStream os, Reporte.TipoReporte tipo) throws IOException {
-        // Escribir BOM UTF-8 para apertura directa en Microsoft Excel
         os.write(0xEF);
         os.write(0xBB);
         os.write(0xBF);
@@ -51,19 +43,16 @@ public class ReporteService {
         PrintWriter writer = new PrintWriter(new OutputStreamWriter(os, StandardCharsets.UTF_8));
         writer.println("ID,Codigo,Tipo,Titulo,Entidad,Prioridad,Estado,UsuarioEmail,FechaCreacion");
 
-        if (mongoTemplate == null) {
-            writer.println("\"N/A\",\"N/A\",\"INFO\",\"MongoDB no conectado en este nodo\",\"N/A\",\"MEDIA\",\"ACTIVO\",\"system\",\"\"");
-            writer.flush();
-            return;
-        }
+        int page = 0;
+        final int pageSize = 500;
+        Page<Reporte> batch;
+        do {
+            Pageable pageable = PageRequest.of(page, pageSize, Sort.by(Sort.Direction.DESC, "fechaCreacion"));
+            batch = (tipo != null)
+                    ? reporteRepository.findByTipo(tipo, pageable)
+                    : reporteRepository.findAll(pageable);
 
-        Query query = new Query();
-        if (tipo != null) {
-            query.addCriteria(Criteria.where("tipo").is(tipo));
-        }
-
-        try (Stream<Reporte> stream = mongoTemplate.stream(query, Reporte.class)) {
-            stream.forEach(r -> {
+            for (Reporte r : batch.getContent()) {
                 String linea = String.format("\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\"",
                         r.getId() != null ? r.getId() : "",
                         r.getCodigo() != null ? r.getCodigo() : "",
@@ -76,14 +65,13 @@ public class ReporteService {
                         r.getFechaCreacion() != null ? r.getFechaCreacion().toString() : ""
                 );
                 writer.println(linea);
-            });
-        }
+            }
+            page++;
+        } while (batch.hasNext());
+
         writer.flush();
     }
 
-    /**
-     * Consulta paginada ultra-eficiente con soporte de índices compuestos en MongoDB.
-     */
     public Page<Reporte> listarPaginado(Reporte.TipoReporte tipo, Reporte.EstadoReporte estado, Pageable pageable) {
         if (tipo != null && estado != null) {
             return reporteRepository.findByTipoAndEstado(tipo, estado, pageable);
@@ -95,12 +83,8 @@ public class ReporteService {
         return reporteRepository.findAll(pageable);
     }
 
-    /**
-     * Búsqueda por texto libre utilizando el índice Text de MongoDB.
-     */
     public Page<Reporte> buscarTexto(String texto, Pageable pageable) {
-        TextCriteria criteria = TextCriteria.forDefaultLanguage().matching(texto);
-        return reporteRepository.findAllBy(criteria, pageable);
+        return reporteRepository.buscarPorTexto(texto, pageable);
     }
 
     public Optional<Reporte> buscarPorId(String id) {
@@ -119,31 +103,25 @@ public class ReporteService {
         return reporteRepository.save(reporte);
     }
 
-    /**
-     * Métricas calculadas con Aggregation Pipelines en MongoDB, cacheadas en Redis por 5 minutos.
-     */
     @Cacheable(value = "reportesMetricas", key = "'global'")
     public Map<String, Object> obtenerEstadisticasGlobales() {
         Map<String, Object> stats = new LinkedHashMap<>();
         stats.put("totalReportes", reporteRepository.count());
-        stats.put("conteoPorTipo", reporteRepository.contarAgrupadoPorTipo());
-        stats.put("conteoPorEstado", reporteRepository.contarAgrupadoPorEstado());
-        stats.put("topLugaresReportados", reporteRepository.obtenerTopEntidadesConMasReportes(5));
+        stats.put("conteoPorTipo", mapearConteo(reporteRepository.contarAgrupadoPorTipoRaw()));
+        stats.put("conteoPorEstado", mapearConteo(reporteRepository.contarAgrupadoPorEstadoRaw()));
+        stats.put("topLugaresReportados", mapearTopEntidades(reporteRepository.obtenerTopEntidadesRaw(PageRequest.of(0, 5))));
         stats.put("fechaCalculo", Instant.now().toString());
         return stats;
     }
 
-    /**
-     * 🚀 SEEDER & BENCHMARK: Genera 15,000+ documentos sintéticos en MongoDB en lotes de 5,000
-     * y evalúa la latencia de inserción y consulta en milisegundos.
-     */
     @CacheEvict(value = "reportesMetricas", allEntries = true)
+    @Transactional
     public Map<String, Object> ejecutarBenchmark15000Documentos() {
-        log.info("Iniciando Benchmark: Generando 15,000 reportes en MongoDB...");
+        log.info("Iniciando Benchmark: Generando 15,000 reportes en MySQL...");
         long tiempoInicioTotal = System.currentTimeMillis();
 
         int totalGenerar = 15000;
-        int tamanoLote = 5000;
+        int tamanoLote = 1000;
         int lotes = totalGenerar / tamanoLote;
 
         String[] lugaresCartagena = {
@@ -157,16 +135,12 @@ public class ReporteService {
         Reporte.EstadoReporte[] estados = Reporte.EstadoReporte.values();
         Random random = new Random();
 
-        long tiempoLotesMs = 0;
-
         for (int l = 0; l < lotes; l++) {
             List<Reporte> listaLote = new ArrayList<>(tamanoLote);
-            long inicioLote = System.currentTimeMillis();
-
             for (int i = 0; i < tamanoLote; i++) {
                 int indexGlobal = (l * tamanoLote) + i + 1;
                 Reporte rep = new Reporte();
-                rep.setCodigo("BENCH-15K-" + String.format("%06d", indexGlobal));
+                rep.setCodigo("BENCH-15K-" + System.currentTimeMillis() + "-" + String.format("%06d", indexGlobal));
                 rep.setTipo(tipos[random.nextInt(tipos.length)]);
                 rep.setPrioridad(prioridades[random.nextInt(prioridades.length)]);
                 rep.setEstado(estados[random.nextInt(estados.length)]);
@@ -174,34 +148,23 @@ public class ReporteService {
                 int lugarIdx = random.nextInt(lugaresCartagena.length);
                 rep.setEntidadId((long) (lugarIdx + 1));
                 rep.setNombreEntidad(lugaresCartagena[lugarIdx]);
-
                 rep.setTitulo("Reporte de actividad turística #" + indexGlobal + " en " + rep.getNombreEntidad());
-                rep.setDescripcion("Registro automatizado para telemetría turística y análisis de concurrencia en Cartagena de Indias.");
-
+                rep.setDescripcion("Registro automatizado para telemetría turística en Cartagena de Indias.");
                 rep.setUsuarioEmail("turista_" + (random.nextInt(500) + 1) + "@odyssey.test");
-
-                Map<String, Object> meta = new HashMap<>();
-                meta.put("latenciaServicioMs", random.nextInt(350) + 15);
-                meta.put("dispositivo", random.nextBoolean() ? "Mobile-iOS" : "Mobile-Android");
-                meta.put("zona", lugarIdx % 2 == 0 ? "Centro Histórico" : "Zona Insular");
-                rep.setMetadata(meta);
-
+                rep.setMetadata(Map.of(
+                        "latenciaServicioMs", random.nextInt(350) + 15,
+                        "zona", lugarIdx % 2 == 0 ? "Centro Histórico" : "Zona Insular"
+                ));
                 rep.setFechaCreacion(Instant.now().minus(random.nextInt(30), ChronoUnit.DAYS));
                 if (rep.getEstado() == Reporte.EstadoReporte.RESUELTO) {
                     rep.setFechaResolucion(rep.getFechaCreacion().plus(random.nextInt(24), ChronoUnit.HOURS));
                 }
-
                 listaLote.add(rep);
             }
-
-            // Inserción masiva ultra-rápida en MongoDB
-            reporteRepository.insertarLote(listaLote);
-            tiempoLotesMs += (System.currentTimeMillis() - inicioLote);
+            reporteRepository.saveAll(listaLote);
         }
 
         long tiempoInsercionTotalMs = System.currentTimeMillis() - tiempoInicioTotal;
-
-        // Prueba de lectura paginada en la base poblada (+15k documentos)
         long inicioLectura = System.nanoTime();
         Page<Reporte> paginaPrueba = reporteRepository.findByTipo(
                 Reporte.TipoReporte.VISITA_TURISTICA,
@@ -209,27 +172,37 @@ public class ReporteService {
         );
         long duracionLecturaMs = (System.nanoTime() - inicioLectura) / 1_000_000;
 
-        // Prueba de agregación analítica nativa
-        long inicioAgg = System.nanoTime();
-        Map<String, Long> conteoTipos = reporteRepository.contarAgrupadoPorTipo();
-        long duracionAggMs = (System.nanoTime() - inicioAgg) / 1_000_000;
-
-        long totalDocumentosActuales = reporteRepository.count();
-
         Map<String, Object> benchmark = new LinkedHashMap<>();
         benchmark.put("status", "SUCCESS");
         benchmark.put("documentosGeneradosEnEstaPrueba", totalGenerar);
-        benchmark.put("totalDocumentosEnColeccion", totalDocumentosActuales);
+        benchmark.put("totalDocumentosEnColeccion", reporteRepository.count());
         benchmark.put("tiempoTotalInsercionMs", tiempoInsercionTotalMs);
-        benchmark.put("tasaInsercionDocsPorSegundo", (int) ((double) totalGenerar / (tiempoInsercionTotalMs / 1000.0)));
         benchmark.put("latenciaConsultaPaginadaMs", duracionLecturaMs + " ms");
-        benchmark.put("latenciaAgregacionGlobalMs", duracionAggMs + " ms");
         benchmark.put("muestraPagina", "Total elementos tipo VISITA_TURISTICA: " + paginaPrueba.getTotalElements());
-        benchmark.put("agregacionPorTipo", conteoTipos);
-
-        log.info("Benchmark completado con éxito: 15,000 documentos insertados en {} ms. Latencia de consulta: {} ms",
-                tiempoInsercionTotalMs, duracionLecturaMs);
-
         return benchmark;
+    }
+
+    private Map<String, Long> mapearConteo(List<Object[]> rows) {
+        Map<String, Long> map = new LinkedHashMap<>();
+        if (rows == null) return map;
+        for (Object[] row : rows) {
+            if (row[0] != null && row[1] instanceof Number n) {
+                map.put(row[0].toString(), n.longValue());
+            }
+        }
+        return map;
+    }
+
+    private List<Map<String, Object>> mapearTopEntidades(List<Object[]> rows) {
+        List<Map<String, Object>> lista = new ArrayList<>();
+        if (rows == null) return lista;
+        for (Object[] row : rows) {
+            Map<String, Object> item = new HashMap<>();
+            item.put("entidadId", row[0]);
+            item.put("nombreEntidad", row[1]);
+            item.put("totalReportes", row[2]);
+            lista.add(item);
+        }
+        return lista;
     }
 }

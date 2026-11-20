@@ -1,5 +1,6 @@
 package com.odyxs.vg.dto;
 
+import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
@@ -21,6 +22,9 @@ public class UsuarioRegistroDto {
 
     private String country;
     private String fechaNacimiento;
+
+    @AssertTrue(message = "Debes aceptar los Términos y Condiciones y la Política de Privacidad")
+    private boolean aceptaPolitica;
 
     public UsuarioRegistroDto() {}
 
@@ -46,4 +50,7 @@ public class UsuarioRegistroDto {
 
     public String getFechaNacimiento() { return fechaNacimiento; }
     public void setFechaNacimiento(String fechaNacimiento) { this.fechaNacimiento = fechaNacimiento; }
+
+    public boolean isAceptaPolitica() { return aceptaPolitica; }
+    public void setAceptaPolitica(boolean aceptaPolitica) { this.aceptaPolitica = aceptaPolitica; }
 }

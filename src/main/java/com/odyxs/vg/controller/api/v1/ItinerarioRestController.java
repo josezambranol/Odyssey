@@ -1,7 +1,7 @@
 package com.odyxs.vg.controller.api.v1;
 
 import com.odyxs.vg.common.ApiResponse;
-import com.odyxs.vg.domain.mongo.Itinerario;
+import com.odyxs.vg.entity.Itinerario;
 import com.odyxs.vg.dto.GenerarItinerarioRequest;
 import com.odyxs.vg.service.ItinerarioService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -15,14 +15,14 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/itinerarios")
-@Tag(name = "Itinerarios con IA (Gemini & NoSQL)", description = "Generación inteligente de planes turísticos personalizados en Cartagena")
+@Tag(name = "Itinerarios con IA", description = "Generación inteligente de planes turísticos personalizados en Cartagena")
 public class ItinerarioRestController {
 
     @Autowired
     private ItinerarioService itinerarioService;
 
-    @Operation(summary = "✨ Generar plan de viaje inteligente con IA (Gemini)",
-               description = "Construye un itinerario detallado día por día (Mañana, Tarde, Noche) según días, presupuesto y estilo de viaje, almacenándolo en MongoDB.")
+    @Operation(summary = "Generar plan de viaje inteligente",
+               description = "Construye un itinerario detallado día por día (Mañana, Tarde, Noche) según días, presupuesto y estilo de viaje, almacenándolo en MySQL.")
     @PostMapping("/generar")
     public ResponseEntity<ApiResponse<Itinerario>> generar(@Valid @RequestBody GenerarItinerarioRequest request) {
         Itinerario itinerario = itinerarioService.generarItinerario(request);

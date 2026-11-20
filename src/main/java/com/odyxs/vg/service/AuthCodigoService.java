@@ -1,18 +1,20 @@
 package com.odyxs.vg.service;
 
-import com.odyxs.vg.domain.mongo.CodigoVerificacion;
-import com.odyxs.vg.domain.mongo.SuscripcionLugar;
+import com.odyxs.vg.entity.CodigoVerificacion;
 import com.odyxs.vg.entity.Lugar;
+import com.odyxs.vg.entity.SuscripcionLugar;
 import com.odyxs.vg.entity.Usuario;
+import com.odyxs.vg.repository.CodigoVerificacionRepository;
 import com.odyxs.vg.repository.LugarRepository;
+import com.odyxs.vg.repository.SuscripcionLugarRepository;
 import com.odyxs.vg.repository.UsuarioRepository;
-import com.odyxs.vg.repository.mongo.CodigoVerificacionRepository;
-import com.odyxs.vg.repository.mongo.SuscripcionLugarRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.security.SecureRandom;
 import java.time.Instant;
@@ -50,6 +52,10 @@ public class AuthCodigoService {
      * Genera y envía un código de 6 dígitos al correo asociado del usuario.
      */
     public Map<String, Object> solicitarCodigo(String correoRaw, CodigoVerificacion.TipoCodigo tipo) {
+        return solicitarCodigo(correoRaw, tipo, true);
+    }
+
+    public Map<String, Object> solicitarCodigo(String correoRaw, CodigoVerificacion.TipoCodigo tipo, boolean aceptaPolitica) {
         Map<String, Object> resp = new LinkedHashMap<>();
         if (correoRaw == null || correoRaw.isBlank()) {
             resp.put("exito", false);
@@ -61,6 +67,11 @@ public class AuthCodigoService {
         Optional<Usuario> userOpt = usuarioRepository.findByCorreo(correo);
         Usuario usuario;
         if (userOpt.isEmpty()) {
+            if (!aceptaPolitica) {
+                resp.put("exito", false);
+                resp.put("mensaje", "Debes aceptar los Términos y la Política de Privacidad para crear tu acceso.");
+                return resp;
+            }
             // Auto-aprovisionamiento de perfil viajero para que cualquier Gmail/correo pueda ingresar con OTP
             usuario = new Usuario();
             String alias = correo.contains("@") ? correo.substring(0, correo.indexOf('@')) : "Viajero";
@@ -262,6 +273,20 @@ public class AuthCodigoService {
             return suscripcionRepository.findByUsuarioIdAndActivoTrueOrderByFechaSuscripcionDesc(usuarioId);
         } catch (Exception e) {
             return List.of();
+        }
+    }
+
+    @Scheduled(cron = "0 0 3 * * ?")
+    @Transactional
+    public void limpiarCodigosExpirados() {
+        if (codigoRepository == null) return;
+        try {
+            long eliminados = codigoRepository.deleteByExpiraEnBefore(Instant.now());
+            if (eliminados > 0) {
+                log.info("[ODYSSEY-AUTH] Purgados {} códigos OTP expirados.", eliminados);
+            }
+        } catch (Exception ex) {
+            log.warn("No se pudieron purgar códigos expirados: {}", ex.getMessage());
         }
     }
 

@@ -1,8 +1,8 @@
 package com.odyxs.vg.controller.api.v1;
 
 import com.odyxs.vg.common.ApiResponse;
-import com.odyxs.vg.repository.mongo.ChatbotLogRepository;
-import com.odyxs.vg.service.RedisMetricsService;
+import com.odyxs.vg.repository.ChatbotLogRepository;
+import com.odyxs.vg.service.MetricsService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,41 +15,41 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/metricas")
-@Tag(name = "Métricas & Trending Redis", description = "Telemetría en memoria, contadores atómicos y Leaderboard en tiempo real con Redis")
+@Tag(name = "Métricas & Trending", description = "Contadores de visitas, ranking de lugares y estadísticas del asistente en MySQL")
 public class MetricasRestController {
 
     @Autowired
-    private RedisMetricsService redisMetricsService;
+    private MetricsService metricsService;
 
     @Autowired(required = false)
     private ChatbotLogRepository chatbotLogRepository;
 
-    @Operation(summary = "Obtener Lugares Trending de Cartagena (Redis Sorted Set)",
-               description = "Devuelve los sitios turísticos más populares en tiempo real calculados con ZINCRBY en Redis.")
+    @Operation(summary = "Obtener Lugares Trending de Cartagena",
+               description = "Devuelve los sitios turísticos más visitados ordenados por visitas acumuladas en MySQL.")
     @GetMapping("/trending")
     public ResponseEntity<ApiResponse<List<Map<String, Object>>>> obtenerTrending(
             @RequestParam(defaultValue = "5") int limit) {
-        List<Map<String, Object>> trending = redisMetricsService.obtenerTopTrending(limit);
+        List<Map<String, Object>> trending = metricsService.obtenerTopTrending(limit);
         return ResponseEntity.ok(ApiResponse.ok("Top " + limit + " trending places", trending));
     }
 
     @Operation(summary = "Registrar visita a un lugar turístico",
-               description = "Incrementa atómicamente el contador en Redis sin sobrecargar MySQL.")
+               description = "Incrementa el contador de visitas en MySQL.")
     @PostMapping("/visita/{lugarId}")
     public ResponseEntity<ApiResponse<Map<String, Object>>> registrarVisita(@PathVariable Long lugarId) {
-        redisMetricsService.registrarVisitaLugar(lugarId);
-        long total = redisMetricsService.obtenerVisitas(lugarId);
+        metricsService.registrarVisitaLugar(lugarId);
+        long total = metricsService.obtenerVisitas(lugarId);
         return ResponseEntity.ok(ApiResponse.ok("Visita registrada", Map.of("lugarId", lugarId, "totalVisitas", total)));
     }
 
-    @Operation(summary = "Obtener visitas en memoria de un lugar")
+    @Operation(summary = "Obtener visitas de un lugar")
     @GetMapping("/visitas/{lugarId}")
     public ResponseEntity<ApiResponse<Map<String, Object>>> obtenerVisitas(@PathVariable Long lugarId) {
-        long total = redisMetricsService.obtenerVisitas(lugarId);
+        long total = metricsService.obtenerVisitas(lugarId);
         return ResponseEntity.ok(ApiResponse.ok(Map.of("lugarId", lugarId, "totalVisitas", total)));
     }
 
-    @Operation(summary = "Métricas globales del Asistente Gemini (MongoDB Telemetry)")
+    @Operation(summary = "Métricas globales del Asistente IA (MySQL)")
     @GetMapping("/chatbot-stats")
     public ResponseEntity<ApiResponse<Map<String, Object>>> obtenerChatbotStats() {
         Map<String, Object> stats = new HashMap<>();

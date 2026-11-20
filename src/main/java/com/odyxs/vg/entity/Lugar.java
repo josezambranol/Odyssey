@@ -38,6 +38,11 @@ public class Lugar {
     @Column(length = 500)
     private String imagenUrl;
 
+    private Double latitud;
+
+    private Double longitud;
+
+    private Long visitas = 0L;
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
@@ -76,6 +81,16 @@ public class Lugar {
 
     public boolean isEsOficial() { return esOficial; }
     public void setEsOficial(boolean esOficial) { this.esOficial = esOficial; }
+
+    public Double getLatitud() { return latitud; }
+    public void setLatitud(Double latitud) { this.latitud = latitud; }
+
+    public Double getLongitud() { return longitud; }
+    public void setLongitud(Double longitud) { this.longitud = longitud; }
+
+    public Long getVisitas() { return visitas; }
+    public void setVisitas(Long visitas) { this.visitas = visitas; }
+
     public String getImagenEfectiva() {
         if (imagenUrl != null && !imagenUrl.isBlank()) return imagenUrl;
         return "/img/hero-murallas.jpg";

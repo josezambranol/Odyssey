@@ -1,7 +1,7 @@
 package com.odyxs.vg.service;
 
-import com.odyxs.vg.domain.mongo.Reporte;
-import com.odyxs.vg.repository.mongo.ReporteRepository;
+import com.odyxs.vg.entity.Reporte;
+import com.odyxs.vg.repository.ReporteRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -66,15 +66,23 @@ class ReporteServiceTest {
 
     @Test
     void obtenerEstadisticasGlobales_RetornaAgregaciones() {
-        when(reporteRepository.count()).thenReturn(15000L);
-        when(reporteRepository.contarAgrupadoPorTipo()).thenReturn(Map.of("VISITA_TURISTICA", 8000L, "CONSULTA_IA", 7000L));
-        when(reporteRepository.contarAgrupadoPorEstado()).thenReturn(Map.of("RESUELTO", 14000L, "NUEVO", 1000L));
-        when(reporteRepository.obtenerTopEntidadesConMasReportes(5)).thenReturn(List.of(Map.of("nombreEntidad", "Castillo San Felipe", "total", 4500L)));
+        when(reporteRepository.count()).thenReturn(150L);
+        when(reporteRepository.contarAgrupadoPorTipoRaw()).thenReturn(List.<Object[]>of(
+                new Object[]{Reporte.TipoReporte.VISITA_TURISTICA, 80L},
+                new Object[]{Reporte.TipoReporte.CONSULTA_IA, 70L}
+        ));
+        when(reporteRepository.contarAgrupadoPorEstadoRaw()).thenReturn(List.<Object[]>of(
+                new Object[]{Reporte.EstadoReporte.RESUELTO, 140L},
+                new Object[]{Reporte.EstadoReporte.NUEVO, 10L}
+        ));
+        when(reporteRepository.obtenerTopEntidadesRaw(any(Pageable.class))).thenReturn(List.<Object[]>of(
+                new Object[]{1L, "Castillo San Felipe", 45L}
+        ));
 
         Map<String, Object> stats = reporteService.obtenerEstadisticasGlobales();
 
         assertNotNull(stats);
-        assertEquals(15000L, stats.get("totalReportes"));
+        assertEquals(150L, stats.get("totalReportes"));
         assertTrue(stats.containsKey("conteoPorTipo"));
         assertTrue(stats.containsKey("conteoPorEstado"));
         assertTrue(stats.containsKey("topLugaresReportados"));
@@ -83,12 +91,12 @@ class ReporteServiceTest {
     @Test
     void buscarPorId_Encontrado() {
         Reporte reporte = new Reporte();
-        reporte.setId("mongo_id_123");
-        when(reporteRepository.findById("mongo_id_123")).thenReturn(Optional.of(reporte));
+        reporte.setId("rep_id_123");
+        when(reporteRepository.findById("rep_id_123")).thenReturn(Optional.of(reporte));
 
-        Optional<Reporte> res = reporteService.buscarPorId("mongo_id_123");
+        Optional<Reporte> res = reporteService.buscarPorId("rep_id_123");
 
         assertTrue(res.isPresent());
-        assertEquals("mongo_id_123", res.get().getId());
+        assertEquals("rep_id_123", res.get().getId());
     }
 }

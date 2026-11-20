@@ -6,16 +6,6 @@
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
-    <style>
-        .select-pais {
-            appearance: none;
-            -webkit-appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236c757d' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right 12px center;
-            padding-right: 36px !important;
-        }
-    </style>
     <!-- Favicon ODYSSEY -->
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
     <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
@@ -121,13 +111,21 @@
                         <input type="date" name="fechaNacimiento" class="form-control border-start-0" min="1920-01-01" max="2010-12-31" oninput="validarNacimiento(this)">
                     </div>
                 </div>
-                <div class="mb-4">
+                <div class="mb-3">
                     <label class="form-label fw-semibold" th:text="#{register.password}">Contraseña</label>
                     <div class="input-group">
                         <span class="input-group-text bg-light border-end-0"><i class="fa fa-lock text-primary"></i></span>
                         <input type="password" name="contrasena" class="form-control border-start-0"
                                th:placeholder="#{register.password.placeholder}" placeholder="Mínimo 6 caracteres" required minlength="6">
                     </div>
+                </div>
+                <div class="form-check mb-4">
+                    <input class="form-check-input" type="checkbox" id="aceptaPolitica" name="aceptaPolitica" value="true" required>
+                    <label class="form-check-label small text-muted" for="aceptaPolitica">
+                        Acepto los <a href="/terminos" target="_blank" class="text-primary fw-semibold">Términos y Condiciones</a>
+                        y autorizo el tratamiento de mis datos conforme a la
+                        <a href="/privacidad" target="_blank" class="text-primary fw-semibold">Política de Privacidad (Ley 1581 de 2012)</a>.
+                    </label>
                 </div>
                 <button type="submit" class="btn btn-primary w-100 rounded-pill py-2 fw-semibold">
                     <i class="fa fa-user-plus me-2"></i><span th:text="#{register.btn}">Crear cuenta</span>

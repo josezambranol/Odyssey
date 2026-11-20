@@ -1,6 +1,6 @@
 package com.odyxs.vg.dto;
 
-import com.odyxs.vg.domain.mongo.Reporte;
+import com.odyxs.vg.entity.Reporte;
 
 import java.time.Instant;
 

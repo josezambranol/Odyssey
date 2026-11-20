@@ -12,6 +12,7 @@ import com.odyxs.vg.service.FileStorageService;
 import com.odyxs.vg.service.LugarService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -70,19 +71,24 @@ public class AdminController {
                                @RequestParam String descripcion,
                                @RequestParam String ubicacion,
                                @RequestParam(required = false) String urlMapa,
+                               @RequestParam(required = false) Double latitud,
+                               @RequestParam(required = false) Double longitud,
                                @RequestParam Long categoriaId,
                                @RequestParam(required = false) MultipartFile imagen,
                                @RequestParam(required = false) String imagenLocal) {
-        lugarService.guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, true, imagen, imagenLocal);
+        lugarService.guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, true, imagen, imagenLocal, latitud, longitud);
         return "redirect:/admin";
     }
 
     @PostMapping("/admin/lugares/{id}/editar")
+    @CacheEvict(value = "lugares", allEntries = true)
     public String editarLugar(@PathVariable Long id,
                               @RequestParam String nombre,
                               @RequestParam String descripcion,
                               @RequestParam String ubicacion,
                               @RequestParam(required = false) String urlMapa,
+                              @RequestParam(required = false) Double latitud,
+                              @RequestParam(required = false) Double longitud,
                               @RequestParam Long categoriaId,
                               @RequestParam(required = false) MultipartFile imagen,
                               @RequestParam(required = false) String imagenUrlExterna) {
@@ -92,6 +98,8 @@ public class AdminController {
         lugar.setDescripcion(descripcion != null ? descripcion.trim() : null);
         lugar.setUbicacion(ubicacion.trim());
         lugar.setUrlMapa(urlMapa != null ? urlMapa.trim() : null);
+        lugar.setLatitud(latitud);
+        lugar.setLongitud(longitud);
         Categoria cat = categoriaRepository.findById(categoriaId).orElse(null);
         if (cat != null) lugar.setCategoria(cat);
 
@@ -113,6 +121,7 @@ public class AdminController {
     // ── EVENTOS ───────────────────────────────────────────────
 
     @PostMapping("/admin/eventos/agregar")
+    @CacheEvict(value = "eventosClasificados", allEntries = true)
     public String agregarEvento(@RequestParam String nombre,
                                 @RequestParam String descripcion,
                                 @RequestParam String fecha,
@@ -133,6 +142,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/eventos/{id}/aprobar")
+    @CacheEvict(value = "eventosClasificados", allEntries = true)
     public String aprobarEvento(@PathVariable Long id) {
         Evento e = eventoRepo.findById(id).orElse(null);
         if (e != null) {
@@ -143,6 +153,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/eventos/{id}/rechazar")
+    @CacheEvict(value = "eventosClasificados", allEntries = true)
     public String rechazarEvento(@PathVariable Long id) {
         Evento e = eventoRepo.findById(id).orElse(null);
         if (e != null) {
@@ -153,6 +164,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/eventos/{id}/editar")
+    @CacheEvict(value = "eventosClasificados", allEntries = true)
     public String editarEvento(@PathVariable Long id,
                                @RequestParam String nombre,
                                @RequestParam String descripcion,
@@ -180,6 +192,7 @@ public class AdminController {
     }
 
     @PostMapping("/admin/eventos/{id}/eliminar")
+    @CacheEvict(value = "eventosClasificados", allEntries = true)
     public String eliminarEvento(@PathVariable Long id) {
         Evento e = eventoRepo.findById(id).orElse(null);
         if (e != null) {

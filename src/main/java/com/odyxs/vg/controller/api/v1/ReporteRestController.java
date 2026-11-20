@@ -2,7 +2,7 @@ package com.odyxs.vg.controller.api.v1;
 
 import com.odyxs.vg.common.ApiResponse;
 import com.odyxs.vg.common.PageResponse;
-import com.odyxs.vg.domain.mongo.Reporte;
+import com.odyxs.vg.entity.Reporte;
 import com.odyxs.vg.dto.ReporteResumenDto;
 import com.odyxs.vg.service.ReporteService;
 import io.swagger.v3.oas.annotations.Operation;
@@ -20,7 +20,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/reportes")
-@Tag(name = "Reportes & Analítica NoSQL", description = "Endpoints de alta escala en MongoDB para gestión de +15,000 documentos, analítica agregada y benchmark")
+@Tag(name = "Reportes & Analítica", description = "Endpoints en MySQL para gestión de reportes, analítica agregada y exportación CSV")
 public class ReporteRestController {
 
     @Autowired

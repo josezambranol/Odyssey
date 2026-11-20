@@ -2,16 +2,16 @@ package com.odyxs.vg.service;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.odyxs.vg.domain.mongo.ChatbotLog;
 import com.odyxs.vg.entity.Actividad;
+import com.odyxs.vg.entity.ChatbotLog;
 import com.odyxs.vg.entity.ChatbotRespuesta;
 import com.odyxs.vg.entity.Evento;
 import com.odyxs.vg.entity.Lugar;
 import com.odyxs.vg.repository.ActividadRepository;
+import com.odyxs.vg.repository.ChatbotLogRepository;
 import com.odyxs.vg.repository.ChatbotRespuestaRepository;
 import com.odyxs.vg.repository.EventoRepository;
 import com.odyxs.vg.repository.LugarRepository;
-import com.odyxs.vg.repository.mongo.ChatbotLogRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -52,7 +52,7 @@ public class GeminiAiService {
     private EventoRepository eventoRepository;
 
     @Autowired(required = false)
-    private RedisMetricsService redisMetricsService;
+    private MetricsService metricsService;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
@@ -108,7 +108,7 @@ public class GeminiAiService {
 
         String mensaje = mensajeRaw.replace("[[", "").replace("]]", "").trim();
 
-        if (redisMetricsService != null && !redisMetricsService.verificarLimiteRateChatbot(clientIp)) {
+        if (metricsService != null && !metricsService.verificarLimiteRateChatbot(clientIp)) {
             return enIngles
                     ? "⚠️ Too many requests. Please wait a minute before asking again."
                     : "⚠️ Has enviado muchas preguntas en poco tiempo. Por favor espera un minuto.";
@@ -132,25 +132,12 @@ public class GeminiAiService {
                     exito = true;
                 }
             } catch (Exception ex) {
-                log.warn("[ODYSSEY-AI] Fallo en Gemini API directa: {}. Activando motor generativo secundario.", ex.getMessage());
+                log.warn("[ODYSSEY-AI] Fallo en Gemini API directa: {}. Usando motor RAG local.", ex.getMessage());
                 errorMsg = ex.getMessage();
             }
         }
 
-        // NIVEL 2: Motor Generativo Cloud Zero-Config con RAG compacto de Cartagena
-        if (!exito || respuesta == null || respuesta.isBlank()) {
-            try {
-                respuesta = llamarMotorGenerativoCloudRag(mensaje, systemPrompt);
-                if (respuesta != null && !respuesta.isBlank()) {
-                    exito = true;
-                }
-            } catch (Exception ex) {
-                log.warn("[ODYSSEY-AI] Motor cloud secundario no disponible: {}. Usando motor RAG local.", ex.getMessage());
-                if (errorMsg == null) errorMsg = ex.getMessage();
-            }
-        }
-
-        // NIVEL 3: Motor RAG Local Inteligente + Síntesis Dinámica de Planes y Lugares
+        // NIVEL 2: Motor RAG Local Inteligente + Síntesis Dinámica de Planes y Lugares
         if (!exito || respuesta == null || respuesta.isBlank()) {
             respuesta = sintetizarRespuestaRagLocal(mensaje, categoriaDetectada, enIngles);
         }
@@ -250,39 +237,6 @@ public class GeminiAiService {
             }
         }
         throw lastEx != null ? lastEx : new RuntimeException("No se pudo conectar con Google Gemini API");
-    }
-
-    private String llamarMotorGenerativoCloudRag(String mensaje, String systemPrompt) throws Exception {
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("model", "openai");
-        payload.put("messages", List.of(
-                Map.of("role", "system", "content", systemPrompt),
-                Map.of("role", "user", "content", mensaje)
-        ));
-
-        String requestJson = objectMapper.writeValueAsString(payload);
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create("https://text.pollinations.ai/openai"))
-                .timeout(Duration.ofSeconds(20))
-                .header("Content-Type", "application/json; charset=utf-8")
-                .header("User-Agent", "OdysseyCartagenaConcierge/2.0")
-                .POST(HttpRequest.BodyPublishers.ofString(requestJson, StandardCharsets.UTF_8))
-                .build();
-
-        HttpResponse<String> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofString(StandardCharsets.UTF_8));
-        if (resp.statusCode() != 200) {
-            throw new RuntimeException("Cloud AI HTTP " + resp.statusCode());
-        }
-
-        JsonNode root = objectMapper.readTree(resp.body());
-        JsonNode choices = root.path("choices");
-        if (choices.isArray() && !choices.isEmpty()) {
-            String content = choices.get(0).path("message").path("content").asText();
-            if (content != null && !content.isBlank()) {
-                return content.trim();
-            }
-        }
-        throw new RuntimeException("Respuesta vacía del motor generativo");
     }
 
     /**
@@ -404,13 +358,28 @@ public class GeminiAiService {
             chatLog.setRespuestaIA(respuesta);
             chatLog.setTiempoRespuestaMs(duracionMs);
             chatLog.setCategoria(categoria);
-            chatLog.setIpRemota(ip);
+            chatLog.setIpRemota(anonimizarIp(ip));
             chatLog.setIdioma(idioma);
             chatLog.setExito(exito);
             chatLog.setErrorDetalle(error);
             chatbotLogRepository.save(chatLog);
         } catch (Exception ex) {
             log.warn("No se pudo guardar el log de Chatbot en MongoDB: {}", ex.getMessage());
+        }
+    }
+
+    private String anonimizarIp(String ip) {
+        if (ip == null || ip.isBlank()) return "anon";
+        try {
+            java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-256");
+            byte[] hash = md.digest(("odyssey-salt:" + ip.trim()).getBytes(StandardCharsets.UTF_8));
+            StringBuilder hex = new StringBuilder();
+            for (int i = 0; i < 8 && i < hash.length; i++) {
+                hex.append(String.format("%02x", hash[i]));
+            }
+            return "sha256:" + hex;
+        } catch (Exception e) {
+            return "anon";
         }
     }
 

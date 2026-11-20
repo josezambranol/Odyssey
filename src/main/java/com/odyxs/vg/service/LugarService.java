@@ -1,15 +1,18 @@
 package com.odyxs.vg.service;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.web.multipart.MultipartFile;
-
 import com.odyxs.vg.entity.Categoria;
 import com.odyxs.vg.entity.Lugar;
 import com.odyxs.vg.repository.CategoriaRepository;
 import com.odyxs.vg.repository.LugarRepository;
+import com.odyxs.vg.repository.ResenaRepository;
+import com.odyxs.vg.repository.SuscripcionLugarRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 @Service
 public class LugarService {
@@ -17,6 +20,8 @@ public class LugarService {
     @Autowired private LugarRepository lugarRepository;
     @Autowired private CategoriaRepository categoriaRepository;
     @Autowired private FileStorageService fileStorageService;
+    @Autowired(required = false) private ResenaRepository resenaRepository;
+    @Autowired(required = false) private SuscripcionLugarRepository suscripcionLugarRepository;
 
     public List<Lugar> obtenerTodos() {
         return lugarRepository.findAll();
@@ -42,6 +47,7 @@ public class LugarService {
         return lugarRepository.findByCategoriaIdAndEstado(categoriaId, Lugar.Estado.APROBADO);
     }
 
+    @CacheEvict(value = "lugares", allEntries = true)
     public String aprobar(Long id) {
         Lugar lugar = lugarRepository.findById(id).orElse(null);
         if (lugar == null) return "Lugar no encontrado.";
@@ -50,6 +56,7 @@ public class LugarService {
         return "Lugar aprobado.";
     }
 
+    @CacheEvict(value = "lugares", allEntries = true)
     public String rechazar(Long id) {
         Lugar lugar = lugarRepository.findById(id).orElse(null);
         if (lugar == null) return "Lugar no encontrado.";
@@ -59,26 +66,44 @@ public class LugarService {
     }
 
     public List<Lugar> buscar(String texto) {
-        return lugarRepository.findByNombreContainingIgnoreCaseAndEstado(texto.trim(), Lugar.Estado.APROBADO);
+        return lugarRepository.buscarPorTexto(texto.trim(), Lugar.Estado.APROBADO);
     }
 
+    @Transactional
+    @CacheEvict(value = "lugares", allEntries = true)
     public String eliminar(Long id) {
         Lugar lugar = lugarRepository.findById(id).orElse(null);
         if (lugar == null) return "Lugar no encontrado.";
+        if (resenaRepository != null) {
+            resenaRepository.deleteByLugarId(id);
+        }
+        if (suscripcionLugarRepository != null) {
+            suscripcionLugarRepository.deleteByLugarId(id);
+        }
         fileStorageService.borrarArchivo(lugar.getImagenUrl());
         lugarRepository.deleteById(id);
         return "Lugar eliminado.";
     }
 
+    @CacheEvict(value = "lugares", allEntries = true)
     public String guardar(Long categoriaId, String nombre, String descripcion,
                           String ubicacion, String urlMapa, boolean esOficial,
                           MultipartFile imagen) {
-        return guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, esOficial, imagen, null);
+        return guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, esOficial, imagen, null, null, null);
     }
 
+    @CacheEvict(value = "lugares", allEntries = true)
     public String guardar(Long categoriaId, String nombre, String descripcion,
                           String ubicacion, String urlMapa, boolean esOficial,
                           MultipartFile imagen, String imagenLocal) {
+        return guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, esOficial, imagen, imagenLocal, null, null);
+    }
+
+    @CacheEvict(value = "lugares", allEntries = true)
+    public String guardar(Long categoriaId, String nombre, String descripcion,
+                          String ubicacion, String urlMapa, boolean esOficial,
+                          MultipartFile imagen, String imagenLocal,
+                          Double latitud, Double longitud) {
 
         Categoria categoria = categoriaRepository.findById(categoriaId).orElse(null);
         if (categoria == null) return "Categoría no encontrada.";
@@ -105,10 +130,13 @@ public class LugarService {
         lugar.setEstado(esOficial ? Lugar.Estado.APROBADO : Lugar.Estado.PENDIENTE);
         lugar.setCategoria(categoria);
         lugar.setImagenUrl(imagenUrlGuardada);
+        lugar.setLatitud(latitud);
+        lugar.setLongitud(longitud);
         lugarRepository.save(lugar);
         return "Lugar guardado.";
     }
 
+    @CacheEvict(value = "lugares", allEntries = true)
     public String actualizarImagen(Long id, MultipartFile imagen) {
         Lugar lugar = lugarRepository.findById(id).orElse(null);
         if (lugar == null) return "Lugar no encontrado.";

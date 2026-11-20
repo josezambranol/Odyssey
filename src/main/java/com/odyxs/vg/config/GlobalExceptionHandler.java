@@ -1,5 +1,7 @@
 package com.odyxs.vg.config;
 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -14,6 +16,11 @@ public class GlobalExceptionHandler {
     public String handleMaxSizeException(MaxUploadSizeExceededException exc, RedirectAttributes redirectAttributes) {
         redirectAttributes.addFlashAttribute("error", "El archivo subido excede el límite máximo permitido (5MB).");
         return "redirect:/";
+    }
+
+    @ExceptionHandler({AccessDeniedException.class, AuthenticationException.class})
+    public void rethrowSecurityExceptions(Exception ex) throws Exception {
+        throw ex;
     }
 
     @ExceptionHandler(Exception.class)

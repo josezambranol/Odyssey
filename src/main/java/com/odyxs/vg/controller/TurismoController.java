@@ -199,11 +199,12 @@ public class TurismoController {
         String respuesta = geminiAiService.responder(mensaje, enIngles, clientIp);
         return ResponseEntity.ok(Map.of(
                 "respuesta", respuesta,
-                "motor", geminiAiService.tieneGeminiKeyConfigurada() ? "Google Gemini 2.5 Flash + RAG" : "Odyssey Cloud AI + RAG Cartagena"
+                "motor", geminiAiService.tieneGeminiKeyConfigurada() ? "Google Gemini + RAG" : "Odyssey RAG Local (MySQL)"
         ));
     }
 
     @PostMapping("/chatbot/config-key")
+    @org.springframework.security.access.prepost.PreAuthorize("hasRole('ADMIN')")
     @ResponseBody
     public ResponseEntity<Map<String, Object>> configurarGeminiKey(@RequestBody Map<String, String> body) {
         String key = body.getOrDefault("apiKey", "").trim();

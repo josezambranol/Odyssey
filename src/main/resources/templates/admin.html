@@ -36,7 +36,8 @@
             No hay lugares pendientes por revisar.
         </div>
 
-        <table th:unless="${#lists.isEmpty(pendientes)}" class="admin-table">
+        <div th:unless="${#lists.isEmpty(pendientes)}" class="table-responsive" style="overflow-x:auto;">
+        <table class="admin-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -67,6 +68,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 
     <!-- LUGARES APROBADOS -->
@@ -77,7 +79,8 @@
             No hay lugares aprobados todavía.
         </div>
 
-        <table th:unless="${#lists.isEmpty(lugares)}" class="admin-table">
+        <div th:unless="${#lists.isEmpty(lugares)}" class="table-responsive" style="overflow-x:auto;">
+        <table class="admin-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -109,6 +112,8 @@
                                 th:data-descripcion="${lugar.descripcion}"
                                 th:data-ubicacion="${lugar.ubicacion}"
                                 th:data-url-mapa="${lugar.urlMapa}"
+                                th:data-latitud="${lugar.latitud}"
+                                th:data-longitud="${lugar.longitud}"
                                 th:data-imagen-url="${lugar.imagenEfectiva}"
                                 th:data-categoria-id="${lugar.categoria.id}">
                              Editar
@@ -125,6 +130,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 
 
@@ -152,6 +158,13 @@
                 <input type="url" name="urlMapa" placeholder="https://maps.google.com/...">
             </div>
             <div class="form-group">
+                <label>Latitud / Longitud (opcional, para aparecer en /mapa)</label>
+                <div style="display:flex;gap:8px;">
+                    <input type="number" step="any" name="latitud" placeholder="Latitud (ej. 10.4236)">
+                    <input type="number" step="any" name="longitud" placeholder="Longitud (ej. -75.5489)">
+                </div>
+            </div>
+            <div class="form-group">
                 <label>Categoría</label>
                 <select name="categoriaId" required>
                     <option value="">-- Seleccionar categoría --</option>
@@ -169,11 +182,14 @@
         </form>
     </div>
 
+</div>
+
 <header class="page-header">
-<h1> Gestion de eventos </h1>
+<h1>Gestión de Eventos</h1>
 <p>Gestiona eventos, categorías y solicitudes pendientes</p>
 </header>
 
+<div class="container" style="padding-top: 48px; padding-bottom: 64px;">
 
     <!-- ═══ EVENTOS PENDIENTES DE APROBACIÓN ═══ -->
     <div class="admin-section">
@@ -183,7 +199,8 @@
             No hay eventos pendientes por revisar.
         </div>
 
-        <table th:unless="${#lists.isEmpty(eventosPendientes)}" class="admin-table">
+        <div th:unless="${#lists.isEmpty(eventosPendientes)}" class="table-responsive" style="overflow-x:auto;">
+        <table class="admin-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -224,6 +241,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 
     <!-- ═══ GESTIÓN DE EVENTOS ═══ -->
@@ -263,7 +281,8 @@
             No hay eventos registrados todavía.
         </div>
 
-        <table th:unless="${#lists.isEmpty(eventos)}" class="admin-table">
+        <div th:unless="${#lists.isEmpty(eventos)}" class="table-responsive" style="overflow-x:auto;">
+        <table class="admin-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -312,16 +331,21 @@
                 </tr>
             </tbody>
         </table>
+        </div>
 
         <p style="margin-top:16px; color:var(--gris); font-size:.9rem;">
             Para ver y filtrar eventos: <a href="/eventos" style="color:var(--azul-claro);">Ver página de eventos</a>
         </p>
     </div>
 
+</div>
+
 <header class="page-header">
-<h1> Gestion de actividades </h1>
+<h1>Gestión de Actividades</h1>
 <p>Gestiona las actividades, categorías y solicitudes pendientes</p>
 </header>
+
+<div class="container" style="padding-top: 48px; padding-bottom: 64px;">
 
     <!-- ═══ ACTIVIDADES PENDIENTES DE APROBACIÓN ═══ -->
     <div class="admin-section">
@@ -331,7 +355,8 @@
             No hay actividades pendientes por revisar.
         </div>
 
-        <table th:unless="${#lists.isEmpty(actividadesPendientes)}" class="admin-table">
+        <div th:unless="${#lists.isEmpty(actividadesPendientes)}" class="table-responsive" style="overflow-x:auto;">
+        <table class="admin-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -370,6 +395,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
     </div>
 
     <!-- ═══ GESTIÓN DE ACTIVIDADES ═══ -->
@@ -420,7 +446,8 @@
             No hay actividades registradas todavía.
         </div>
 
-        <table th:unless="${#lists.isEmpty(actividades)}" class="admin-table">
+        <div th:unless="${#lists.isEmpty(actividades)}" class="table-responsive" style="overflow-x:auto;">
+        <table class="admin-table">
             <thead>
                 <tr>
                     <th>ID</th>
@@ -449,7 +476,7 @@
                     </td>
                     <td th:text="${act.duracion}"></td>
                     <td th:text="${act.precioAprox}"></td>
-                    <td style="display:flex; gap:8px; flex-wrap:wrap; min-width:200px;">
+                    <td style="white-space:nowrap;">
                         <button type="button" class="btn-primary btn-editar-actividad"
                                 style="padding:7px 14px; font-size:0.8rem;"
                                 th:data-id="${act.id}"
@@ -462,7 +489,8 @@
                         </button>
                         
                         <form th:action="@{/admin/actividades/{id}/eliminar(id=${act.id})}" method="post"
-                              onsubmit="return confirm('¿Seguro que quieres eliminar esta actividad?');">
+                              onsubmit="return confirm('¿Seguro que quieres eliminar esta actividad?');"
+                              style="display:inline;">
                             <button type="submit" class="btn-primary"
                                     style="padding:7px 14px; font-size:0.8rem; background:#e74c3c; border-color:#e74c3c; color:#fff;">Eliminar</button>
                         </form>
@@ -470,6 +498,7 @@
                 </tr>
             </tbody>
         </table>
+        </div>
 
         <p style="margin-top:16px; color:var(--gris); font-size:.9rem;">
             Ver actividades públicas: <a href="/actividades" style="color:var(--azul-claro);">Ir a actividades</a>
@@ -514,7 +543,7 @@
   .odyx-modal-close:hover { background: rgba(255,255,255,0.3); }
   .odyx-modal-body { padding: 24px 28px 28px; }
   .odyx-field-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 4px; }
-  .odyx-field { display: flex; flex-direction: column; gap: 5px; }
+  .odyx-field { display: flex; flex-direction: column; gap: 5px; min-width: 0; }
   .odyx-field.full { grid-column: 1 / -1; }
   .odyx-field label {
     font-size: 0.78rem; font-weight: 600; color: #5a6a8a;
@@ -526,6 +555,7 @@
     transition: border-color 0.2s, box-shadow 0.2s;
     width: 100%; box-sizing: border-box;
   }
+  .odyx-field input[type="file"] { font-size: 0.82rem; }
   .odyx-field input:focus, .odyx-field select:focus, .odyx-field textarea:focus {
     outline: none; border-color: #13357B;
     box-shadow: 0 0 0 3px rgba(19,53,123,0.1); background: #fff;
@@ -575,6 +605,14 @@
           <div class="odyx-field">
             <label>URL del mapa</label>
             <input type="text" id="lugarUrlMapa" name="urlMapa" placeholder="https://maps.google.com/...">
+          </div>
+          <div class="odyx-field">
+            <label>Latitud</label>
+            <input type="number" step="any" id="lugarLatitud" name="latitud" placeholder="Ej: 10.4236">
+          </div>
+          <div class="odyx-field">
+            <label>Longitud</label>
+            <input type="number" step="any" id="lugarLongitud" name="longitud" placeholder="Ej: -75.5489">
           </div>
           <div class="odyx-field full">
             <label>Categoría</label>
@@ -674,7 +712,7 @@
             <label>Precio aproximado</label>
             <input type="text" id="actPrecio" name="precioAprox" placeholder="Ej: $80.000 COP">
           </div>
-          <div class="odyx-field">
+          <div class="odyx-field full">
             <label>Nueva imagen (JPG/PNG, opcional)</label>
             <input type="file" name="imagen" accept="image/jpeg,image/png,image/jpg">
           </div>
@@ -695,9 +733,11 @@
 
 <script>
     const navbar = document.getElementById('navbar');
-    window.addEventListener('scroll', () => {
-        navbar.classList.toggle('scrolled', window.scrollY > 60);
-    });
+    if (navbar) {
+        window.addEventListener('scroll', () => {
+            navbar.classList.toggle('scrolled', window.scrollY > 60);
+        });
+    }
     function abrirMenu() {
         document.getElementById('sidebar').classList.remove('hidden');
         document.getElementById('overlay').classList.add('visible');
@@ -717,6 +757,8 @@
             document.getElementById('lugarDescripcion').value = this.dataset.descripcion || '';
             document.getElementById('lugarUbicacion').value   = this.dataset.ubicacion   || '';
             document.getElementById('lugarUrlMapa').value     = this.dataset.urlMapa     || '';
+            document.getElementById('lugarLatitud').value     = this.dataset.latitud     || '';
+            document.getElementById('lugarLongitud').value    = this.dataset.longitud    || '';
             // Seleccionar la categoría correcta
             const sel = document.getElementById('lugarCategoriaId');
             for (let opt of sel.options) {

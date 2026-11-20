@@ -19,19 +19,17 @@ public class OpenApiConfig {
                 .info(new Info()
                         .title("Odyssey API — Guía Turística & Asistente IA")
                         .version("2.0.0-PROD")
-                        .description("API RESTful de alto rendimiento para Cartagena de Indias. " +
-                                "Arquitectura Políglota con soporte para MySQL (Catálogo y Usuarios), " +
-                                "MongoDB (+15,000 Reportes y Telemetría IA), y Redis (Caché ultrarrápida y Trending).")
+                        .description("API RESTful para Cartagena de Indias. " +
+                                "Arquitectura modular en capas con Java 21, Spring Boot 3, MySQL 8 y caché en memoria.")
                         .contact(new Contact()
                                 .name("Equipo de Ingeniería Odyssey")
                                 .email("soporte@odyssey.com")
-                                .url("https://odyssey.cartagena.gov.co"))
+                                .url("http://localhost:8080"))
                         .license(new License()
                                 .name("MIT License")
                                 .url("https://opensource.org/licenses/MIT")))
                 .servers(List.of(
-                        new Server().url("http://localhost:8080").description("Servidor Local de Desarrollo"),
-                        new Server().url("https://api.odyssey.cartagena.gov.co").description("Servidor de Producción")
+                        new Server().url("http://localhost:8080").description("Servidor Local de Desarrollo")
                 ));
     }
 }

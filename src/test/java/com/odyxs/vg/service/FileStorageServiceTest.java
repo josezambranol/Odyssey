@@ -36,4 +36,11 @@ class FileStorageServiceTest {
         assertFalse(storageService.borrarArchivo(null));
         assertFalse(storageService.borrarArchivo(""));
     }
+
+    @Test
+    void guardarImagen_ContenidoFalsificado_RetornaNull() {
+        MockMultipartFile spoofedPng = new MockMultipartFile(
+                "file", "evil.png", "image/png", "<script>alert(1)</script>".getBytes());
+        assertNull(storageService.guardarImagen(spoofedPng, "lugares"));
+    }
 }

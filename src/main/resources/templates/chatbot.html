@@ -1,8 +1,10 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<html lang="es" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title th:text="#{chatbot.title} + ' — ODYSSEY'">Asistente IA ODYSSEY — Cartagena</title>
+    <meta name="_csrf" th:content="${_csrf.token}"/>
+    <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+    <title th:text="#{chatbot.title}">Asistente IA ODYSSEY — Cartagena</title>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -97,8 +99,8 @@
         }
         .chat-inp textarea {
             flex: 1; border: 1.5px solid rgba(11,45,107,.18); border-radius: 20px;
-            padding: 11px 18px; font-size: .93rem; color: var(--azul); outline: none;
-            resize: none; overflow-y: hidden; min-height: 46px; max-height: 150px;
+            padding: 13px 18px; font-size: .93rem; color: var(--azul); outline: none;
+            resize: none; overflow-y: hidden; min-height: 52px; max-height: 150px; line-height: 1.4;
         }
         .chat-inp textarea:focus { border-color: var(--gold); box-shadow: 0 0 0 3px rgba(200,150,62,.15); }
     </style>
@@ -114,10 +116,10 @@
         <div class="chat-head">
             <div class="bot-av"><i class="fas fa-compass"></i></div>
             <div class="flex-grow-1">
-                <h4><span class="online-dot"></span><span>ODYSSEY AI — Concierge de Cartagena</span></h4>
-                <p>Conectado al catálogo en vivo · Playas · Historia · Tarifas DATT &amp; Transcaribe · Gastronomía</p>
+                <h4><span class="online-dot"></span><span th:text="#{chatpage.head.title}">ODYSSEY AI — Concierge de Cartagena</span></h4>
+                <p th:text="#{chatpage.head.sub}">Conectado al catálogo en vivo · Playas · Historia · Tarifas DATT &amp; Transcaribe · Gastronomía</p>
             </div>
-            <div class="d-flex align-items-center gap-2">
+            <div class="d-flex align-items-center gap-2" sec:authorize="hasRole('ADMIN')">
                 <button class="btn btn-sm rounded-pill px-3" style="background:rgba(212,166,74,0.2);color:#f3c86b;border:1px solid rgba(212,166,74,0.45);font-size:0.75rem;"
                         data-bs-toggle="modal" data-bs-target="#geminiKeyModal">
                     <i class="fas fa-key me-1"></i> Motor IA
@@ -129,7 +131,7 @@
         <div class="chat-box" id="chatBox">
             <div class="msg bot">
                 <div class="msg-av"><i class="fas fa-compass"></i></div>
-                <div class="bubble">
+                <div class="bubble" th:utext="#{chatpage.welcome.full}">
                     ¡Hola! 🌊 Soy <strong>ODYSSEY AI</strong>, tu asistente inteligente de Cartagena de Indias.<br><br>
                     Puedo responder <strong>cualquier pregunta abierta</strong> sobre sitios históricos, playas e islas, tarifas oficiales de taxis DATT y Transcaribe, restaurantes o armarte un itinerario a medida. ¿Qué deseas explorar hoy?
                 </div>
@@ -138,17 +140,17 @@
 
         <!-- Sugerencias rápidas sin errores de sintaxis -->
         <div class="sugs-wrap">
-            <div class="small text-muted fw-semibold mb-2" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;">
+            <div class="small text-muted fw-semibold mb-2" style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.06em;" th:text="#{chatpage.sug.header}">
                 ⚡ Consultas frecuentes y generador IA:
             </div>
             <div class="sugs">
-                <button class="sug" onclick="enviar('¿Cuáles son las mejores playas e islas de Cartagena y cómo llegar?')">🏖️ Playas e Islas</button>
-                <button class="sug" onclick="enviar('¿Cómo moverme en Transcaribe y cuánto cobran los taxis oficiales DATT?')">🚌 Transporte y Tarifas</button>
-                <button class="sug" onclick="enviar('Ármame un itinerario romántico y cultural de 2 días en Cartagena')">✨ Itinerario 2 Días</button>
-                <button class="sug" onclick="enviar('¿Qué platos típicos debo probar y qué restaurantes recomiendas en Getsemaní?')">🍽️ Gastronomía</button>
-                <button class="sug" onclick="enviar('¿Cuáles son los sitios históricos imprescindibles de la Ciudad Amurallada?')">🏰 Historia Colonial</button>
-                <button class="sug" onclick="enviar('¿Qué consejos de seguridad y precios justos debo tener en cuenta en las playas?')">🛡️ Seguridad y Precios</button>
-                <button class="sug" onclick="enviar('¿Qué festivales y eventos culturales hay en Cartagena?')">🎉 Eventos y Fiestas</button>
+                <button class="sug" th:data-msg="#{chatpage.q1.msg}" onclick="enviar(this.dataset.msg)" th:text="#{chatpage.q1.lbl}">🏖️ Playas e Islas</button>
+                <button class="sug" th:data-msg="#{chatpage.q2.msg}" onclick="enviar(this.dataset.msg)" th:text="#{chatpage.q2.lbl}">🚌 Transporte y Tarifas</button>
+                <button class="sug" th:data-msg="#{chatpage.q3.msg}" onclick="enviar(this.dataset.msg)" th:text="#{chatpage.q3.lbl}">✨ Itinerario 2 Días</button>
+                <button class="sug" th:data-msg="#{chatpage.q4.msg}" onclick="enviar(this.dataset.msg)" th:text="#{chatpage.q4.lbl}">🍽️ Gastronomía</button>
+                <button class="sug" th:data-msg="#{chatpage.q5.msg}" onclick="enviar(this.dataset.msg)" th:text="#{chatpage.q5.lbl}">🏰 Historia Colonial</button>
+                <button class="sug" th:data-msg="#{chatpage.q6.msg}" onclick="enviar(this.dataset.msg)" th:text="#{chatpage.q6.lbl}">🛡️ Seguridad y Precios</button>
+                <button class="sug" th:data-msg="#{chatpage.q7.msg}" onclick="enviar(this.dataset.msg)" th:text="#{chatpage.q7.lbl}">🎉 Eventos y Fiestas</button>
             </div>
         </div>
 
@@ -157,25 +159,25 @@
             <div class="msg-av" style="background:var(--azul);color:#f3c86b;"><i class="fas fa-compass fa-spin"></i></div>
             <div style="background:#f0f4ff;border:1px solid #dce5ff;padding:10px 16px;border-radius:18px;border-bottom-left-radius:4px;display:flex;gap:5px;align-items:center;">
                 <div class="dot"></div><div class="dot"></div><div class="dot"></div>
-                <span class="small text-muted ms-2" style="font-size:0.75rem;">Consultando base de datos de Cartagena...</span>
+                <span class="small text-muted ms-2" style="font-size:0.75rem;" th:text="#{chatpage.typing}">Consultando base de datos de Cartagena...</span>
             </div>
         </div>
 
         <!-- Input -->
         <div class="chat-inp">
-            <textarea id="chatInput" placeholder="Pregúntame lo que quieras sobre Cartagena (ej: ¿Dónde ver el mejor atardecer? ¿Cuánto vale la lancha a Barú?)..." rows="1"
+            <textarea id="chatInput" th:placeholder="#{chatpage.input.placeholder}" placeholder="Pregúntame sobre Cartagena (ej: playas, tarifas, restaurantes...)" rows="1"
                       onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();enviarInput();}"
                       oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,150)+'px'"></textarea>
             <button class="btn btn-primary rounded-pill px-4 fw-semibold" onclick="enviarInput()">
-                <i class="fa fa-paper-plane me-1"></i> Enviar
+                <i class="fa fa-paper-plane me-1"></i> <span th:text="#{chatbot.send}">Enviar</span>
             </button>
         </div>
 
     </div>
 </div>
 
-<!-- Modal para configurar Google Gemini API Key opcional -->
-<div class="modal fade" id="geminiKeyModal" tabindex="-1" aria-hidden="true">
+<!-- Modal para configurar Google Gemini API Key (solo ADMIN) -->
+<div class="modal fade" id="geminiKeyModal" tabindex="-1" aria-hidden="true" sec:authorize="hasRole('ADMIN')">
     <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content" style="border-radius:18px;overflow:hidden;">
             <div class="modal-header" style="background:#071630;color:#fff;">
@@ -184,7 +186,7 @@
             </div>
             <div class="modal-body p-4">
                 <p class="small text-muted mb-3">
-                    ODYSSEY cuenta con un <strong>Motor Híbrido de 3 Niveles (Gemini 2.5 Flash + Cloud Generative AI + RAG Local)</strong> que funciona automáticamente sin necesidad de configuración adicional. Si tienes tu propia clave de <em>Google AI Studio</em>, puedes ingresarla aquí:
+                    ODYSSEY funciona con <strong>Google Gemini API + RAG Local en MySQL</strong>. Si tienes tu clave de <em>Google AI Studio</em>, puedes activarla aquí como administrador:
                 </p>
                 <div id="keyModalAlert"></div>
                 <div class="mb-3">
@@ -201,7 +203,8 @@
 
 <div th:replace="fragments :: footer-interno"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
-<script>
+<script th:inline="javascript">
+const CHAT_ERR_CONEXION = /*[[#{chatpage.err.connection}]]*/ 'Hubo un inconveniente temporal de red. Por favor intenta de nuevo.';
 const chatBox = document.getElementById('chatBox');
 const typingRow = document.getElementById('typingRow');
 
@@ -252,7 +255,7 @@ async function enviar(msg) {
         agregarMsg(data.respuesta, 'bot', data.motor);
     } catch (e) {
         typingRow.classList.remove('show');
-        agregarMsg('Hubo un inconveniente temporal de red. Por favor intenta de nuevo.', 'bot');
+        agregarMsg(CHAT_ERR_CONEXION, 'bot');
     }
 }
 
@@ -268,9 +271,14 @@ async function guardarGeminiKey() {
         return;
     }
     try {
+        const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content') || '';
+        const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content') || 'X-CSRF-TOKEN';
+        const headers = { 'Content-Type': 'application/json' };
+        if (csrfToken) headers[csrfHeader] = csrfToken;
+
         const res = await fetch('/chatbot/config-key', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: headers,
             body: JSON.stringify({ apiKey: key })
         });
         const data = await res.json();

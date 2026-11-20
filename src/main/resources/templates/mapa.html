@@ -49,7 +49,8 @@
         .hud-top-left {
             top: 16px;
             left: 16px;
-            right: 290px;
+            right: 278px;
+            max-width: calc(100% - 294px);
             padding: 12px 16px;
             display: flex;
             flex-direction: column;
@@ -115,11 +116,11 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
-            min-width: 255px;
+            width: 246px;
         }
         .layer-switch-group {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 5px;
             background: rgba(255, 255, 255, 0.07);
             padding: 4px;
@@ -291,7 +292,7 @@
         <div class="d-flex flex-wrap justify-content-between align-items-end mb-3 gap-2">
             <div>
                 <span class="badge rounded-pill px-3 py-1 mb-1" style="background:rgba(212,166,74,0.2);color:#f3c86b;border:1px solid rgba(212,166,74,0.4);font-size:0.72rem;">
-                    <i class="fas fa-satellite-dish me-1"></i> MOTOR GEOESPACIAL MONGODB 2DSPHERE EN VIVO
+                    <i class="fas fa-satellite-dish me-1"></i> RADAR GEOESPACIAL HAVERSINE EN MYSQL
                 </span>
                 <h2 class="mb-0 fw-bold text-white" style="font-family:'Cormorant Garamond',serif;font-size:2.1rem;">
                     Cartografía Interactiva de <em style="color:#d4a64a;">Cartagena de Indias</em>
@@ -337,20 +338,19 @@
                     <div class="map-hud-widget hud-top-right">
                         <div class="d-flex justify-content-between align-items-center px-1">
                             <span style="font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;color:#d4a64a;font-weight:700;">Estilo de Mapa</span>
-                            <span style="font-size:0.72rem;color:rgba(255,255,255,0.75);"><i class="fas fa-sun text-warning me-1"></i>Atardecer ~6:05 PM</span>
+                            <span style="font-size:0.72rem;color:rgba(255,255,255,0.75);"><i class="fas fa-sun text-warning me-1"></i>6:05 PM</span>
                         </div>
                         <div class="layer-switch-group">
                             <button class="layer-btn active" onclick="cambiarCapaMapa('voyager', this)">🗺️ Editorial</button>
                             <button class="layer-btn" onclick="cambiarCapaMapa('dark', this)">🌙 Nocturno</button>
-                            <button class="layer-btn" onclick="cambiarCapaMapa('satelite', this)">🛰️ Satélite</button>
                         </div>
                     </div>
 
-                    <!-- WIDGET 3 (BOTTOM-LEFT): Radar Geoespacial MongoDB 2dsphere -->
+                    <!-- WIDGET 3 (BOTTOM-LEFT): Radar de Proximidad -->
                     <div class="map-hud-widget hud-bottom-left">
                         <div class="d-flex justify-content-between align-items-center mb-2">
                             <span class="fw-bold small" style="color:#f3c86b;">
-                                <i class="fas fa-bullseye me-1"></i> Radar Proximidad (2dsphere)
+                                <i class="fas fa-bullseye me-1"></i> Radar de Proximidad
                             </span>
                             <span class="badge bg-warning text-dark fw-bold" id="radioLabelBadge">Radio: 5.0 km</span>
                         </div>
@@ -446,12 +446,6 @@ L.control.zoom({ position: 'bottomright' }).addTo(map);
 const CAPAS = {
     voyager: L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors', maxZoom: 19
-    }),
-    dark: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '© Esri · Dark Gray Canvas', maxZoom: 16
-    }),
-    satelite: L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-        attribution: '© Esri World Imagery', maxZoom: 19
     })
 };
 let capaActual = CAPAS.voyager.addTo(map);
@@ -471,9 +465,12 @@ let marcadoresLayer = L.layerGroup().addTo(map);
 function cambiarCapaMapa(clave, btn) {
     document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    map.removeLayer(capaActual);
-    capaActual = CAPAS[clave];
-    map.addLayer(capaActual);
+    const tilePane = map.getPane('tilePane');
+    if (tilePane) {
+        tilePane.style.filter = (clave === 'dark')
+            ? 'invert(92%) hue-rotate(180deg) brightness(95%) contrast(90%)'
+            : '';
+    }
 }
 
 function crearPinHtml(emoji) {
@@ -527,7 +524,7 @@ function aplicarFiltrosMapa() {
         return coincideCat && coincideTexto;
     });
 
-    document.getElementById('contadorMapaBadge').textContent = `${puntosFiltrados.length} sitios`;
+    document.getElementById('contadorMapaBadge').textContent = `${puntosFiltrados.length} ${puntosFiltrados.length === 1 ? 'sitio' : 'sitios'}`;
     renderizarMarcadoresYLista();
 }
 
@@ -554,7 +551,7 @@ function renderizarMarcadoresYLista() {
                     <span class="text-warning fw-bold" style="font-size:0.7rem;">${p.distanciaTexto}</span>
                 </div>
                 <h6 class="mb-1 text-white fw-bold text-truncate" style="font-size:0.9rem;font-family:'Cormorant Garamond',serif;">${p.nombre}</h6>
-                <p class="mb-0 text-white-50 text-truncate" style="font-size:0.73rem;">${p.descripcion}</p>
+                <p class="mb-0 text-white-50" style="font-size:0.73rem;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;">${p.descripcion}</p>
             </div>
         </div>
     `).join('');

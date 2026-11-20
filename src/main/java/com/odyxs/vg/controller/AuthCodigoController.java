@@ -1,6 +1,6 @@
 package com.odyxs.vg.controller;
 
-import com.odyxs.vg.domain.mongo.CodigoVerificacion;
+import com.odyxs.vg.entity.CodigoVerificacion;
 import com.odyxs.vg.entity.Usuario;
 import com.odyxs.vg.security.CustomUserDetails;
 import com.odyxs.vg.service.AuthCodigoService;
@@ -34,15 +34,18 @@ public class AuthCodigoController {
      */
     @PostMapping("/auth/codigo/solicitar")
     @ResponseBody
-    public ResponseEntity<Map<String, Object>> solicitarCodigo(@RequestBody Map<String, String> payload) {
-        String correo = payload.getOrDefault("correo", "");
-        String tipoStr = payload.getOrDefault("tipo", "LOGIN_OTP");
+    public ResponseEntity<Map<String, Object>> solicitarCodigo(@RequestBody Map<String, Object> payload) {
+        String correo = payload.get("correo") != null ? payload.get("correo").toString() : "";
+        String tipoStr = payload.get("tipo") != null ? payload.get("tipo").toString() : "LOGIN_OTP";
+        boolean aceptaPolitica = Boolean.TRUE.equals(payload.get("aceptaPolitica"))
+                || "true".equalsIgnoreCase(String.valueOf(payload.get("aceptaPolitica")));
 
         CodigoVerificacion.TipoCodigo tipo = "RECUPERAR_PASSWORD".equalsIgnoreCase(tipoStr)
                 ? CodigoVerificacion.TipoCodigo.RECUPERAR_PASSWORD
                 : CodigoVerificacion.TipoCodigo.LOGIN_OTP;
 
-        Map<String, Object> resultado = authCodigoService.solicitarCodigo(correo, tipo);
+        boolean consentimientoEfectivo = (tipo == CodigoVerificacion.TipoCodigo.RECUPERAR_PASSWORD) || aceptaPolitica;
+        Map<String, Object> resultado = authCodigoService.solicitarCodigo(correo, tipo, consentimientoEfectivo);
         return ResponseEntity.ok(resultado);
     }
 
