@@ -3,12 +3,11 @@
 [![Odyssey CI](https://github.com/josezambranol/Odyssey/actions/workflows/ci.yml/badge.svg)](https://github.com/josezambranol/Odyssey/actions/workflows/ci.yml)
 ![Java 21](https://img.shields.io/badge/Java-21%20LTS-ED8B00?style=flat-square&logo=openjdk&logoColor=white)
 ![Spring Boot 3.2](https://img.shields.io/badge/Spring%20Boot-3.2.5-6DB33F?style=flat-square&logo=springboot&logoColor=white)
+![Spring Security 6](https://img.shields.io/badge/Spring%20Security-6-6DB33F?style=flat-square&logo=springsecurity&logoColor=white)
 ![MySQL 8](https://img.shields.io/badge/MySQL-8.0-4479A1?style=flat-square&logo=mysql&logoColor=white)
-![MongoDB 7](https://img.shields.io/badge/MongoDB-7.0-47A248?style=flat-square&logo=mongodb&logoColor=white)
-![Redis 7](https://img.shields.io/badge/Redis-7.2-DC382D?style=flat-square&logo=redis&logoColor=white)
 ![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?style=flat-square&logo=docker&logoColor=white)
 
-Plataforma web y API REST desarrollada en **Java 21 + Spring Boot 3** con arquitectura modular en capas, persistencia unificada en **MySQL 8**, caché en memoria de Spring, autenticación con **Spring Security 6**, documentación interactiva **OpenAPI/Swagger** y asistente turístico impulsado por **Google Gemini** con motor de respaldo local.
+Plataforma web y API REST desarrollada en **Java 21 + Spring Boot 3** con arquitectura monolítica modular en capas, persistencia unificada en **MySQL 8**, caché en memoria de Spring, autenticación con **Spring Security 6**, internacionalización nativa **ES / EN**, documentación interactiva **OpenAPI/Swagger** y asistente turístico impulsado por **Google Gemini** con motor de respaldo local.
 
 ---
 
@@ -20,6 +19,7 @@ Plataforma web y API REST desarrollada en **Java 21 + Spring Boot 3** con arquit
 - **Caché en Memoria (Spring Cache):** Caché de catálogo y cartelera sin necesidad de servidores auxiliares.
 - **API REST v1 + OpenAPI/Swagger:** Endpoints versionados (`/api/v1/lugares`, `/api/v1/eventos`, `/api/v1/itinerarios`, `/api/v1/reportes`, `/api/v1/metricas`) documentados en `/swagger-ui.html`.
 - **Asistente Turístico Híbrido:** Integración con Google Gemini (`GEMINI_API_KEY`) y fallback determinístico local sobre base de datos MySQL.
+- **Internacionalización nativa (ES / EN):** Cambio de idioma gestionado desde servidor con `SessionLocaleResolver` y archivos `i18n/messages*.properties` (sin scripts ni cookies de terceros).
 - **Autenticación y Seguridad:** Contraseñas con **BCrypt**, protección **CSRF**, validación de entradas con Jakarta Validation, carga segura de archivos (`FileStorageService`), páginas legales (`/terminos`, `/privacidad`) y flujo de códigos **OTP por SMTP**.
 
 ---
@@ -43,7 +43,7 @@ flowchart LR
 | :--- | :--- |
 | **Backend** | Java 21 LTS, Spring Boot 3.2.5, Spring Security 6, Spring Data JPA, Spring Cache |
 | **API & Docs** | Spring MVC, Springdoc OpenAPI 3 / Swagger UI, Bean Validation |
-| **Frontend** | Thymeleaf, Bootstrap 5, Leaflet (OpenStreetMap / Esri), HTML5, CSS3, JavaScript |
+| **Frontend** | Thymeleaf, Bootstrap 5, Leaflet (OpenStreetMap), HTML5, CSS3, JavaScript |
 | **Base de datos** | MySQL 8.0 |
 | **Testing & CI** | JUnit 5, Mockito, Spring Security Test, H2 (perfil `test`), GitHub Actions |
 | **Contenedores** | Docker, Docker Compose (2 servicios: `odyssey_mysql` + `odyssey_backend`) |
@@ -98,6 +98,7 @@ mvn -B test
 - [02. Arquitectura y Modelo de Datos](./docs/02_ARQUITECTURA_Y_MODELO_DE_DATOS.md)
 - [03. Diagnóstico de Seguridad y Deuda Técnica](./docs/03_SEGURIDAD_Y_DEUDA_TECNICA.md)
 - [04. Hoja de Ruta y Plan de Modernización](./docs/04_HOJA_DE_RUTA_Y_PLAN_DE_REFACCION.md)
+- [05. Plan de Fases y Reglas de Refactorización](./docs/05_PLAN_FASES_Y_REGLAS.md)
 
 ---
 
