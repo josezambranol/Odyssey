@@ -92,6 +92,19 @@ mvn -B test
 
 ---
 
+## Registro de Errores, Pruebas y Fallas
+
+Todas las incidencias detectadas en pruebas manuales (QA en navegador), fallos de compilación/ejecución, regresiones y resultados de la suite de pruebas se documentan de forma continua en:
+
+- **[06. Bitácora de Errores, Pruebas y Fallas](./docs/06_REGISTRO_ERRORES_Y_PRUEBAS.md)**
+
+| Última Verificación | Alcance | Resultado | Observaciones |
+| :--- | :--- | :--- | :--- |
+| `mvn -B clean package` (2026-11-19) | 33 tests (servicios, REST API v1 e integración Security/H2) | **33/33 pasaron** (`0` fallos) | Validado tras completar Fases 1–7 |
+| QA Humano en Navegador (2026-11-19) | Flujos anónimo, usuario y admin en `localhost:8080` | **8 bloques (`ERR-001`–`ERR-008`) corregidos** | Pendiente re-verificación en Docker tras encender Docker Desktop (`docker compose up -d --build`) |
+
+---
+
 ## Documentación Técnica Adicional
 
 - [01. Contexto e Historias de Usuario](./docs/01_CONTEXTO_Y_HISTORIAS_DE_USUARIO.md)
@@ -99,6 +112,7 @@ mvn -B test
 - [03. Diagnóstico de Seguridad y Deuda Técnica](./docs/03_SEGURIDAD_Y_DEUDA_TECNICA.md)
 - [04. Hoja de Ruta y Plan de Modernización](./docs/04_HOJA_DE_RUTA_Y_PLAN_DE_REFACCION.md)
 - [05. Plan de Fases y Reglas de Refactorización](./docs/05_PLAN_FASES_Y_REGLAS.md)
+- [06. Registro de Errores, Pruebas y Fallas](./docs/06_REGISTRO_ERRORES_Y_PRUEBAS.md)
 
 ---
 
