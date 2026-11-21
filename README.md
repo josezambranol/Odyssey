@@ -100,8 +100,8 @@ Todas las incidencias detectadas en pruebas manuales (QA en navegador), fallos d
 
 | Última Verificación | Alcance | Resultado | Observaciones |
 | :--- | :--- | :--- | :--- |
-| `mvn -B clean package` (2026-11-19) | 33 tests (servicios, REST API v1 e integración Security/H2) | **33/33 pasaron** (`0` fallos) | Validado tras completar Fases 1–7 |
-| QA Humano en Navegador (2026-11-19) | Flujos anónimo, usuario y admin en `localhost:8080` | **8 bloques (`ERR-001`–`ERR-008`) corregidos** | Pendiente re-verificación en Docker tras encender Docker Desktop (`docker compose up -d --build`) |
+| `mvn -B clean package` (2026-11-20) | 34 tests (servicios, REST API v1, seguridad e integración H2) | **34/34 pasaron** (`0` fallos) | Validado tras Fases 1–7, auditoría de seguridad/rutas y optimización de rendimiento |
+| QA Humano & Rendimiento PC / Móvil (2026-11-20) | `1440×900` (PC) y `390×844` (Móvil) sobre `/`, `/lugares`, `/mapa`, `/transporte`, `/eventos`, `/chatbot`, `/registro` | **15 bloques (`ERR-001`–`ERR-015`) corregidos** | Imágenes reducidas `-73.8%` (`19.30 MB → 5.06 MB`), GZIP + `Cache-Control` 30d activos y correcciones responsive en `/mapa` y controles móviles |
 
 ---
 

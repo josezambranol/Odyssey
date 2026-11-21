@@ -54,7 +54,10 @@ public class LugarController {
     @GetMapping("/lugares/{id}")
     public String detalle(@PathVariable Long id, HttpSession session, Model model) {
         Lugar lugar = lugarService.obtenerPorId(id);
-        if (lugar == null) return "redirect:/lugares";
+        boolean esAdmin = session != null && "ADMIN".equals(session.getAttribute("usuarioRol"));
+        if (lugar == null || (lugar.getEstado() != Lugar.Estado.APROBADO && !esAdmin)) {
+            return "redirect:/lugares";
+        }
 
         if (metricsService != null) {
             metricsService.registrarVisitaLugar(id);

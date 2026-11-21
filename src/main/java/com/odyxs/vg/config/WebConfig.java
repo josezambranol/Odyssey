@@ -3,6 +3,7 @@ package com.odyxs.vg.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.CacheControl;
 import org.springframework.web.servlet.LocaleResolver;
 import org.springframework.web.servlet.config.annotation.InterceptorRegistry;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -10,10 +11,10 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import org.springframework.web.servlet.i18n.LocaleChangeInterceptor;
 import org.springframework.web.servlet.i18n.CookieLocaleResolver;
 
-import java.io.File;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
@@ -58,6 +59,9 @@ public class WebConfig implements WebMvcConfigurer {
         String staticTarget = "file:" + Paths.get(System.getProperty("user.dir"),
                 "target", "classes", "static").toAbsolutePath() + "/";
 
+        CacheControl cacheStatic = CacheControl.maxAge(30, TimeUnit.DAYS).cachePublic();
+        CacheControl cacheUploads = CacheControl.maxAge(7, TimeUnit.DAYS).cachePublic();
+
         // /uploads/** — primero busca en carpeta externa, luego en classpath (imágenes pre-cargadas)
         registry.addResourceHandler("/uploads/**")
                 .addResourceLocations(
@@ -65,7 +69,8 @@ public class WebConfig implements WebMvcConfigurer {
                     staticFs + "uploads/",
                     staticTarget + "uploads/",
                     "classpath:/static/uploads/"
-                );
+                )
+                .setCacheControl(cacheUploads);
 
         // /img/**
         registry.addResourceHandler("/img/**")
@@ -73,7 +78,8 @@ public class WebConfig implements WebMvcConfigurer {
                     staticFs + "img/",
                     staticTarget + "img/",
                     "classpath:/static/img/"
-                );
+                )
+                .setCacheControl(cacheStatic);
 
         // /css/**
         registry.addResourceHandler("/css/**")
@@ -81,7 +87,8 @@ public class WebConfig implements WebMvcConfigurer {
                     staticFs + "css/",
                     staticTarget + "css/",
                     "classpath:/static/css/"
-                );
+                )
+                .setCacheControl(cacheStatic);
 
         // /js/**
         registry.addResourceHandler("/js/**")
@@ -89,6 +96,7 @@ public class WebConfig implements WebMvcConfigurer {
                     staticFs + "js/",
                     staticTarget + "js/",
                     "classpath:/static/js/"
-                );
+                )
+                .setCacheControl(cacheStatic);
     }
 }

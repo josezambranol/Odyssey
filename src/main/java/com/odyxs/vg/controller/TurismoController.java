@@ -60,6 +60,12 @@ public class TurismoController {
         return "eventos";
     }
 
+    @GetMapping("/eventos/sincronizar")
+    public String sincronizarEventosWeb() {
+        eventoSyncService.refrescarCarteleraEventos();
+        return "redirect:/eventos?synced=true";
+    }
+
     // ── Actividades (Web) ─────────────────────────────────────────
 
     @GetMapping("/actividades")
@@ -142,10 +148,15 @@ public class TurismoController {
             Model model) {
 
         try {
+            LocalDate fechaEvento = LocalDate.parse(fecha.trim());
+            if (fechaEvento.isBefore(LocalDate.now())) {
+                model.addAttribute("error", "La fecha del evento no puede ser anterior a hoy.");
+                return "proponer-evento";
+            }
             Evento e = new Evento();
             e.setNombre(nombre.trim());
             e.setDescripcion(descripcion != null ? descripcion.trim() : null);
-            e.setFecha(LocalDate.parse(fecha.trim()));
+            e.setFecha(fechaEvento);
             e.setLugar(lugar != null ? lugar.trim() : null);
             e.setImagenUrl(fileStorageService.guardarImagen(imagen, "eventos"));
             e.setActivo(false); // pendiente de aprobación admin
@@ -179,7 +190,7 @@ public class TurismoController {
         return "mapa";
     }
 
-    // ── Chatbot ODYSSEY con Google Gemini & Telemetría NoSQL ──
+    // ── Chatbot ODYSSEY con Google Gemini & Telemetría en MySQL ──
 
     @GetMapping("/chatbot")
     public String chatbotPage(Model model) {

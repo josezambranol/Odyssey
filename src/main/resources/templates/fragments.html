@@ -454,149 +454,17 @@
         function chatEnviarInput() {
             chatEnviar(document.getElementById('chatInputPop').value);
         }
+
+        // Mostrar botón volver arriba solo después de hacer scroll
+        (function(){
+            const backTop = document.querySelector('.back-to-top');
+            if (!backTop) return;
+            const onScroll = () => backTop.classList.toggle('is-visible', window.scrollY > 300);
+            window.addEventListener('scroll', onScroll, { passive: true });
+            onScroll();
+        })();
     </script>
 </div>
 <!-- ═══ FIN footer-interno ══════════════════════════════════ -->
-
-
-<!-- ═══ FRAGMENTO: footer-chatbot-only (solo popup sin footer) ═══ -->
-<div th:fragment="footer-chatbot-only">
-    <button id="chatFab" onclick="toggleChat()" title="ODYSSEY Concierge IA"
-            style="position:fixed;bottom:95px;right:28px;z-index:1060;
-                   width:58px;height:58px;border-radius:50%;border:none;
-                   cursor:pointer;background:var(--gold);color:var(--azul);
-                   font-size:1.5rem;box-shadow:0 6px 24px rgba(19,53,123,.4);
-                   display:flex;align-items:center;justify-content:center;transition:transform .2s;
-                   overflow:hidden;padding:0;">
-        <img id="chatFabIcon" src="/img/chatbot-icon.png" alt="Chat"
-             style="width:100%;height:100%;object-fit:cover;border-radius:50%;display:block;">
-    </button>
-    <span id="chatBadge" style="position:fixed;bottom:139px;right:24px;z-index:1061;
-          background:#e74c3c;color:#fff;font-size:.6rem;font-weight:700;
-          width:16px;height:16px;border-radius:50%;display:flex;
-          align-items:center;justify-content:center;pointer-events:none;">1</span>
-
-    <div id="chatPopup" style="position:fixed;bottom:20px;right:94px;z-index:1059;
-       width:375px;max-width:calc(100vw - 120px);background:#fff;border-radius:18px;
-         box-shadow:0 16px 56px rgba(19,53,123,.28);display:none;
-         flex-direction:column;overflow:hidden;">
-        <div style="background:linear-gradient(135deg,var(--azul) 0%,#1a4299 100%);
-                    padding:14px 16px;display:flex;align-items:center;gap:10px;">
-            <div style="width:40px;height:40px;border-radius:50%;background:rgba(255,193,7,.2);
-                        border:2px solid rgba(255,193,7,.4);display:flex;align-items:center;
-                        justify-content:center;font-size:1.3rem;flex-shrink:0;">🤖</div>
-            <div style="flex:1;">
-                <div style="font-family:'Jost',sans-serif;font-weight:700;color:#fff;font-size:.9rem;">ODYSSEY — Concierge IA</div>
-                <div style="color:rgba(255,255,255,.65);font-size:.72rem;">
-                    <span style="color:#2ecc71;margin-right:4px;">●</span>IA Generativa · Online 24/7</div>
-            </div>
-            <a href="/chatbot" title="Abrir en pantalla completa"
-               style="background:rgba(255,255,255,.15);border:none;color:#fff;
-                      width:26px;height:26px;border-radius:50%;text-decoration:none;
-                      font-size:.72rem;display:flex;align-items:center;justify-content:center;">
-                <i class="fa fa-expand"></i>
-            </a>
-            <button onclick="toggleChat()" style="background:rgba(255,255,255,.15);border:none;color:#fff;
-                    width:26px;height:26px;border-radius:50%;cursor:pointer;font-size:.8rem;
-                    display:flex;align-items:center;justify-content:center;">✕</button>
-        </div>
-        <div id="chatMessages" style="height:290px;overflow-y:auto;padding:14px;
-             display:flex;flex-direction:column;gap:10px;background:#f7f9ff;scroll-behavior:smooth;"></div>
-        <div style="padding:8px 10px;background:#fff;border-top:1px solid #eef2ff;display:flex;gap:5px;flex-wrap:wrap;">
-            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)" data-msg="¿Cuál es el clima en Cartagena?">🌤️ Clima</button>
-            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)" data-msg="¿Cuáles son las mejores playas?">🏖️ Playas</button>
-            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)" data-msg="¿Cómo me muevo en Cartagena?">🚌 Transporte</button>
-            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)" data-msg="¿Qué hoteles recomiendas?">🏨 Hoteles</button>
-            <button class="chat-sug-pop" onclick="chatEnviar(this.dataset.msg)" data-msg="¿Qué actividades hay?">🎯 Actividades</button>
-        </div>
-        <div style="display:flex;gap:8px;padding:10px;background:#fff;border-top:1px solid #eef2ff;min-width:0;">
-            <input id="chatInputPop" type="text" placeholder="Pregúntale lo que quieras sobre Cartagena..."
-                   onkeydown="if(event.key==='Enter')chatEnviarInput()"
-                   style="flex:1;min-width:0;border:1.5px solid #dce5ff;border-radius:40px;padding:9px 15px;
-                          font-size:.87rem;outline:none;font-family:'Roboto',sans-serif;color:var(--azul);
-                          overflow:hidden;text-overflow:ellipsis;">
-            <button onclick="chatEnviarInput()"
-                    style="background:var(--azul);color:#fff;border:none;width:36px;height:36px;
-                           border-radius:50%;cursor:pointer;display:flex;align-items:center;
-                           justify-content:center;flex-shrink:0;font-size:.85rem;">
-                <i class="fa fa-paper-plane"></i></button>
-        </div>
-    </div>
-
-    <style>
-        @keyframes slideUp{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-        .chat-sug-pop{font-family:'Jost',sans-serif;font-size:.65rem;font-weight:700;text-transform:uppercase;
-            background:#f0f4ff;border:1px solid #dce5ff;color:var(--azul);padding:4px 10px;
-            border-radius:20px;cursor:pointer;transition:.2s;}
-        .chat-sug-pop:hover{background:var(--azul);color:#fff;}
-        #chatFab:hover{transform:scale(1.08);}
-    </style>
-    <script>
-    var chatOpen=false;
-    function formatChatMdOnly(raw) {
-        if (!raw) return '';
-        var s = raw.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        s = s.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-        s = s.replace(/\*(.+?)\*/g, '<em>$1</em>');
-        s = s.replace(/\n/g, '<br>');
-        return s;
-    }
-    function toggleChat(){
-        var p=document.getElementById('chatPopup');
-        var b=document.getElementById('chatBadge');
-        var f=document.getElementById('chatFab');
-        chatOpen=!chatOpen;
-        p.style.display=chatOpen?'flex':'none';
-        f.style.background=chatOpen?'var(--azul)':'var(--gold)';
-        f.style.color=chatOpen?'#fff':'var(--azul)';
-        if(b)b.style.display='none';
-        var msgs=document.getElementById('chatMessages');
-        if(chatOpen&&msgs.children.length===0){
-            addBotMsg('¡Hola! 👋 Soy **ODYSSEY**, tu Concierge IA de Cartagena de Indias. ¿Qué plan o lugar quieres descubrir hoy?');
-        }
-        if(chatOpen)setTimeout(function(){document.getElementById('chatInputPop').focus();},200);
-    }
-    function addBotMsg(text){
-        var box=document.getElementById('chatMessages');
-        var d=document.createElement('div');
-        d.style.cssText='display:flex;gap:7px;align-items:flex-end;max-width:90%;align-self:flex-start;';
-        d.innerHTML='<div style="width:28px;height:28px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;">🤖</div><div style="padding:10px 13px;border-radius:16px;border-bottom-left-radius:3px;background:#fff;color:var(--azul);font-size:.84rem;line-height:1.55;border:1px solid #e0e8ff;word-break:break-word;">'+formatChatMdOnly(text)+'</div>';
-        box.appendChild(d);box.scrollTop=box.scrollHeight;
-    }
-    function addUserMsg(text){
-        var box=document.getElementById('chatMessages');
-        var d=document.createElement('div');
-        var safe = text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        d.style.cssText='display:flex;gap:7px;align-items:flex-end;max-width:90%;align-self:flex-end;flex-direction:row-reverse;';
-        d.innerHTML='<div style="width:28px;height:28px;border-radius:50%;background:var(--gold);color:var(--azul);display:flex;align-items:center;justify-content:center;font-size:.85rem;flex-shrink:0;">👤</div><div style="padding:9px 13px;border-radius:16px;border-bottom-right-radius:3px;background:var(--azul);color:#fff;font-size:.84rem;word-break:break-word;">'+safe+'</div>';
-        box.appendChild(d);box.scrollTop=box.scrollHeight;
-    }
-    function addTyping(){
-        var box=document.getElementById('chatMessages');
-        var d=document.createElement('div');
-        d.id='chatTypingDot';
-        d.style.cssText='display:flex;gap:7px;align-items:flex-end;align-self:flex-start;';
-        d.innerHTML='<div style="width:28px;height:28px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:.85rem;">🤖</div><div style="padding:10px 14px;border-radius:16px;background:#fff;border:1px solid #e0e8ff;display:flex;gap:4px;align-items:center;"><span style="width:6px;height:6px;border-radius:50%;background:var(--azul);opacity:.3;animation:dot 1.2s infinite;display:block;"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--azul);opacity:.3;animation:dot 1.2s .2s infinite;display:block;"></span><span style="width:6px;height:6px;border-radius:50%;background:var(--azul);opacity:.3;animation:dot 1.2s .4s infinite;display:block;"></span></div>';
-        box.appendChild(d);box.scrollTop=box.scrollHeight;
-    }
-    async function chatEnviar(msg){
-        if(!msg||!msg.trim())return;
-        var clean = msg.replace(/^\[\[|\]\]$/g, '').trim();
-        addUserMsg(clean);
-        document.getElementById('chatInputPop').value='';
-        addTyping();
-        try{
-            var res=await fetch('/chatbot/respuesta',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({mensaje:clean})});
-            var data=await res.json();
-            var t=document.getElementById('chatTypingDot');if(t)t.remove();
-            addBotMsg(data.respuesta);
-        }catch(e){
-            var t=document.getElementById('chatTypingDot');if(t)t.remove();
-            addBotMsg('Lo siento, hubo un error. Inténtalo de nuevo 🙏');
-        }
-    }
-    function chatEnviarInput(){chatEnviar(document.getElementById('chatInputPop').value);}
-    </script>
-</div>
 
 </html>

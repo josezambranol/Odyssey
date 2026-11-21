@@ -8,6 +8,7 @@ import com.odyxs.vg.repository.ResenaRepository;
 import com.odyxs.vg.repository.SuscripcionLugarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -35,6 +36,7 @@ public class LugarService {
         return lugarRepository.findByCategoriaId(categoriaId);
     }
 
+    @Cacheable(value = "lugares", key = "'aprobados'")
     public List<Lugar> obtenerAprobados() {
         return lugarRepository.findByEstado(Lugar.Estado.APROBADO);
     }

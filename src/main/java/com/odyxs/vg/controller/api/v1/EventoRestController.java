@@ -19,7 +19,7 @@ import java.util.Map;
 
 @RestController
 @RequestMapping("/api/v1/eventos")
-@Tag(name = "Cartelera de Eventos Culturales", description = "Sincronización en vivo, web scraping de agendas externas y consulta de eventos en Cartagena")
+@Tag(name = "Cartelera de Eventos Culturales", description = "Consulta y actualización de la cartelera oficial y comunitaria de eventos en Cartagena (MySQL 8)")
 public class EventoRestController {
 
     @Autowired
@@ -29,7 +29,7 @@ public class EventoRestController {
     private EventoRepository eventoRepository;
 
     @Operation(summary = "Refrescar cartelera de eventos culturales",
-               description = "Invalida caché y actualiza los eventos activos desde MySQL.")
+               description = "Invalida caché en memoria y actualiza los eventos activos desde MySQL.")
     @PostMapping("/sync-externo")
     public ResponseEntity<ApiResponse<Map<String, Object>>> sincronizarExterno() {
         Map<String, Object> resultado = eventoSyncService.refrescarCarteleraEventos();
@@ -37,7 +37,7 @@ public class EventoRestController {
     }
 
     @Operation(summary = "Obtener cartelera clasificada (Hoy, Próximos, Finalizados)",
-               description = "Devuelve los eventos clasificados con caché de alta velocidad en Redis.")
+               description = "Devuelve los eventos clasificados con caché en memoria de Spring Cache.")
     @GetMapping("/clasificados")
     public ResponseEntity<ApiResponse<Map<String, List<Evento>>>> obtenerClasificados() {
         Map<String, List<Evento>> clasificados = eventoSyncService.obtenerEventosClasificados();

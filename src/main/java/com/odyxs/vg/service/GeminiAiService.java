@@ -364,7 +364,7 @@ public class GeminiAiService {
             chatLog.setErrorDetalle(error);
             chatbotLogRepository.save(chatLog);
         } catch (Exception ex) {
-            log.warn("No se pudo guardar el log de Chatbot en MongoDB: {}", ex.getMessage());
+            log.warn("No se pudo guardar el log de Chatbot en MySQL: {}", ex.getMessage());
         }
     }
 

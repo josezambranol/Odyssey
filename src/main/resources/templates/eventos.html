@@ -200,7 +200,7 @@
                 <div class="ev-card">
                     <div class="ev-img">
                         <img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/pf-eventos.jpg'}"
-                             th:alt="${ev.nombre}" onerror="this.src='/img/pf-eventos.jpg'">
+                             th:alt="${ev.nombre}" loading="lazy" decoding="async" onerror="this.src='/img/pf-eventos.jpg'">
                     </div>
                     <div class="ev-meta">
                         <span><i class="fa fa-calendar-alt text-warning"></i><span th:text="${#temporals.format(ev.fecha,'dd MMM yyyy')}"></span></span>

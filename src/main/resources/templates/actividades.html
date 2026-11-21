@@ -53,6 +53,7 @@
             <div class="act-card">
                 <div class="act-img">
                     <img th:src="${act.imagenEfectiva}" th:alt="${act.nombre}"
+                         loading="lazy" decoding="async"
                          onerror="this.src='/img/act-gastronomia.jpg'">
                 </div>
                 <div class="act-body">

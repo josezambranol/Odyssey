@@ -45,7 +45,7 @@ public class AuthCodigoService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    // Respaldo en memoria en caso de que MongoDB no esté activo en un entorno aislado
+    // Respaldo en memoria para códigos temporales en entornos aislados
     private final Map<String, CodigoVerificacion> fallbackCodigos = new HashMap<>();
 
     /**

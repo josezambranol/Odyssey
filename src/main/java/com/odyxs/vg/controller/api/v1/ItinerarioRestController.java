@@ -3,12 +3,16 @@ package com.odyxs.vg.controller.api.v1;
 import com.odyxs.vg.common.ApiResponse;
 import com.odyxs.vg.entity.Itinerario;
 import com.odyxs.vg.dto.GenerarItinerarioRequest;
+import com.odyxs.vg.entity.Usuario;
+import com.odyxs.vg.security.CustomUserDetails;
 import com.odyxs.vg.service.ItinerarioService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -38,9 +42,20 @@ public class ItinerarioRestController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
-    @Operation(summary = "Obtener itinerarios guardados de un usuario")
+    @Operation(summary = "Obtener itinerarios guardados de un usuario (requiere sesión del titular o ADMIN)")
     @GetMapping("/usuario/{usuarioId}")
-    public ResponseEntity<ApiResponse<List<Itinerario>>> obtenerPorUsuario(@PathVariable Long usuarioId) {
+    public ResponseEntity<ApiResponse<List<Itinerario>>> obtenerPorUsuario(
+            @PathVariable Long usuarioId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(ApiResponse.error("Debes iniciar sesión para consultar tus itinerarios."));
+        }
+        boolean esAdmin = userDetails.getUsuario() != null && userDetails.getUsuario().getRol() == Usuario.Rol.ADMIN;
+        if (!esAdmin && !usuarioId.equals(userDetails.getId())) {
+            return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                    .body(ApiResponse.error("No tienes permisos para consultar itinerarios de otro usuario."));
+        }
         List<Itinerario> lista = itinerarioService.buscarPorUsuario(usuarioId);
         return ResponseEntity.ok(ApiResponse.ok("Itinerarios del usuario", lista));
     }

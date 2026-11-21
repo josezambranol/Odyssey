@@ -142,7 +142,7 @@
             color: #071630;
         }
 
-        /* Bottom-Left: Radar Geoespacial 2dsphere */
+        /* Bottom-Left: Radar Geoespacial Haversine */
         .hud-bottom-left {
             bottom: 18px;
             left: 16px;
@@ -273,10 +273,10 @@
         }
 
         @media (max-width: 991px) {
-            .hud-top-left { right: 16px; }
+            .hud-top-left { left: 12px; right: 12px; max-width: none; padding: 10px 12px; }
             .hud-top-right { top: auto; bottom: 16px; right: 16px; display: none; }
-            .hud-bottom-left { width: calc(100% - 32px); }
-            .hud-place-inspector { width: calc(100% - 32px); left: 16px; bottom: 16px; }
+            .hud-bottom-left { width: calc(100% - 76px); left: 12px; bottom: 12px; padding: 10px 12px; }
+            .hud-place-inspector { width: calc(100% - 24px); left: 12px; bottom: 12px; }
             .map-command-stage { height: 560px; }
         }
     </style>
@@ -320,7 +320,7 @@
                                 <i class="fas fa-search me-2" style="color:#d4a64a;font-size:0.85rem;"></i>
                                 <input type="text" id="mapSearchInput" placeholder="Buscar baluarte, playa, museo, restaurante o barrio..." oninput="aplicarFiltrosMapa()">
                             </div>
-                            <span class="badge rounded-pill px-3 py-2" style="background:#d4a64a;color:#071630;font-weight:800;" id="contadorMapaBadge">26 sitios</span>
+                            <span class="badge rounded-pill px-3 py-2" style="background:#d4a64a;color:#071630;font-weight:800;" id="contadorMapaBadge">Cargando...</span>
                         </div>
                         <div class="hud-filter-pills">
                             <button class="hud-pill active" onclick="seleccionarCategoriaMapa('TODOS', this)">🌟 Todos</button>
@@ -483,7 +483,7 @@ function crearPinHtml(emoji) {
     });
 }
 
-// Cargar puntos desde el motor geoespacial MongoDB 2dsphere
+// Cargar puntos desde el motor geoespacial Haversine en MySQL
 async function cargarPuntosGeoespaciales() {
     try {
         const url = `/api/v1/lugares/cerca-de-mi?lng=${centroRadar.lng}&lat=${centroRadar.lat}&radioKm=${radioRadarKm}`;

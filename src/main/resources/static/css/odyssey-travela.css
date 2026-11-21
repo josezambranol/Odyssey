@@ -7,7 +7,7 @@
    Fonts: Cormorant Garamond (títulos) + DM Sans (cuerpo)
    ========================================================= */
 
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400;1,500&family=DM+Sans:wght@300;400;500;600;700&family=Jost:wght@500;600;700&display=swap');
+/* Las fuentes de Google Fonts se cargan vía <link> en cada plantilla para evitar cascadas bloqueantes */
 
 :root {
     --azul:         #0B2D6B;
@@ -48,11 +48,21 @@ h1,h2,h3,h4,h5,.display-1,.display-2,.display-3 {
     position:fixed; right:30px; bottom:30px;
     display:flex; width:48px; height:48px;
     align-items:center; justify-content:center;
-    transition:.4s; z-index:99;
+    transition:.3s; z-index:99;
     background:var(--azul); color:#fff; border-radius:50%;
     box-shadow: 0 4px 16px rgba(11,45,107,.3);
+    opacity: 0; pointer-events: none; transform: translateY(12px);
+}
+.back-to-top.is-visible {
+    opacity: 1; pointer-events: auto; transform: translateY(0);
 }
 .back-to-top:hover { background:var(--gold); color:var(--azul); }
+@media (max-width: 767px) {
+    .back-to-top { width:40px; height:40px; right:16px; bottom:70px; }
+    #chatFab { width:46px !important; height:46px !important; bottom:16px !important; right:14px !important; }
+    #chatBadge { bottom:50px !important; right:10px !important; }
+    #chatPopup { right:12px !important; bottom:72px !important; width:calc(100vw - 24px) !important; max-width:calc(100vw - 24px) !important; }
+}
 
 /* ── Buttons ─────────────────────────────────────────────── */
 .btn { font-family:'DM Sans',sans-serif; font-weight:600; transition:.4s; }

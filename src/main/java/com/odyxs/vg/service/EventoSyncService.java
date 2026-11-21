@@ -23,7 +23,7 @@ public class EventoSyncService {
     /**
      * Obtiene los eventos activos clasificados en Hoy, Próximos y Finalizados desde MySQL.
      */
-    @Cacheable(value = "eventosClasificados", key = "'agenda'")
+    @Cacheable(value = "eventosClasificados", key = "T(java.time.LocalDate).now().toString()")
     public Map<String, List<Evento>> obtenerEventosClasificados() {
         LocalDate hoy = LocalDate.now();
         Map<String, List<Evento>> mapa = new LinkedHashMap<>();

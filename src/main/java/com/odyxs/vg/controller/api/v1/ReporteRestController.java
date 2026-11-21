@@ -45,7 +45,7 @@ public class ReporteRestController {
         return ResponseEntity.ok(ApiResponse.ok(new PageResponse<>(dtos)));
     }
 
-    @Operation(summary = "Búsqueda por texto en reportes", description = "Aprovecha el índice de texto nativo de MongoDB.")
+    @Operation(summary = "Búsqueda por texto en reportes", description = "Filtra reportes en MySQL por título, descripción o entidad.")
     @GetMapping("/buscar")
     public ResponseEntity<ApiResponse<PageResponse<ReporteResumenDto>>> buscar(
             @RequestParam String q,
@@ -59,14 +59,14 @@ public class ReporteRestController {
     }
 
     @Operation(summary = "Obtener métricas y agregaciones globales",
-               description = "Calcula métricas analíticas en tiempo real usando Aggregation Pipelines de MongoDB, con caché en Redis.")
+               description = "Calcula métricas analíticas agregadas desde MySQL con caché en memoria (Spring Cache).")
     @GetMapping("/metricas")
     public ResponseEntity<ApiResponse<Map<String, Object>>> obtenerMetricas() {
         return ResponseEntity.ok(ApiResponse.ok(reporteService.obtenerEstadisticasGlobales()));
     }
 
-    @Operation(summary = "📥 Exportación Masiva en Streaming CSV (+15,000 registros)",
-               description = "Descarga de alto rendimiento con cursor directo a MongoDB y StreamingResponseBody (consumo de RAM < 20MB).")
+    @Operation(summary = "📥 Exportación Masiva en Streaming CSV",
+               description = "Descarga paginada desde MySQL mediante StreamingResponseBody (bajo consumo de RAM).")
     @GetMapping(value = "/exportar/csv", produces = "text/csv; charset=utf-8")
     public ResponseEntity<org.springframework.web.servlet.mvc.method.annotation.StreamingResponseBody> exportarCsv(
             @RequestParam(required = false) Reporte.TipoReporte tipo) {
@@ -81,15 +81,15 @@ public class ReporteRestController {
                 .body(stream);
     }
 
-    @Operation(summary = "🚀 Benchmark masivo: Generar 15,000 reportes en MongoDB",
-               description = "Inserta 15,000 documentos sintéticos en lotes con mongoTemplate.insertAll() y devuelve métricas de rendimiento y latencia en vivo.")
+    @Operation(summary = "🚀 Benchmark masivo: Generar 15,000 reportes en MySQL",
+               description = "Inserta 15,000 registros sintéticos en lotes en MySQL y devuelve métricas de rendimiento y latencia.")
     @PostMapping("/benchmark/seed-15k")
     public ResponseEntity<ApiResponse<Map<String, Object>>> benchmark15k() {
         Map<String, Object> stats = reporteService.ejecutarBenchmark15000Documentos();
         return ResponseEntity.ok(ApiResponse.ok("Benchmark ejecutado con éxito", stats));
     }
 
-    @Operation(summary = "Obtener detalle completo de un reporte por ID (MongoDB ObjectId)")
+    @Operation(summary = "Obtener detalle completo de un reporte por ID (UUID)")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Reporte>> obtenerPorId(@PathVariable String id) {
         return reporteService.buscarPorId(id)

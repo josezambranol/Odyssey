@@ -10,7 +10,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -32,7 +31,6 @@ public class LugarRestController {
 
     @Operation(summary = "Listar lugares aprobados (con caché en memoria)",
                description = "Obtiene todos los sitios turísticos aprobados desde MySQL con caché en memoria.")
-    @Cacheable(value = "lugares", key = "'aprobados'")
     @GetMapping
     public ResponseEntity<ApiResponse<List<Lugar>>> obtenerAprobados() {
         List<Lugar> lugares = lugarService.obtenerAprobados();
@@ -52,11 +50,11 @@ public class LugarRestController {
     }
 
     @Operation(summary = "Obtener detalle de un lugar por ID",
-               description = "Devuelve la información de un sitio y registra automáticamente una visita en MySQL.")
+               description = "Devuelve la información de un sitio aprobado y registra automáticamente una visita en MySQL.")
     @GetMapping("/{id}")
     public ResponseEntity<ApiResponse<Lugar>> obtenerPorId(@PathVariable Long id) {
         Lugar lugar = lugarService.obtenerPorId(id);
-        if (lugar == null) {
+        if (lugar == null || lugar.getEstado() != Lugar.Estado.APROBADO) {
             return ResponseEntity.notFound().build();
         }
         metricsService.registrarVisitaLugar(id);

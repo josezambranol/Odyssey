@@ -64,8 +64,11 @@ public class SecurityConfig {
                     "/api/v1/reportes/exportar/**",
                     "/api/v1/eventos/sync-externo"
                 ).hasRole("ADMIN")
-                // Creación de reportes requiere usuario autenticado
+                // Creación de reportes requiere usuario autenticado; consulta/analítica de reportes solo ADMIN
                 .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/v1/reportes").hasAnyRole("USUARIO", "ADMIN")
+                .requestMatchers("/api/v1/reportes/**").hasRole("ADMIN")
+                // Itinerarios privados por usuario requieren autenticación
+                .requestMatchers("/api/v1/itinerarios/usuario/**").hasAnyRole("USUARIO", "ADMIN")
                 // Rutas públicas de exploración abierta, auth por código y recuperación
                 .requestMatchers(
                     "/", "/guia", "/eventos", "/eventos/**", "/actividades", "/transporte",

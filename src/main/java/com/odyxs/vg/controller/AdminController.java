@@ -18,6 +18,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
@@ -75,8 +76,14 @@ public class AdminController {
                                @RequestParam(required = false) Double longitud,
                                @RequestParam Long categoriaId,
                                @RequestParam(required = false) MultipartFile imagen,
-                               @RequestParam(required = false) String imagenLocal) {
-        lugarService.guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, true, imagen, imagenLocal, latitud, longitud);
+                               @RequestParam(required = false) String imagenLocal,
+                               RedirectAttributes redirectAttributes) {
+        String resultado = lugarService.guardar(categoriaId, nombre, descripcion, ubicacion, urlMapa, true, imagen, imagenLocal, latitud, longitud);
+        if ("Lugar guardado.".equals(resultado)) {
+            redirectAttributes.addFlashAttribute("mensajeAdmin", "Lugar creado correctamente.");
+        } else {
+            redirectAttributes.addFlashAttribute("errorAdmin", resultado);
+        }
         return "redirect:/admin";
     }
 
@@ -91,9 +98,13 @@ public class AdminController {
                               @RequestParam(required = false) Double longitud,
                               @RequestParam Long categoriaId,
                               @RequestParam(required = false) MultipartFile imagen,
-                              @RequestParam(required = false) String imagenUrlExterna) {
+                              @RequestParam(required = false) String imagenUrlExterna,
+                              RedirectAttributes redirectAttributes) {
         Lugar lugar = lugarRepository.findById(id).orElse(null);
-        if (lugar == null) return "redirect:/admin";
+        if (lugar == null) {
+            redirectAttributes.addFlashAttribute("errorAdmin", "Lugar no encontrado.");
+            return "redirect:/admin";
+        }
         lugar.setNombre(nombre.trim());
         lugar.setDescripcion(descripcion != null ? descripcion.trim() : null);
         lugar.setUbicacion(ubicacion.trim());
@@ -108,13 +119,24 @@ public class AdminController {
             if (url != null) {
                 fileStorageService.borrarArchivo(lugar.getImagenUrl());
                 lugar.setImagenUrl(url);
+            } else {
+                redirectAttributes.addFlashAttribute("errorAdmin", "La imagen no es válida (solo JPG/PNG/WEBP/GIF, máx. 5 MB).");
+                return "redirect:/admin";
             }
         } else if (imagenUrlExterna != null && !imagenUrlExterna.isBlank()) {
-            fileStorageService.borrarArchivo(lugar.getImagenUrl());
-            lugar.setImagenUrl(imagenUrlExterna.trim());
+            String limpia = imagenUrlExterna.trim();
+            if (limpia.startsWith("https://") || limpia.startsWith("http://")
+                    || limpia.startsWith("/img/") || limpia.startsWith("/uploads/")) {
+                fileStorageService.borrarArchivo(lugar.getImagenUrl());
+                lugar.setImagenUrl(limpia);
+            } else {
+                redirectAttributes.addFlashAttribute("errorAdmin", "La URL de imagen externa no tiene un formato permitido.");
+                return "redirect:/admin";
+            }
         }
 
         lugarRepository.save(lugar);
+        redirectAttributes.addFlashAttribute("mensajeAdmin", "Lugar actualizado correctamente.");
         return "redirect:/admin";
     }
 
@@ -126,17 +148,27 @@ public class AdminController {
                                 @RequestParam String descripcion,
                                 @RequestParam String fecha,
                                 @RequestParam(required = false) String lugar,
-                                @RequestParam(required = false) MultipartFile imagen) {
+                                @RequestParam(required = false) MultipartFile imagen,
+                                RedirectAttributes redirectAttributes) {
         try {
             Evento e = new Evento();
             e.setNombre(nombre.trim());
             e.setDescripcion(descripcion != null ? descripcion.trim() : null);
             e.setFecha(LocalDate.parse(fecha.trim()));
             e.setLugar(lugar != null ? lugar.trim() : null);
-            e.setImagenUrl(fileStorageService.guardarImagen(imagen, "eventos"));
+            if (imagen != null && !imagen.isEmpty()) {
+                String url = fileStorageService.guardarImagen(imagen, "eventos");
+                if (url == null) {
+                    redirectAttributes.addFlashAttribute("errorAdmin", "Imagen de evento inválida (solo JPG/PNG/WEBP/GIF, máx. 5 MB).");
+                    return "redirect:/admin";
+                }
+                e.setImagenUrl(url);
+            }
             e.setActivo(true);
             eventoRepo.save(e);
-        } catch (DateTimeParseException ignored) {
+            redirectAttributes.addFlashAttribute("mensajeAdmin", "Evento creado correctamente.");
+        } catch (DateTimeParseException ex) {
+            redirectAttributes.addFlashAttribute("errorAdmin", "Formato de fecha de evento no válido.");
         }
         return "redirect:/admin";
     }
@@ -170,9 +202,13 @@ public class AdminController {
                                @RequestParam String descripcion,
                                @RequestParam String fecha,
                                @RequestParam(required = false) String lugar,
-                               @RequestParam(required = false) MultipartFile imagen) {
+                               @RequestParam(required = false) MultipartFile imagen,
+                               RedirectAttributes redirectAttributes) {
         Evento e = eventoRepo.findById(id).orElse(null);
-        if (e == null) return "redirect:/admin";
+        if (e == null) {
+            redirectAttributes.addFlashAttribute("errorAdmin", "Evento no encontrado.");
+            return "redirect:/admin";
+        }
         try {
             e.setNombre(nombre.trim());
             e.setDescripcion(descripcion != null ? descripcion.trim() : null);
@@ -183,10 +219,15 @@ public class AdminController {
                 if (url != null) {
                     fileStorageService.borrarArchivo(e.getImagenUrl());
                     e.setImagenUrl(url);
+                } else {
+                    redirectAttributes.addFlashAttribute("errorAdmin", "Imagen de evento inválida (solo JPG/PNG/WEBP/GIF, máx. 5 MB).");
+                    return "redirect:/admin";
                 }
             }
             eventoRepo.save(e);
-        } catch (DateTimeParseException ignored) {
+            redirectAttributes.addFlashAttribute("mensajeAdmin", "Evento actualizado correctamente.");
+        } catch (DateTimeParseException ex) {
+            redirectAttributes.addFlashAttribute("errorAdmin", "Formato de fecha de evento no válido.");
         }
         return "redirect:/admin";
     }
@@ -210,8 +251,14 @@ public class AdminController {
                                    @RequestParam(required = false) String duracion,
                                    @RequestParam(required = false) String precioAprox,
                                    @RequestParam String categoria,
-                                   @RequestParam(required = false) MultipartFile imagen) {
-        actividadService.guardar(nombre, descripcion, duracion, precioAprox, categoria, true, imagen);
+                                   @RequestParam(required = false) MultipartFile imagen,
+                                   RedirectAttributes redirectAttributes) {
+        String res = actividadService.guardar(nombre, descripcion, duracion, precioAprox, categoria, true, imagen);
+        if ("Actividad guardada.".equals(res)) {
+            redirectAttributes.addFlashAttribute("mensajeAdmin", res);
+        } else {
+            redirectAttributes.addFlashAttribute("errorAdmin", res);
+        }
         return "redirect:/admin";
     }
 
@@ -240,8 +287,14 @@ public class AdminController {
                                   @RequestParam(required = false) String duracion,
                                   @RequestParam(required = false) String precioAprox,
                                   @RequestParam String categoria,
-                                  @RequestParam(required = false) MultipartFile imagen) {
-        actividadService.actualizar(id, nombre, descripcion, duracion, precioAprox, categoria, imagen);
+                                  @RequestParam(required = false) MultipartFile imagen,
+                                  RedirectAttributes redirectAttributes) {
+        String res = actividadService.actualizar(id, nombre, descripcion, duracion, precioAprox, categoria, imagen);
+        if ("Actividad actualizada.".equals(res)) {
+            redirectAttributes.addFlashAttribute("mensajeAdmin", res);
+        } else {
+            redirectAttributes.addFlashAttribute("errorAdmin", res);
+        }
         return "redirect:/admin";
     }
 }
