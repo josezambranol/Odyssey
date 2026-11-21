@@ -1,443 +1,455 @@
 <!DOCTYPE html>
-<html lang="es" xmlns:th="http://www.thymeleaf.org" th:lang="${#locale.language}">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title th:text="#{transport.page.title}">Transporte y Movilidad — ODYSSEY Cartagena</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=Jost:wght@500;600;700&display=swap" rel="stylesheet">
+    <title th:text="#{trans.hero.title} + ' — ODYSSEY'">Guía de Transporte en Cartagena — ODYSSEY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Jost:wght@500;600;700&amp;family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,600&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
     <style>
-        :root {
-            --azul: #0a1f44;
-            --azul-dark: #07152f;
-            --gold: #d4a64a;
-            --gold-light: #f5e6c8;
-        }
-        body { font-family: 'DM Sans', sans-serif; background-color: #f7f9fc; color: #2c3e50; }
-        
-        .page-breadcrumb-hero {
-            background: linear-gradient(135deg, rgba(7,21,47,0.92) 0%, rgba(10,31,68,0.85) 100%), url('/img/hero-murallas.jpg') center/cover no-repeat;
-            padding: 80px 20px 60px;
-            text-align: center;
-            color: #fff;
-            position: relative;
-        }
-        .page-breadcrumb-hero h1 { font-family: 'Cormorant Garamond', serif; font-size: 3rem; font-weight: 700; color: #ffffff; }
-        .gold-line { width: 80px; height: 3px; background: var(--gold); margin: 15px auto; border-radius: 2px; }
-
-        /* Calculadora interactiva HUD */
-        .calc-card {
-            background: #ffffff;
-            border-radius: 20px;
-            box-shadow: 0 15px 45px rgba(10,31,68,0.08);
-            border: 1px solid rgba(212,166,74,0.25);
-            padding: 35px 30px;
-            margin-top: -45px;
-            position: relative;
-            z-index: 10;
-        }
-        .calc-select {
-            border-radius: 12px;
-            padding: 12px 16px;
-            border: 1.5px solid #dce4ec;
-            font-size: 0.95rem;
-            font-weight: 500;
-            background-color: #fdfdfd;
-        }
-        .calc-select:focus { border-color: var(--azul); box-shadow: 0 0 0 3px rgba(10,31,68,0.1); }
-        .calc-result-box {
-            background: linear-gradient(135deg, #0a1f44 0%, #122b5c 100%);
-            border-radius: 16px;
-            padding: 24px;
-            color: #fff;
-            border: 1px solid rgba(212,166,74,0.3);
-            display: none;
-            animation: fadeIn .3s ease;
-        }
-
-        /* Tarjetas de Medios de Transporte */
-        .tr-card {
-            background: #ffffff;
-            border-radius: 18px;
-            padding: 28px 24px;
-            transition: transform .3s ease, box-shadow .3s ease;
-            height: 100%;
-            box-shadow: 0 6px 25px rgba(10,31,68,0.05);
+        .calc-panel {
+            background: #fff;
+            border: 1px solid rgba(11,45,107,.1);
             border-top: 4px solid var(--gold);
+            border-radius: 18px;
+            padding: 32px 34px;
+            box-shadow: 0 20px 48px rgba(7,30,74,.14);
+        }
+        .calc-label {
+            font-family: 'Jost', sans-serif;
+            font-size: .7rem;
+            font-weight: 700;
+            letter-spacing: .1em;
+            text-transform: uppercase;
+            color: var(--azul-dark);
+            margin-bottom: 7px;
+            display: block;
+        }
+        select.calc-select {
+            border-radius: 10px;
+            border: 1.5px solid #dfd6c5;
+            padding: 12px 38px 12px 14px;
+            font-weight: 600;
+            color: var(--azul-dark);
+            background-color: #fffdf9;
+            font-size: .92rem;
+        }
+        select.calc-select:focus {
+            border-color: var(--azul);
+            box-shadow: 0 0 0 3px rgba(11,45,107,.1);
+            background-color: #fff;
+        }
+        .calc-result-box {
+            background: linear-gradient(135deg, #071630 0%, #0b2d6b 100%);
+            color: #fff;
+            border-radius: 16px;
+            padding: 24px 28px;
+            border: 1px solid rgba(232,180,85,.32);
+            box-shadow: 0 14px 32px rgba(7,22,48,.2);
+        }
+        .calc-result-price {
+            font-family: 'Playfair Display', serif;
+            color: var(--gold-light);
+            font-size: clamp(1.65rem, 2.8vw, 2.2rem);
+            font-weight: 700;
+            line-height: 1.1;
+            margin: 4px 0;
+        }
+        .tr-ed-card {
+            background: #fff;
+            border: 1px solid rgba(11,45,107,.08);
+            border-top: 3px solid var(--gold);
+            border-radius: 14px;
+            padding: 26px 24px;
+            height: 100%;
             display: flex;
             flex-direction: column;
+            box-shadow: 0 4px 14px rgba(7,30,74,.05);
+            transition: transform .32s cubic-bezier(.16,1,.3,1), box-shadow .32s ease;
         }
-        .tr-card:hover {
+        .tr-ed-card:hover {
             transform: translateY(-6px);
-            box-shadow: 0 18px 40px rgba(10,31,68,0.14);
+            box-shadow: 0 18px 36px rgba(7,30,74,.12);
         }
-        .tr-icon-bubble {
-            width: 60px;
-            height: 60px;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            margin-bottom: 20px;
+        .tr-ed-icon {
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            background: var(--gold-pale);
+            color: #8a630e;
+            display: grid;
+            place-items: center;
+            font-size: 1.3rem;
+            margin-bottom: 16px;
         }
-        .tr-card h4 { font-family: 'Cormorant Garamond', serif; font-size: 1.4rem; font-weight: 700; color: var(--azul); }
-        .tr-costo-badge {
+        .tr-ed-card h3 {
+            color: var(--azul-dark);
+            font-size: 1.28rem;
+            margin: 6px 0 10px;
+        }
+        .tr-ed-card p {
+            color: #66645f;
+            font-size: .84rem;
+            line-height: 1.62;
+        }
+        .tr-ed-list {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 18px;
+            font-size: .8rem;
+            color: #55524b;
+        }
+        .tr-ed-list li {
+            padding: 5px 0;
+            border-bottom: 1px dashed #ede5d4;
+        }
+        .tr-ed-list li:last-child { border-bottom: 0; }
+        .tr-cost-pill {
+            margin-top: auto;
             display: inline-flex;
             align-items: center;
             gap: 6px;
-            background: rgba(10,31,68,0.06);
-            color: var(--azul);
+            align-self: flex-start;
+            padding: 7px 14px;
+            border-radius: 999px;
+            background: var(--cream-dark);
+            color: var(--azul-dark);
             font-weight: 700;
-            font-size: 0.85rem;
-            padding: 6px 14px;
-            border-radius: 30px;
-            margin-top: auto;
-            border: 1px solid rgba(10,31,68,0.1);
+            font-size: .78rem;
+            border: 1px solid rgba(200,150,62,.3);
         }
-
-        /* Banner de Advertencia DATT */
-        .alert-datt {
-            background: #fff8e8;
-            border: 1.5px solid #e6b85c;
-            border-radius: 16px;
-            padding: 24px 28px;
-            color: #5c4106;
-        }
-
-        /* Tabla de Tarifas Reguladas */
-        .table-custom {
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 6px 30px rgba(10,31,68,0.06);
-            background: #fff;
-        }
-        .table-custom thead {
-            background: var(--azul);
-            color: #ffffff;
-            font-family: 'DM Sans', sans-serif;
-            font-weight: 600;
-        }
-        .table-custom th, .table-custom td {
-            padding: 16px 20px;
-            vertical-align: middle;
+        @media (max-width: 767px) {
+            .calc-panel { padding: 22px 18px; }
+            .calc-result-box { padding: 20px 18px; }
+            .calc-divider { border-right: 0 !important; border-bottom: 1px solid rgba(255,255,255,.12); padding-bottom: 14px; }
         }
     </style>
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
 </head>
-<body>
+<body class="odyssey-inner">
 
 <div th:replace="fragments :: topbar"></div>
 <div th:replace="fragments :: navbar-interno"></div>
 
-<!-- HERO HEADER -->
-<div class="page-breadcrumb-hero">
-    <div class="container">
-        <h1 th:text="#{trans.hero.title}">Guía de Movilidad & Transporte en Cartagena</h1>
-        <div class="gold-line"></div>
-        <p class="lead mb-0 text-white-50" th:text="#{trans.hero.sub}">Tarifas oficiales DATT 2026, líneas Transcaribe, lanchas a las islas y cómo evitar sobrecostos.</p>
+<section class="editorial-subhero has-float-bar" style="--subhero-img: url('/img/pf-transporte.jpg');">
+    <div class="editorial-subhero-bg"></div>
+    <div class="container editorial-subhero-inner">
+        <nav class="ed-breadcrumb" aria-label="breadcrumb">
+            <a href="/" th:text="#{nav.inicio}">Inicio</a>
+            <span class="sep">/</span>
+            <span class="current" th:text="#{nav.transporte}">Transporte</span>
+        </nav>
+        <span class="eyebrow eyebrow-light">
+            <i class="fas fa-route"></i>
+            <span th:text="#{trans.calc.badge}">Herramienta Oficial de Movilidad</span>
+        </span>
+        <h1><em th:text="#{trans.hero.title}">Guía de Movilidad &amp; Transporte en Cartagena</em></h1>
+        <p class="editorial-subhero-lead" th:text="#{trans.hero.sub}">Tarifas oficiales DATT 2026, líneas Transcaribe, lanchas a las islas y cómo evitar sobrecostos.</p>
     </div>
-</div>
+</section>
 
-<div class="container mb-5">
-
-    <!-- ═══ CALCULADORA INTERACTIVA DE TARIFAS EN TIEMPO REAL ═══ -->
-    <div class="calc-card mb-5">
-        <div class="row align-items-center mb-4">
-            <div class="col-lg-8">
-                <span class="badge rounded-pill px-3 py-2 text-uppercase mb-2" style="background:var(--gold-light); color:#7d5c14; font-weight:700; letter-spacing:0.5px;">
-                    <i class="fas fa-calculator me-1"></i> <span th:text="#{trans.calc.badge}">Herramienta Oficial de Movilidad</span>
-                </span>
-                <h3 class="fw-bold mb-1" style="font-family:'Cormorant Garamond',serif; color:var(--azul); font-size:1.8rem;" th:text="#{trans.calc.title}">
-                    Calculadora de Tarifas y Rutas en Cartagena
-                </h3>
-                <p class="text-muted small mb-0" th:text="#{trans.calc.sub}">Selecciona tu punto de partida y destino para conocer el precio oficial regulado DATT, alternativas y tiempo de viaje.</p>
-            </div>
-            <div class="col-lg-4 text-lg-end mt-3 mt-lg-0">
-                <span class="small text-muted"><i class="fas fa-shield-alt text-success me-1"></i> <span th:text="#{trans.calc.decree}">Tarifas reguladas por Decreto Alcaldía</span></span>
-            </div>
-        </div>
-
-        <div class="row g-3">
-            <div class="col-md-5">
-                <label class="form-label fw-semibold small text-muted"><i class="fas fa-map-marker-alt text-danger me-1"></i> <span th:text="#{trans.calc.origin}">Punto de Origen</span></label>
-                <select id="calcOrigen" class="form-select calc-select" onchange="calcularTarifaCartagena()">
-                    <option value="AEROPUERTO">Aeropuerto Internacional Rafael Núñez (Crespo)</option>
-                    <option value="CENTRO" selected>Centro Histórico / Torre del Reloj</option>
-                    <option value="GETSEMANI">Barrio Getsemaní (Plaza Trinidad)</option>
-                    <option value="BOCAGRANDE">Bocagrande / El Laguito / Castillogrande</option>
-                    <option value="MANGA">Barrio Manga / Muelle Turístico</option>
-                    <option value="BODEGUITA">Muelle de la Bodeguita (Salida a Islas)</option>
-                    <option value="TERMINAL">Terminal de Transportes Terrestre</option>
-                </select>
-            </div>
-            <div class="col-md-5">
-                <label class="form-label fw-semibold small text-muted"><i class="fas fa-flag-checkered text-success me-1"></i> <span th:text="#{trans.calc.dest}">Destino</span></label>
-                <select id="calcDestino" class="form-select calc-select" onchange="calcularTarifaCartagena()">
-                    <option value="CENTRO">Centro Histórico / Torre del Reloj</option>
-                    <option value="BOCAGRANDE" selected>Bocagrande / El Laguito</option>
-                    <option value="SAN_FELIPE">Castillo de San Felipe de Barajas</option>
-                    <option value="POPA">Convento de la Popa (Cerro)</option>
-                    <option value="BODEGUITA">Muelle de la Bodeguita (Lanchas Islas)</option>
-                    <option value="BARU">Playa Blanca (Península de Barú)</option>
-                    <option value="BOQUILLA">La Boquilla (Playas y Manglares)</option>
-                    <option value="AEROPUERTO">Aeropuerto Rafael Núñez</option>
-                </select>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button type="button" class="btn btn-primary w-100 py-3 rounded-3 fw-bold" onclick="calcularTarifaCartagena()">
-                    <i class="fas fa-search me-1"></i> <span th:text="#{trans.calc.btn}">Cotizar</span>
-                </button>
-            </div>
-        </div>
-
-        <!-- Caja de Resultados de la Calculadora -->
-        <div id="calcResultado" class="calc-result-box mt-4">
-            <div class="row align-items-center g-4">
-                <div class="col-md-4 border-end border-light border-opacity-10">
-                    <span class="text-white-50 small d-block mb-1" th:text="#{trans.calc.taxiLabel}">🚕 Taxi Regulado DATT (Decreto)</span>
-                    <h2 class="text-warning fw-bold mb-0" id="resTaxiCop">$15.000 COP</h2>
-                    <span class="text-white-50 small" id="resTaxiUsd">~ $3.80 USD</span>
+<main>
+    <!-- ═══ CALCULADORA FLOTANTE DE TARIFAS ═══ -->
+    <div class="container ed-float-wrap">
+        <div class="calc-panel">
+            <div class="row align-items-end mb-4 g-2">
+                <div class="col-lg-8">
+                    <span class="eyebrow">
+                        <i class="fas fa-calculator"></i>
+                        <span th:text="#{trans.calc.badge}">Herramienta Oficial de Movilidad</span>
+                    </span>
+                    <h2 class="mt-2 mb-1" style="color:var(--azul-dark); font-size:clamp(1.5rem, 2.8vw, 2.1rem);" th:text="#{trans.calc.title}">
+                        Calculadora de Tarifas y Rutas en Cartagena
+                    </h2>
+                    <p class="text-muted small mb-0" th:text="#{trans.calc.sub}">Selecciona tu punto de partida y destino para conocer el precio oficial regulado DATT, alternativas y tiempo de viaje.</p>
                 </div>
-                <div class="col-md-4 border-end border-light border-opacity-10">
-                    <span class="text-white-50 small d-block mb-1" th:text="#{trans.calc.altLabel}">🚌 Alternativa Transcaribe / Caminata</span>
-                    <h4 class="text-white fw-bold mb-0" id="resTranscaribe">Línea T103 ($3.000 COP)</h4>
-                    <span class="text-white-50 small" id="resTiempo">⏱️ 12 - 18 minutos</span>
-                </div>
-                <div class="col-md-4">
-                    <span class="text-white-50 small d-block mb-1"><i class="fas fa-info-circle text-warning me-1"></i> <span th:text="#{trans.calc.tipLabel}">Recomendación</span></span>
-                    <p class="mb-0 text-white-50 small" id="resTip">Tarifa diurna fija. No pagues más sin verificar la tabla oficial.</p>
+                <div class="col-lg-4 text-lg-end">
+                    <span class="small fw-semibold" style="color:#55524b;">
+                        <i class="fas fa-shield-alt text-success me-1"></i>
+                        <span th:text="#{trans.calc.decree}">Tarifas reguladas por Decreto Alcaldía</span>
+                    </span>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- ═══ ALERTA DE SEGURIDAD DATT: CERO TAXÍMETROS ═══ -->
-    <div class="alert-datt mb-5">
-        <div class="d-flex align-items-start gap-3">
-            <div style="font-size:2.2rem; line-height:1; color:#c48b18;"><i class="fas fa-exclamation-triangle"></i></div>
-            <div>
-                <h5 class="fw-bold mb-1" style="color:#7d5c14;" th:text="#{trans.datt.title}">¡Muy Importante! En Cartagena los taxis NO usan taxímetro</h5>
-                <p class="mb-2 small" style="line-height:1.6;" th:utext="#{trans.datt.body}">
-                    A diferencia de Bogotá o Medellín, <strong>ningún taxi en Cartagena cuenta con taxímetro legal</strong>. Todas las tarifas están fijadas por <strong>decreto del Departamento Administrativo de Tránsito y Transporte (DATT)</strong> según zonas.
-                    Todo taxista está legalmente obligado a portar la <strong>Tarjeta de Control plastificada</strong> detrás del asiento del copiloto con las tarifas oficiales impresas.
-                </p>
-                <div class="d-flex flex-wrap gap-3 small fw-semibold">
-                    <span><i class="fas fa-check-circle text-success me-1"></i> <span th:text="#{trans.datt.min}">Tarifa Mínima Legal: ~$10.000 COP</span></span>
-                    <span><i class="fas fa-moon text-primary me-1"></i> <span th:text="#{trans.datt.night}">Recargo nocturno (9 PM a 5 AM): +$1.000 COP</span></span>
-                    <span><i class="fas fa-phone-alt text-danger me-1"></i> <span th:text="#{trans.datt.police}">Denuncias sobrecostos: Línea 123 Policía de Turismo</span></span>
+            <div class="row g-3 align-items-end">
+                <div class="col-md-5">
+                    <label class="calc-label" for="calcOrigen">
+                        <i class="fas fa-map-marker-alt me-1" style="color:var(--coral);"></i>
+                        <span th:text="#{trans.calc.origin}">Punto de Origen</span>
+                    </label>
+                    <select id="calcOrigen" class="form-select calc-select" onchange="calcularTarifaCartagena()">
+                        <option value="AEROPUERTO">Aeropuerto Internacional Rafael Núñez (Crespo)</option>
+                        <option value="CENTRO" selected>Centro Histórico / Torre del Reloj</option>
+                        <option value="GETSEMANI">Barrio Getsemaní (Plaza Trinidad)</option>
+                        <option value="BOCAGRANDE">Bocagrande / El Laguito / Castillogrande</option>
+                        <option value="MANGA">Barrio Manga / Muelle Turístico</option>
+                        <option value="BODEGUITA">Muelle de la Bodeguita (Salida a Islas)</option>
+                        <option value="TERMINAL">Terminal de Transportes Terrestre</option>
+                    </select>
+                </div>
+                <div class="col-md-5">
+                    <label class="calc-label" for="calcDestino">
+                        <i class="fas fa-flag-checkered me-1" style="color:#1e8449;"></i>
+                        <span th:text="#{trans.calc.dest}">Destino</span>
+                    </label>
+                    <select id="calcDestino" class="form-select calc-select" onchange="calcularTarifaCartagena()">
+                        <option value="CENTRO">Centro Histórico / Torre del Reloj</option>
+                        <option value="BOCAGRANDE" selected>Bocagrande / El Laguito</option>
+                        <option value="SAN_FELIPE">Castillo de San Felipe de Barajas</option>
+                        <option value="POPA">Convento de la Popa (Cerro)</option>
+                        <option value="BODEGUITA">Muelle de la Bodeguita (Lanchas Islas)</option>
+                        <option value="BARU">Playa Blanca (Península de Barú)</option>
+                        <option value="BOQUILLA">La Boquilla (Playas y Manglares)</option>
+                        <option value="AEROPUERTO">Aeropuerto Rafael Núñez</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="button" class="button button-primary w-100" style="min-height:48px;" onclick="calcularTarifaCartagena()">
+                        <i class="fas fa-search"></i>
+                        <span th:text="#{trans.calc.btn}">Cotizar</span>
+                    </button>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- ═══ TARJETAS DETALLADAS POR MEDIO DE TRANSPORTE ═══ -->
-    <h3 class="fw-bold mb-4" style="font-family:'Cormorant Garamond',serif; color:var(--azul); font-size:1.8rem;" th:text="#{trans.cards.title}">
-        Medios de Transporte Disponibles
-    </h3>
-
-    <div class="row g-4 mb-5">
-        <!-- Tarjeta 1: Transcaribe -->
-        <div class="col-lg-4 col-md-6">
-            <div class="tr-card">
-                <div class="tr-icon-bubble" style="background:#e8f4fd; color:#0d6efd;">🚌</div>
-                <span class="badge bg-light text-primary mb-2 align-self-start fw-bold" th:text="#{trans.c1.badge}">Sistema Masivo</span>
-                <h4 th:text="#{trans.c1.title}">Transcaribe (SITM)</h4>
-                <p class="text-muted small mb-3" th:text="#{trans.c1.desc}">
-                    Flota de buses articulados y padrones con aire acondicionado. Seguro, económico y con carril exclusivo sobre la Av. Pedro de Heredia.
-                </p>
-                <ul class="list-unstyled small text-muted mb-4">
-                    <li class="mb-1" th:utext="#{trans.c1.li1}"><strong>Línea T102:</strong> Aeropuerto ↔ Centro Histórico.</li>
-                    <li class="mb-1" th:utext="#{trans.c1.li2}"><strong>Línea T103:</strong> Portal ↔ Bocagrande (hoteles).</li>
-                    <li th:utext="#{trans.c1.li3}"><strong>Pago:</strong> Tarjeta recargable ($6.000 COP tarjeta plástica).</li>
-                </ul>
-                <div class="tr-costo-badge">
-                    <span th:text="#{trans.c1.cost}">💰 $3.000 COP por viaje</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tarjeta 2: Taxis DATT -->
-        <div class="col-lg-4 col-md-6">
-            <div class="tr-card" style="border-top-color:#f1c40f;">
-                <div class="tr-icon-bubble" style="background:#fef9e7; color:#b7950b;">🚕</div>
-                <span class="badge bg-light text-warning mb-2 align-self-start fw-bold" th:text="#{trans.c2.badge}">Servicio Público</span>
-                <h4 th:text="#{trans.c2.title}">Taxis Amarillos DATT</h4>
-                <p class="text-muted small mb-3" th:text="#{trans.c2.desc}">
-                    Disponibles en toda la ciudad. En el aeropuerto debes pasar por la caseta oficial de taxis donde te entregan un tiquete impreso con la tarifa exacta hacia tu hotel.
-                </p>
-                <ul class="list-unstyled small text-muted mb-4">
-                    <li class="mb-1" th:utext="#{trans.c2.li1}"><strong>Aeropuerto → Centro:</strong> ~$15.000 - $18.000 COP.</li>
-                    <li class="mb-1" th:utext="#{trans.c2.li2}"><strong>Aeropuerto → Bocagrande:</strong> ~$22.000 - $25.000 COP.</li>
-                    <li th:utext="#{trans.c2.li3}"><strong>Regla de oro:</strong> Confirma el precio antes de subir la maleta.</li>
-                </ul>
-                <div class="tr-costo-badge">
-                    <span th:text="#{trans.c2.cost}">💰 Mínima: $10.000 COP</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tarjeta 3: Lanchas a Islas -->
-        <div class="col-lg-4 col-md-6">
-            <div class="tr-card" style="border-top-color:#16a085;">
-                <div class="tr-icon-bubble" style="background:#e8f8f5; color:#117864;">🛥️</div>
-                <span class="badge bg-light text-success mb-2 align-self-start fw-bold" th:text="#{trans.c3.badge}">Transporte Marítimo</span>
-                <h4 th:text="#{trans.c3.title}">Lanchas a Islas y Barú</h4>
-                <p class="text-muted small mb-3" th:utext="#{trans.c3.desc}">
-                    Las salidas oficiales hacia el Parque Nacional Islas del Rosario y Playa Blanca parten exclusivamente del <strong>Muelle de la Bodeguita</strong>.
-                </p>
-                <ul class="list-unstyled small text-muted mb-4">
-                    <li class="mb-1" th:utext="#{trans.c3.li1}"><strong>Zarpe:</strong> Entre 8:30 AM y 9:30 AM.</li>
-                    <li class="mb-1" th:utext="#{trans.c3.li2}"><strong>Regreso:</strong> 3:00 PM a 3:45 PM (oleaje de la tarde).</li>
-                    <li th:utext="#{trans.c3.li3}"><strong>Impuesto portuario:</strong> ~$26.500 COP por persona (obligatorio).</li>
-                </ul>
-                <div class="tr-costo-badge">
-                    <span th:text="#{trans.c3.cost}">💰 $70.000 – $95.000 COP ida y vuelta</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tarjeta 4: Apps de Transporte -->
-        <div class="col-lg-4 col-md-6">
-            <div class="tr-card" style="border-top-color:#9b59b6;">
-                <div class="tr-icon-bubble" style="background:#f4ecf7; color:#7d3c98;">📱</div>
-                <span class="badge bg-light text-purple mb-2 align-self-start fw-bold" th:text="#{trans.c4.badge}">Apps Móviles</span>
-                <h4 th:text="#{trans.c4.title}">InDriver, Uber & Didi</h4>
-                <p class="text-muted small mb-3" th:text="#{trans.c4.desc}">
-                    InDriver es la app más utilizada por cartageneros y turistas para proponer tarifa. Uber y Didi ofrecen precio fijo preestablecido en la pantalla.
-                </p>
-                <ul class="list-unstyled small text-muted mb-4">
-                    <li class="mb-1" th:utext="#{trans.c4.li1}"><strong>Aeropuerto:</strong> Pedirlo tras salir del terminal hacia la vía pública.</li>
-                    <li class="mb-1" th:utext="#{trans.c4.li2}"><strong>Comodidad:</strong> Vehículos particulares con A/C garantizado.</li>
-                    <li th:utext="#{trans.c4.li3}"><strong>Pago:</strong> Efectivo o tarjeta de crédito según la aplicación.</li>
-                </ul>
-                <div class="tr-costo-badge">
-                    <span th:text="#{trans.c4.cost}">💰 10% a 20% más económico</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tarjeta 5: A Pie -->
-        <div class="col-lg-4 col-md-6">
-            <div class="tr-card" style="border-top-color:#27ae60;">
-                <div class="tr-icon-bubble" style="background:#eafaf1; color:#1e8449;">🚶</div>
-                <span class="badge bg-light text-success mb-2 align-self-start fw-bold" th:text="#{trans.c5.badge}">Ecológico & Saludable</span>
-                <h4 th:text="#{trans.c5.title}">A Pie en la Ciudad Amurallada</h4>
-                <p class="text-muted small mb-3" th:text="#{trans.c5.desc}">
-                    La mejor manera de descubrir el Centro Histórico, San Diego y Getsemaní es caminando. Las distancias son cortas y las calles peatonales están llenas de historia.
-                </p>
-                <ul class="list-unstyled small text-muted mb-4">
-                    <li class="mb-1" th:utext="#{trans.c5.li1}"><strong>Centro a Getsemaní:</strong> 5 minutos a pie.</li>
-                    <li class="mb-1" th:utext="#{trans.c5.li2}"><strong>Recomendación:</strong> Calzado cómodo, gorra y agua.</li>
-                    <li th:utext="#{trans.c5.li3}"><strong>Paseo sobre murallas:</strong> Totalmente peatonal y gratuito.</li>
-                </ul>
-                <div class="tr-costo-badge">
-                    <span th:text="#{trans.c5.cost}">💰 100% Gratis</span>
-                </div>
-            </div>
-        </div>
-
-        <!-- Tarjeta 6: Chivas Rumberas -->
-        <div class="col-lg-4 col-md-6">
-            <div class="tr-card" style="border-top-color:#e67e22;">
-                <div class="tr-icon-bubble" style="background:#fef5e7; color:#d35400;">🚌</div>
-                <span class="badge bg-light text-warning mb-2 align-self-start fw-bold" th:text="#{trans.c6.badge}">Turístico & Nocturno</span>
-                <h4 th:text="#{trans.c6.title}">Chivas Rumberas Típicas</h4>
-                <p class="text-muted small mb-3" th:text="#{trans.c6.desc}">
-                    Buses folclóricos abiertos de madera con música en vivo (papayera), bar abierto y animación nocturna recorriendo Bocagrande, Manga y murallas.
-                </p>
-                <ul class="list-unstyled small text-muted mb-4">
-                    <li class="mb-1" th:utext="#{trans.c6.li1}"><strong>Salida:</strong> 7:30 PM frente a la Torre del Reloj.</li>
-                    <li class="mb-1" th:utext="#{trans.c6.li2}"><strong>Duración:</strong> 3 horas de recorrido festivo.</li>
-                    <li th:utext="#{trans.c6.li3}"><strong>Incluye:</strong> Degustación de fritos tradicionales al cierre.</li>
-                </ul>
-                <div class="tr-costo-badge">
-                    <span th:text="#{trans.c6.cost}">💰 ~$55.000 COP por persona</span>
+            <!-- Caja de resultados editorial oscura -->
+            <div id="calcResultado" class="calc-result-box mt-4">
+                <div class="row align-items-center g-4">
+                    <div class="col-md-4 calc-divider" style="border-right:1px solid rgba(255,255,255,.12);">
+                        <span class="small d-block" style="color:rgba(255,255,255,.62);" th:text="#{trans.calc.taxiLabel}">🚕 Taxi Regulado DATT (Decreto)</span>
+                        <div class="calc-result-price" id="resTaxiCop">$12.000 COP</div>
+                        <span class="small" style="color:rgba(255,255,255,.65);" id="resTaxiUsd">~ $3.10 USD</span>
+                    </div>
+                    <div class="col-md-4 calc-divider" style="border-right:1px solid rgba(255,255,255,.12);">
+                        <span class="small d-block mb-1" style="color:rgba(255,255,255,.62);" th:text="#{trans.calc.altLabel}">🚌 Alternativa Transcaribe / Caminata</span>
+                        <h4 class="text-white mb-1" style="font-size:1.12rem;" id="resTranscaribe">Línea T103 ($3.000 COP)</h4>
+                        <span class="small" style="color:var(--gold-light);" id="resTiempo">⏱️ 10 minutos aprox.</span>
+                    </div>
+                    <div class="col-md-4">
+                        <span class="small d-block mb-1" style="color:var(--gold-light);">
+                            <i class="fas fa-info-circle me-1"></i>
+                            <span th:text="#{trans.calc.tipLabel}">Recomendación</span>
+                        </span>
+                        <p class="mb-0 small" style="color:rgba(255,255,255,.78); line-height:1.55;" id="resTip">Tarifa diurna fija. No pagues más sin verificar la tabla oficial.</p>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- ═══ TABLA COMPARATIVA DE RUTAS POPULARES ═══ -->
-    <h3 class="fw-bold mb-4" style="font-family:'Cormorant Garamond',serif; color:var(--azul); font-size:1.8rem;" th:text="#{trans.tbl.title}">
-        Tabla de Rutas Más Frecuentes y Tiempos Estimados
-    </h3>
+    <!-- ═══ ALERTA DE SEGURIDAD DATT ═══ -->
+    <section class="ed-band-compact">
+        <div class="container">
+            <div class="ed-quote-bar">
+                <div class="d-flex align-items-start gap-3">
+                    <div style="width:44px; height:44px; border-radius:12px; background:var(--gold-pale); color:#8a630e; display:grid; place-items:center; flex-shrink:0; font-size:1.15rem;">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div>
+                        <h4 class="mb-1" style="color:var(--azul-dark); font-size:1.25rem;" th:text="#{trans.datt.title}">¡Muy Importante! En Cartagena los taxis NO usan taxímetro</h4>
+                        <p class="mb-3 small" style="color:#55524b; line-height:1.68;" th:utext="#{trans.datt.body}"></p>
+                        <div class="d-flex flex-wrap gap-3 small fw-semibold" style="color:var(--azul-dark);">
+                            <span><i class="fas fa-check-circle text-success me-1"></i> <span th:text="#{trans.datt.min}">Tarifa Mínima Legal: ~$10.000 COP</span></span>
+                            <span><i class="fas fa-moon me-1" style="color:var(--azul);"></i> <span th:text="#{trans.datt.night}">Recargo nocturno (9 PM a 5 AM): +$1.000 COP</span></span>
+                            <span><i class="fas fa-phone-alt me-1" style="color:var(--coral);"></i> <span th:text="#{trans.datt.police}">Denuncias sobrecostos: Línea 123 Policía de Turismo</span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <div class="table-responsive mb-5">
-        <table class="table table-custom">
-            <thead>
-                <tr>
-                    <th th:text="#{trans.tbl.col1}">Origen</th>
-                    <th th:text="#{trans.tbl.col2}">Destino</th>
-                    <th th:text="#{trans.tbl.col3}">Opción Recomendada</th>
-                    <th th:text="#{trans.tbl.col4}">Tiempo Estimado</th>
-                    <th th:text="#{trans.tbl.col5}">Tarifa Aproximada</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><strong>Aeropuerto Rafael Núñez</strong></td>
-                    <td>Centro Histórico (Torre del Reloj)</td>
-                    <td>Taxi Oficial DATT / Transcaribe T102</td>
-                    <td>10 - 15 min</td>
-                    <td>$15.000 - $18.000 COP</td>
-                </tr>
-                <tr>
-                    <td><strong>Aeropuerto Rafael Núñez</strong></td>
-                    <td>Bocagrande / El Laguito</td>
-                    <td>Taxi Oficial DATT / InDriver</td>
-                    <td>20 - 25 min</td>
-                    <td>$22.000 - $26.000 COP</td>
-                </tr>
-                <tr>
-                    <td><strong>Centro Histórico</strong></td>
-                    <td>Barrio Getsemaní (Plaza Trinidad)</td>
-                    <td>Caminando por Parque Centenario</td>
-                    <td>5 - 8 min</td>
-                    <td><span class="badge bg-success">Gratis</span></td>
-                </tr>
-                <tr>
-                    <td><strong>Centro Histórico</strong></td>
-                    <td>Castillo de San Felipe de Barajas</td>
-                    <td>Taxi (~$10.000) o Caminata (15 min)</td>
-                    <td>6 min en taxi</td>
-                    <td>$10.000 COP (Mínima)</td>
-                </tr>
-                <tr>
-                    <td><strong>Muelle de la Bodeguita</strong></td>
-                    <td>Islas del Rosario (Isla Grande / Cholón)</td>
-                    <td>Lancha rápida con motor fuera de borda</td>
-                    <td>45 - 55 min</td>
-                    <td>$75.000 - $90.000 COP + Tasa</td>
-                </tr>
-                <tr>
-                    <td><strong>Centro Histórico</strong></td>
-                    <td>Playa Blanca (Barú por tierra)</td>
-                    <td>Taxi / Van turística colectiva</td>
-                    <td>50 min</td>
-                    <td>$80.000 - $120.000 COP</td>
-                </tr>
-                <tr>
-                    <td><strong>Terminal de Transportes</strong></td>
-                    <td>Centro Histórico</td>
-                    <td>Transcaribe Troncal T101</td>
-                    <td>45 - 55 min</td>
-                    <td>$3.000 COP</td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
+    <!-- ═══ MEDIOS DE TRANSPORTE DISPONIBLES ═══ -->
+    <section class="ed-band-alt">
+        <div class="container">
+            <div class="ed-section-head">
+                <span class="eyebrow"><i class="fas fa-compass"></i> <span th:text="#{nav.transporte}">Transporte</span></span>
+                <h2 th:text="#{trans.cards.title}">Medios de Transporte Disponibles</h2>
+            </div>
 
-</div>
+            <div class="row g-4">
+                <div class="col-lg-4 col-md-6">
+                    <article class="tr-ed-card" style="border-top-color:var(--azul);">
+                        <div class="tr-ed-icon" style="background:rgba(11,45,107,.08); color:var(--azul);">🚌</div>
+                        <span class="eyebrow" style="font-size:.6rem;" th:text="#{trans.c1.badge}">Sistema Masivo</span>
+                        <h3 th:text="#{trans.c1.title}">Transcaribe (SITM)</h3>
+                        <p th:text="#{trans.c1.desc}"></p>
+                        <ul class="tr-ed-list">
+                            <li th:utext="#{trans.c1.li1}"></li>
+                            <li th:utext="#{trans.c1.li2}"></li>
+                            <li th:utext="#{trans.c1.li3}"></li>
+                        </ul>
+                        <div class="tr-cost-pill"><span th:text="#{trans.c1.cost}">💰 $3.000 COP</span></div>
+                    </article>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <article class="tr-ed-card" style="border-top-color:var(--gold);">
+                        <div class="tr-ed-icon">🚕</div>
+                        <span class="eyebrow" style="font-size:.6rem;" th:text="#{trans.c2.badge}">Servicio Público</span>
+                        <h3 th:text="#{trans.c2.title}">Taxis Amarillos DATT</h3>
+                        <p th:text="#{trans.c2.desc}"></p>
+                        <ul class="tr-ed-list">
+                            <li th:utext="#{trans.c2.li1}"></li>
+                            <li th:utext="#{trans.c2.li2}"></li>
+                            <li th:utext="#{trans.c2.li3}"></li>
+                        </ul>
+                        <div class="tr-cost-pill"><span th:text="#{trans.c2.cost}">💰 Mínima: $10.000 COP</span></div>
+                    </article>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <article class="tr-ed-card" style="border-top-color:#16a085;">
+                        <div class="tr-ed-icon" style="background:#e8f8f5; color:#117864;">🛥️</div>
+                        <span class="eyebrow" style="font-size:.6rem;" th:text="#{trans.c3.badge}">Transporte Marítimo</span>
+                        <h3 th:text="#{trans.c3.title}">Lanchas a Islas y Barú</h3>
+                        <p th:utext="#{trans.c3.desc}"></p>
+                        <ul class="tr-ed-list">
+                            <li th:utext="#{trans.c3.li1}"></li>
+                            <li th:utext="#{trans.c3.li2}"></li>
+                            <li th:utext="#{trans.c3.li3}"></li>
+                        </ul>
+                        <div class="tr-cost-pill"><span th:text="#{trans.c3.cost}">💰 $70.000 – $95.000 COP</span></div>
+                    </article>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <article class="tr-ed-card" style="border-top-color:#7d3c98;">
+                        <div class="tr-ed-icon" style="background:#f4ecf7; color:#7d3c98;">📱</div>
+                        <span class="eyebrow" style="font-size:.6rem;" th:text="#{trans.c4.badge}">Apps Móviles</span>
+                        <h3 th:text="#{trans.c4.title}">InDriver, Uber &amp; Didi</h3>
+                        <p th:text="#{trans.c4.desc}"></p>
+                        <ul class="tr-ed-list">
+                            <li th:utext="#{trans.c4.li1}"></li>
+                            <li th:utext="#{trans.c4.li2}"></li>
+                            <li th:utext="#{trans.c4.li3}"></li>
+                        </ul>
+                        <div class="tr-cost-pill"><span th:text="#{trans.c4.cost}">💰 10% a 20% más económico</span></div>
+                    </article>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <article class="tr-ed-card" style="border-top-color:#27ae60;">
+                        <div class="tr-ed-icon" style="background:#eafaf1; color:#1e8449;">🚶</div>
+                        <span class="eyebrow" style="font-size:.6rem;" th:text="#{trans.c5.badge}">Ecológico &amp; Saludable</span>
+                        <h3 th:text="#{trans.c5.title}">A Pie en la Ciudad Amurallada</h3>
+                        <p th:text="#{trans.c5.desc}"></p>
+                        <ul class="tr-ed-list">
+                            <li th:utext="#{trans.c5.li1}"></li>
+                            <li th:utext="#{trans.c5.li2}"></li>
+                            <li th:utext="#{trans.c5.li3}"></li>
+                        </ul>
+                        <div class="tr-cost-pill"><span th:text="#{trans.c5.cost}">💰 100% Gratis</span></div>
+                    </article>
+                </div>
+
+                <div class="col-lg-4 col-md-6">
+                    <article class="tr-ed-card" style="border-top-color:var(--coral);">
+                        <div class="tr-ed-icon" style="background:rgba(232,93,63,.12); color:var(--coral);">🚌</div>
+                        <span class="eyebrow" style="font-size:.6rem;" th:text="#{trans.c6.badge}">Turístico &amp; Nocturno</span>
+                        <h3 th:text="#{trans.c6.title}">Chivas Rumberas Típicas</h3>
+                        <p th:text="#{trans.c6.desc}"></p>
+                        <ul class="tr-ed-list">
+                            <li th:utext="#{trans.c6.li1}"></li>
+                            <li th:utext="#{trans.c6.li2}"></li>
+                            <li th:utext="#{trans.c6.li3}"></li>
+                        </ul>
+                        <div class="tr-cost-pill"><span th:text="#{trans.c6.cost}">💰 ~$55.000 COP</span></div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ TABLA COMPARATIVA DE RUTAS ═══ -->
+    <section class="ed-band">
+        <div class="container">
+            <div class="ed-section-head">
+                <span class="eyebrow"><i class="fas fa-table"></i> DATT 2026</span>
+                <h2 th:text="#{trans.tbl.title}">Tabla de Rutas Más Frecuentes y Tiempos Estimados</h2>
+            </div>
+
+            <div class="ed-table-wrap">
+                <div class="table-responsive">
+                    <table class="ed-table">
+                        <thead>
+                            <tr>
+                                <th th:text="#{trans.tbl.col1}">Origen</th>
+                                <th th:text="#{trans.tbl.col2}">Destino</th>
+                                <th th:text="#{trans.tbl.col3}">Opción Recomendada</th>
+                                <th th:text="#{trans.tbl.col4}">Tiempo Estimado</th>
+                                <th th:text="#{trans.tbl.col5}">Tarifa Aproximada</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><strong style="color:var(--azul-dark);">Aeropuerto Rafael Núñez</strong></td>
+                                <td>Centro Histórico (Torre del Reloj)</td>
+                                <td>Taxi Oficial DATT / Transcaribe T102</td>
+                                <td>10 - 15 min</td>
+                                <td><strong>$15.000 - $18.000 COP</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color:var(--azul-dark);">Aeropuerto Rafael Núñez</strong></td>
+                                <td>Bocagrande / El Laguito</td>
+                                <td>Taxi Oficial DATT / InDriver</td>
+                                <td>20 - 25 min</td>
+                                <td><strong>$22.000 - $26.000 COP</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color:var(--azul-dark);">Centro Histórico</strong></td>
+                                <td>Barrio Getsemaní (Plaza Trinidad)</td>
+                                <td>Caminando por Parque Centenario</td>
+                                <td>5 - 8 min</td>
+                                <td><span class="ed-pill" style="background:#eafaf1; color:#1e8449; border-color:transparent; padding:4px 10px;">Gratis</span></td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color:var(--azul-dark);">Centro Histórico</strong></td>
+                                <td>Castillo de San Felipe de Barajas</td>
+                                <td>Taxi (~$10.000) o Caminata (15 min)</td>
+                                <td>6 min en taxi</td>
+                                <td><strong>$10.000 COP (Mínima)</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color:var(--azul-dark);">Muelle de la Bodeguita</strong></td>
+                                <td>Islas del Rosario (Isla Grande / Cholón)</td>
+                                <td>Lancha rápida con motor fuera de borda</td>
+                                <td>45 - 55 min</td>
+                                <td><strong>$75.000 - $90.000 COP + Tasa</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color:var(--azul-dark);">Centro Histórico</strong></td>
+                                <td>Playa Blanca (Barú por tierra)</td>
+                                <td>Taxi / Van turística colectiva</td>
+                                <td>50 min</td>
+                                <td><strong>$80.000 - $120.000 COP</strong></td>
+                            </tr>
+                            <tr>
+                                <td><strong style="color:var(--azul-dark);">Terminal de Transportes</strong></td>
+                                <td>Centro Histórico</td>
+                                <td>Transcaribe Troncal T101</td>
+                                <td>45 - 55 min</td>
+                                <td><strong>$3.000 COP</strong></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </section>
+</main>
 
 <div th:replace="fragments :: footer-interno"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 <script th:inline="javascript">
 const TRANS_LANG = /*[[${#locale.language}]]*/ 'es';
-// Matriz de Tarifas Oficiales DATT y Tiempos de Viaje
 const TARIFAS_CARTAGENA = {
     'AEROPUERTO-CENTRO': { cop: 16000, usd: 4.10, min: 12, trans: 'Línea T102 ($3.000 COP)', transEn: 'Line T102 ($3,000 COP)', tip: 'Toma el tiquete oficial en la caseta de la salida del terminal.', tipEn: 'Get the official fixed-fare ticket at the airport arrivals booth.' },
     'AEROPUERTO-BOCAGRANDE': { cop: 24000, usd: 6.15, min: 22, trans: 'InDriver / Uber o Taxi', transEn: 'InDriver / Uber or Taxi', tip: 'Tarifa diurna fija. Si viajas tarde en la noche, el recargo es de $1.000 COP.', tipEn: 'Fixed daytime fare. Night surcharge after 9 PM is +$1,000 COP.' },
@@ -485,9 +497,7 @@ function calcularTarifaCartagena() {
     box.style.display = 'block';
 }
 
-// Ejecutar cálculo inicial
 document.addEventListener('DOMContentLoaded', calcularTarifaCartagena);
 </script>
-
 </body>
 </html>

@@ -1,410 +1,593 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
-<head>    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title th:text="#{guia.page.title}">Travel Guide — ODYSSEY</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=Jost:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Jost:wght@500;600;700&amp;family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,600&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
     <style>
-        .guia-nav { display:flex; gap:8px; flex-wrap:wrap; justify-content:center; margin-bottom:52px; }
-        .guia-nav a { font-family:'DM Sans',sans-serif; font-size:.78rem; font-weight:700; text-transform:uppercase; letter-spacing:.05em; padding:10px 22px; border-radius:40px; border:1.5px solid rgba(11,45,107,.2); color:var(--azul); background:#fff; transition:.25s; text-decoration:none; }
-        .guia-nav a:hover { background:var(--azul); color:#fff; border-color:var(--azul); }
-        .guia-sec { margin-bottom:72px; scroll-margin-top:80px; }
-        .guia-sec h2 { font-family:'Cormorant Garamond',serif; font-size:2.2rem; font-weight:700; color:var(--azul); border-bottom:2px solid var(--gold-pale); padding-bottom:14px; margin-bottom:24px; }
-        .timeline { border-left:3px solid var(--gold); padding-left:32px; margin-top:24px; }
-        .tl-item { margin-bottom:28px; position:relative; }
-        .tl-item::before { content:''; position:absolute; left:-40px; top:8px; width:14px; height:14px; background:var(--gold); border-radius:50%; border:3px solid #fff; box-shadow:0 0 0 2px var(--gold); }
-        .tl-year { font-family:'DM Sans',sans-serif; font-size:.72rem; font-weight:700; color:var(--gold); text-transform:uppercase; letter-spacing:.08em; }
-        .tl-item h5 { font-family:'Cormorant Garamond',serif; font-weight:700; color:var(--azul); margin:4px 0; font-size:1.15rem; }
-        .playa-card { border-radius:14px; overflow:hidden; box-shadow:0 4px 20px rgba(11,45,107,.1); transition:.35s; }
-        .playa-card:hover { transform:translateY(-6px); box-shadow:0 14px 36px rgba(11,45,107,.2); }
-        .playa-card img { height:180px; width:100%; object-fit:cover; transition:.4s; }
-        .playa-card:hover img { transform:scale(1.06); }
-        .season-card { border-radius:14px; padding:26px; height:100%; }
-        .barrio-card { border-radius:14px; padding:24px; background:#fff; box-shadow:0 4px 20px rgba(11,45,107,.08); border-top:4px solid var(--gold); transition:.3s; }
-        .barrio-card:hover { transform:translateY(-4px); box-shadow:0 12px 32px rgba(11,45,107,.16); }
-        .consejo-item { display:flex; gap:16px; align-items:flex-start; padding:16px 0; border-bottom:1px solid rgba(11,45,107,.07); }
-        .consejo-item:last-child { border-bottom:none; }
-        .consejo-num { width:36px; height:36px; border-radius:50%; background:var(--azul); color:var(--gold-light); font-family:'Cormorant Garamond',serif; font-weight:700; font-size:1.1rem; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+        .guia-chapter { scroll-margin-top: 136px; }
+        .ed-timeline {
+            border-left: 2px solid var(--gold);
+            padding-left: 28px;
+            margin-top: 28px;
+        }
+        .ed-tl-item {
+            position: relative;
+            margin-bottom: 24px;
+        }
+        .ed-tl-item:last-child { margin-bottom: 0; }
+        .ed-tl-item::before {
+            content: '';
+            position: absolute;
+            left: -35px;
+            top: 5px;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: var(--gold-light);
+            border: 2px solid var(--azul-dark);
+        }
+        .ed-tl-year {
+            font-family: 'Jost', sans-serif;
+            font-size: .68rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+            color: #936615;
+        }
+        .ed-tl-item h4 {
+            margin: 3px 0 4px;
+            color: var(--azul-dark);
+            font-size: 1.12rem;
+        }
+        .ed-tl-item p {
+            margin: 0;
+            color: #66645f;
+            font-size: .84rem;
+            line-height: 1.58;
+        }
+
+        .barrio-ed-card {
+            background: #fff;
+            border: 1px solid rgba(11,45,107,.08);
+            border-top: 3px solid var(--gold);
+            border-radius: 14px;
+            padding: 24px;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 3px 12px rgba(7,30,74,.05);
+            transition: transform .3s ease, box-shadow .3s ease;
+        }
+        .barrio-ed-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 14px 30px rgba(7,30,74,.11);
+        }
+        .barrio-ed-card h3 {
+            color: var(--azul-dark);
+            font-size: 1.28rem;
+            margin: 10px 0 8px;
+        }
+        .barrio-ed-card p {
+            color: #66645f;
+            font-size: .84rem;
+            line-height: 1.62;
+            margin-bottom: 0;
+        }
+        .barrio-badge {
+            align-self: flex-start;
+            padding: 4px 10px;
+            border-radius: 999px;
+            font-family: 'Jost', sans-serif;
+            font-size: .62rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .dish-ed-card {
+            background: #fff;
+            border: 1px solid rgba(11,45,107,.08);
+            border-radius: 14px;
+            padding: 22px 18px;
+            height: 100%;
+            transition: transform .3s ease, box-shadow .3s ease;
+        }
+        .dish-ed-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 26px rgba(7,30,74,.09);
+        }
+        .dish-ed-card h4 {
+            color: var(--azul-dark);
+            font-size: 1.14rem;
+            margin: 8px 0 6px;
+        }
+        .dish-ed-card p {
+            color: #66645f;
+            font-size: .8rem;
+            line-height: 1.55;
+            margin: 0;
+        }
+        .dish-num {
+            font-family: 'Jost', sans-serif;
+            font-size: .64rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            color: #936615;
+        }
+
+        .guia-seasons-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+        }
+        .guia-seasons-grid article {
+            padding: 28px;
+            background: #fff;
+            border: 1px solid rgba(11,45,107,.08);
+            border-radius: 14px;
+            box-shadow: 0 4px 14px rgba(7,30,74,.05);
+        }
+        .guia-seasons-grid article > i {
+            width: 42px;
+            height: 42px;
+            display: grid;
+            place-items: center;
+            margin-bottom: 18px;
+            color: #8a630e;
+            background: var(--gold-pale);
+            border-radius: 10px;
+            font-size: 1.05rem;
+        }
+        .guia-seasons-grid h3 { color: var(--azul-dark); font-size: 1.25rem; margin: 0 0 6px; }
+        .guia-seasons-grid strong { color: #936615; font-size: .8rem; display: block; margin-bottom: 10px; }
+        .guia-seasons-grid p { margin: 0; color: #66645f; font-size: .84rem; line-height: 1.62; }
+        .guia-seasons-grid .season-highlight {
+            background: var(--gold-light);
+            border-color: var(--gold-light);
+        }
+        .guia-seasons-grid .season-highlight > i {
+            color: var(--gold-light);
+            background: var(--azul-dark);
+        }
+        .guia-seasons-grid .season-highlight strong,
+        .guia-seasons-grid .season-highlight p { color: var(--azul-dark); }
+
+        .consejo-row {
+            display: flex;
+            gap: 15px;
+            align-items: flex-start;
+            padding: 16px 0;
+            border-bottom: 1px solid #f0e8d8;
+        }
+        .consejo-row:last-child { border-bottom: 0; padding-bottom: 0; }
+        .consejo-badge-num {
+            width: 34px;
+            height: 34px;
+            border-radius: 50%;
+            background: var(--azul);
+            color: var(--gold-light);
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: .95rem;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+
+        @media (max-width: 991px) {
+            .guia-seasons-grid { grid-template-columns: 1fr; }
+        }
     </style>
-    <!-- Favicon ODYSSEY -->
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
     <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
     <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
     <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
 </head>
-<body>
+<body class="odyssey-inner">
 <div th:replace="fragments :: topbar"></div>
 <div th:replace="fragments :: navbar-interno"></div>
-<div class="page-breadcrumb-hero">
-    <div style="position:relative; z-index:1;">
-        <h1 style="font-style:italic;" th:text="#{guia.hero.title}">Travel Guide to Cartagena</h1>
-        <div class="gold-line"></div>
-        <p th:text="#{guia.hero.sub}">Everything you need to know before and during your visit</p>
+
+<section class="editorial-subhero" style="--subhero-img: url('/img/hero-murallas.jpg');">
+    <div class="editorial-subhero-bg"></div>
+    <div class="container editorial-subhero-inner">
+        <nav class="ed-breadcrumb" aria-label="breadcrumb">
+            <a href="/" th:text="#{nav.inicio}">Inicio</a>
+            <span class="sep">/</span>
+            <span class="current" th:text="#{nav.guia}">Guía</span>
+        </nav>
+        <div class="editorial-subhero-grid">
+            <div>
+                <span class="eyebrow eyebrow-light">
+                    <i class="fas fa-book-open"></i>
+                    <span th:text="#{topbar.unesco}">Patrimonio UNESCO 1984</span>
+                </span>
+                <h1><em th:text="#{guia.hero.title}">Guía Turística de Cartagena</em></h1>
+                <p class="editorial-subhero-lead" th:text="#{guia.hero.sub}">Todo lo que necesitas saber antes y durante tu visita</p>
+            </div>
+            <div class="editorial-subhero-actions">
+                <a href="/lugares?categoriaId=0" class="button button-gold">
+                    <i class="fas fa-map-marker-alt"></i>
+                    <span th:text="#{guia.cta.lugares}">Ver todos los lugares</span>
+                </a>
+                <a href="#" onclick="toggleChat();return false;" class="button button-glass">
+                    <i class="fas fa-robot"></i>
+                    <span th:text="#{guia.cta.odyx}">Preguntar a ODYSSEY</span>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Barra editorial de capítulos -->
+<div class="ed-anchor-bar">
+    <div class="container">
+        <nav class="ed-anchor-list" aria-label="Secciones de la guía">
+            <a href="#historia"    class="ed-anchor-link" th:text="#{guia.nav.historia}">Historia</a>
+            <a href="#barrios"     class="ed-anchor-link" th:text="#{guia.nav.barrios}">Barrios</a>
+            <a href="#playas"      class="ed-anchor-link" th:text="#{guia.nav.playas}">Playas</a>
+            <a href="#cuando"      class="ed-anchor-link" th:text="#{guia.nav.cuando}">Cuándo ir</a>
+            <a href="#gastronomia" class="ed-anchor-link" th:text="#{guia.nav.gastronomia}">Gastronomía</a>
+            <a href="#consejos"    class="ed-anchor-link" th:text="#{guia.nav.consejos}">Consejos</a>
+        </nav>
     </div>
 </div>
 
-<div class="container py-5">
-    <nav class="guia-nav">
-        <a href="#historia"    th:text="#{guia.nav.historia}">History</a>
-        <a href="#barrios"     th:text="#{guia.nav.barrios}">Neighborhoods</a>
-        <a href="#playas"      th:text="#{guia.nav.playas}">Beaches</a>
-        <a href="#cuando"      th:text="#{guia.nav.cuando}">When to go</a>
-        <a href="#gastronomia" th:text="#{guia.nav.gastronomia}">Gastronomy</a>
-        <a href="#consejos"    th:text="#{guia.nav.consejos}">Tips</a>
-    </nav>
+<main>
+    <!-- ═══════════ 1. HISTORIA ═══════════ -->
+    <section class="ed-band guia-chapter" id="historia">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-6">
+                    <div class="ed-section-head mb-3">
+                        <span class="eyebrow"><i class="fas fa-landmark"></i> 1533 — 2026</span>
+                        <h2 th:utext="#{guia.historia.title}">Historia &amp; Cultura</h2>
+                    </div>
+                    <p style="color:#55524b; line-height:1.78;" class="mb-3" th:utext="#{guia.historia.p1}"></p>
+                    <p style="color:#55524b; line-height:1.78;" class="mb-4" th:utext="#{guia.historia.p2}"></p>
+                    <div class="ed-timeline">
+                        <div class="ed-tl-item">
+                            <div class="ed-tl-year">1533</div>
+                            <h4 th:text="#{guia.tl.y1533.title}">Founded by Pedro de Heredia</h4>
+                            <p th:text="#{guia.tl.y1533.desc}"></p>
+                        </div>
+                        <div class="ed-tl-item">
+                            <div class="ed-tl-year">1586</div>
+                            <h4 th:text="#{guia.tl.y1586.title}">Francis Drake's Attack</h4>
+                            <p th:text="#{guia.tl.y1586.desc}"></p>
+                        </div>
+                        <div class="ed-tl-item">
+                            <div class="ed-tl-year" th:text="#{guia.tl.y17c.year}">17th Century</div>
+                            <h4 th:text="#{guia.tl.y17c.title}">The Walls and the Castle</h4>
+                            <p th:text="#{guia.tl.y17c.desc}"></p>
+                        </div>
+                        <div class="ed-tl-item">
+                            <div class="ed-tl-year">1811</div>
+                            <h4 th:text="#{guia.tl.y1811.title}">Independence</h4>
+                            <p th:text="#{guia.tl.y1811.desc}"></p>
+                        </div>
+                        <div class="ed-tl-item">
+                            <div class="ed-tl-year">1984</div>
+                            <h4 th:text="#{guia.tl.y1984.title}">UNESCO World Heritage</h4>
+                            <p th:text="#{guia.tl.y1984.desc}"></p>
+                        </div>
+                        <div class="ed-tl-item">
+                            <div class="ed-tl-year" th:text="#{guia.tl.today}">Today</div>
+                            <h4 th:text="#{guia.tl.today.title}">Colombia's #1 Destination</h4>
+                            <p th:text="#{guia.tl.today.desc}"></p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="about-visual mb-4">
+                        <div class="about-frame-new">
+                            <img src="/img/hero-murallas.jpg" alt="Murallas de Cartagena" loading="lazy" decoding="async">
+                        </div>
+                        <div class="history-seal">
+                            <strong>1984</strong>
+                            <span>UNESCO</span>
+                        </div>
+                    </div>
+                    <div class="ed-quote-bar">
+                        <p class="mb-0" style="color:#4f4c44; font-family:'Playfair Display',serif; font-style:italic; font-size:1.02rem; line-height:1.65;">
+                            <i class="fas fa-quote-left me-2" style="color:var(--gold);"></i>
+                            <span th:utext="#{guia.historia.quote}"></span>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
 
-    <!-- ═══════════════════ HISTORY ═══════════════════ -->
-    <div class="guia-sec" id="historia">
-        <h2 th:utext="#{guia.historia.title}">History &amp; Culture</h2>
-        <div class="row g-5 align-items-center">
-            <div class="col-lg-6">
-                <p class="text-muted lh-lg mb-3" th:utext="#{guia.historia.p1}"></p>
-                <p class="text-muted lh-lg mb-4" th:utext="#{guia.historia.p2}"></p>
-                <div class="timeline">
-                    <div class="tl-item">
-                        <div class="tl-year">1533</div>
-                        <h5 th:text="#{guia.tl.y1533.title}">Founded by Pedro de Heredia</h5>
-                        <p class="text-muted small" th:text="#{guia.tl.y1533.desc}"></p>
-                    </div>
-                    <div class="tl-item">
-                        <div class="tl-year">1586</div>
-                        <h5 th:text="#{guia.tl.y1586.title}">Francis Drake's Attack</h5>
-                        <p class="text-muted small" th:text="#{guia.tl.y1586.desc}"></p>
-                    </div>
-                    <div class="tl-item">
-                        <div class="tl-year" th:text="#{guia.tl.y17c.year}">17th Century</div>
-                        <h5 th:text="#{guia.tl.y17c.title}">The Walls and the Castle</h5>
-                        <p class="text-muted small" th:text="#{guia.tl.y17c.desc}"></p>
-                    </div>
-                    <div class="tl-item">
-                        <div class="tl-year">1811</div>
-                        <h5 th:text="#{guia.tl.y1811.title}">Independence</h5>
-                        <p class="text-muted small" th:text="#{guia.tl.y1811.desc}"></p>
-                    </div>
-                    <div class="tl-item">
-                        <div class="tl-year">1984</div>
-                        <h5 th:text="#{guia.tl.y1984.title}">UNESCO World Heritage</h5>
-                        <p class="text-muted small" th:text="#{guia.tl.y1984.desc}"></p>
-                    </div>
-                    <div class="tl-item">
-                        <div class="tl-year" th:text="#{guia.tl.today}">Today</div>
-                        <h5 th:text="#{guia.tl.today.title}">Colombia's #1 Destination</h5>
-                        <p class="text-muted small" th:text="#{guia.tl.today.desc}"></p>
-                    </div>
-                </div>
+    <!-- ═══════════ 2. BARRIOS ═══════════ -->
+    <section class="ed-band-alt guia-chapter" id="barrios">
+        <div class="container">
+            <div class="ed-section-head">
+                <span class="eyebrow"><i class="fas fa-map-signs"></i> <span th:text="#{guia.nav.barrios}">Barrios</span></span>
+                <h2 th:text="#{guia.barrios.title}">Barrios para explorar</h2>
             </div>
-            <div class="col-lg-6">
-                <img src="/img/hero-murallas.jpg" class="img-fluid rounded-3 shadow-lg" alt="Cartagena Walls" style="aspect-ratio:4/3;object-fit:cover;">
-                <div class="mt-3 p-3 rounded-3" style="background:var(--cream); border-left:4px solid var(--gold);">
-                    <p class="mb-0 small text-muted">
-                        <i class="fa fa-quote-left me-2" style="color:var(--gold);"></i>
-                        <span th:utext="#{guia.historia.quote}"></span>
-                    </p>
+            <div class="row g-4">
+                <div class="col-md-6 col-lg-4">
+                    <article class="barrio-ed-card">
+                        <span class="barrio-badge" style="background:var(--gold-pale); color:var(--azul-dark);" th:text="#{guia.b1.badge}">Imprescindible</span>
+                        <h3 th:text="#{guia.b1.name}">Centro Histórico</h3>
+                        <p th:text="#{guia.b1.desc}"></p>
+                    </article>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <article class="barrio-ed-card" style="border-top-color:var(--coral);">
+                        <span class="barrio-badge" style="background:rgba(232,93,63,.12); color:var(--coral);" th:text="#{guia.b2.badge}">Arte &amp; Cultura</span>
+                        <h3 th:text="#{guia.b2.name}">Getsemaní</h3>
+                        <p th:text="#{guia.b2.desc}"></p>
+                    </article>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <article class="barrio-ed-card" style="border-top-color:var(--azul);">
+                        <span class="barrio-badge" style="background:rgba(11,45,107,.09); color:var(--azul);" th:text="#{guia.b3.badge}">Playa &amp; Hoteles</span>
+                        <h3 th:text="#{guia.b3.name}">Bocagrande</h3>
+                        <p th:text="#{guia.b3.desc}"></p>
+                    </article>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <article class="barrio-ed-card" style="border-top-color:#27ae60;">
+                        <span class="barrio-badge" style="background:rgba(39,174,96,.12); color:#1e8449;" th:text="#{guia.b4.badge}">Local &amp; Relajado</span>
+                        <h3 th:text="#{guia.b4.name}">Manga</h3>
+                        <p th:text="#{guia.b4.desc}"></p>
+                    </article>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <article class="barrio-ed-card" style="border-top-color:#7d3c98;">
+                        <span class="barrio-badge" style="background:rgba(125,60,152,.1); color:#7d3c98;" th:text="#{guia.b5.badge}">Residencial</span>
+                        <h3 th:text="#{guia.b5.name}">Castillo Grande</h3>
+                        <p th:text="#{guia.b5.desc}"></p>
+                    </article>
+                </div>
+                <div class="col-md-6 col-lg-4">
+                    <article class="barrio-ed-card">
+                        <span class="barrio-badge" style="background:var(--gold-pale); color:var(--azul-dark);" th:text="#{guia.b6.badge}">Compras &amp; Arte</span>
+                        <h3 th:text="#{guia.b6.name}">San Diego</h3>
+                        <p th:text="#{guia.b6.desc}"></p>
+                    </article>
                 </div>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- ═══════════════════ NEIGHBORHOODS ═══════════════════ -->
-    <div class="guia-sec" id="barrios">
-        <h2 th:text="#{guia.barrios.title}">Neighborhoods to Explore</h2>
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-                <div class="barrio-card">
-                    <h5 style="font-family:'Cormorant Garamond',serif; color:var(--azul); font-size:1.25rem;" th:text="#{guia.b1.name}">Historic Center</h5>
-                    <p class="text-muted small mb-2" th:text="#{guia.b1.desc}"></p>
-                    <span class="badge" style="background:var(--gold-pale); color:var(--azul); font-weight:700; font-size:.7rem;" th:text="#{guia.b1.badge}">Must-see</span>
-                </div>
+    <!-- ═══════════ 3. PLAYAS ═══════════ -->
+    <section class="ed-band guia-chapter" id="playas">
+        <div class="container">
+            <div class="ed-section-head">
+                <span class="eyebrow"><i class="fas fa-umbrella-beach"></i> <span th:text="#{guia.nav.playas}">Playas</span></span>
+                <h2 th:text="#{guia.playas.title}">Mejores Playas</h2>
             </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="barrio-card" style="border-top-color:var(--coral);">
-                    <h5 style="font-family:'Cormorant Garamond',serif; color:var(--azul); font-size:1.25rem;" th:text="#{guia.b2.name}">Getsemaní</h5>
-                    <p class="text-muted small mb-2" th:text="#{guia.b2.desc}"></p>
-                    <span class="badge" style="background:rgba(232,93,63,.12); color:var(--coral); font-weight:700; font-size:.7rem;" th:text="#{guia.b2.badge}">Art &amp; Culture</span>
-                </div>
+            <div class="destination-grid">
+                <article class="ed-card">
+                    <div class="ed-card-media">
+                        <img src="/img/hero-playa-blanca.jpg" alt="Playa Blanca" loading="lazy" decoding="async">
+                        <span class="verified-badge" th:text="#{guia.p1.badge}">Top</span>
+                    </div>
+                    <div class="ed-card-body">
+                        <h3 th:text="#{guia.p1.name}">Playa Blanca — Barú</h3>
+                        <p class="mb-3" th:text="#{guia.p1.desc}"></p>
+                        <small style="color:#936615; font-weight:700; margin-top:auto;" th:text="#{guia.p1.costo}"></small>
+                    </div>
+                </article>
+                <article class="ed-card">
+                    <div class="ed-card-media">
+                        <img src="/img/act-playa-bocagrande.jpg" alt="Bocagrande" loading="lazy" decoding="async">
+                        <span class="destination-badge" th:text="#{guia.p2.badge}">Accesible</span>
+                    </div>
+                    <div class="ed-card-body">
+                        <h3 th:text="#{guia.p2.name}">Bocagrande</h3>
+                        <p class="mb-3" th:text="#{guia.p2.desc}"></p>
+                        <small style="color:#936615; font-weight:700; margin-top:auto;" th:text="#{guia.p2.costo}"></small>
+                    </div>
+                </article>
+                <article class="ed-card">
+                    <div class="ed-card-media">
+                        <img src="/img/act-islas-rosario.jpg" alt="Islas del Rosario" loading="lazy" decoding="async">
+                        <span class="destination-badge" style="background:var(--coral);" th:text="#{guia.p3.badge}">Buceo</span>
+                    </div>
+                    <div class="ed-card-body">
+                        <h3 th:text="#{guia.p3.name}">Islas del Rosario</h3>
+                        <p class="mb-3" th:text="#{guia.p3.desc}"></p>
+                        <small style="color:#936615; font-weight:700; margin-top:auto;" th:text="#{guia.p3.costo}"></small>
+                    </div>
+                </article>
             </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="barrio-card" style="border-top-color:var(--azul-mid);">
-                    <h5 style="font-family:'Cormorant Garamond',serif; color:var(--azul); font-size:1.25rem;" th:text="#{guia.b3.name}">Bocagrande</h5>
-                    <p class="text-muted small mb-2" th:text="#{guia.b3.desc}"></p>
-                    <span class="badge" style="background:rgba(11,45,107,.08); color:var(--azul); font-weight:700; font-size:.7rem;" th:text="#{guia.b3.badge}">Beach &amp; Hotels</span>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="barrio-card" style="border-top-color:#27ae60;">
-                    <h5 style="font-family:'Cormorant Garamond',serif; color:var(--azul); font-size:1.25rem;" th:text="#{guia.b4.name}">Manga</h5>
-                    <p class="text-muted small mb-2" th:text="#{guia.b4.desc}"></p>
-                    <span class="badge" style="background:rgba(39,174,96,.12); color:#27ae60; font-weight:700; font-size:.7rem;" th:text="#{guia.b4.badge}">Local &amp; Relaxed</span>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="barrio-card" style="border-top-color:#8e44ad;">
-                    <h5 style="font-family:'Cormorant Garamond',serif; color:var(--azul); font-size:1.25rem;" th:text="#{guia.b5.name}">Castillo Grande</h5>
-                    <p class="text-muted small mb-2" th:text="#{guia.b5.desc}"></p>
-                    <span class="badge" style="background:rgba(142,68,173,.1); color:#8e44ad; font-weight:700; font-size:.7rem;" th:text="#{guia.b5.badge}">Residential</span>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="barrio-card" style="border-top-color:var(--gold);">
-                    <h5 style="font-family:'Cormorant Garamond',serif; color:var(--azul); font-size:1.25rem;" th:text="#{guia.b6.name}">San Diego</h5>
-                    <p class="text-muted small mb-2" th:text="#{guia.b6.desc}"></p>
-                    <span class="badge" style="background:var(--gold-pale); color:var(--azul); font-weight:700; font-size:.7rem;" th:text="#{guia.b6.badge}">Shopping &amp; Art</span>
-                </div>
+            <div class="ed-quote-bar mt-4" style="border-left-color:var(--azul);">
+                <h5 class="mb-2" style="color:var(--azul-dark); font-family:'Playfair Display',serif;">
+                    <i class="fas fa-ship me-2" style="color:var(--gold);"></i>
+                    <span th:text="#{guia.playas.howto.title}">Cómo llegar a las islas</span>
+                </h5>
+                <p class="mb-0 small" style="color:#55524b; line-height:1.68;" th:utext="#{guia.playas.howto.desc}"></p>
             </div>
         </div>
-    </div>
+    </section>
 
-    <!-- ═══════════════════ BEACHES ═══════════════════ -->
-    <div class="guia-sec" id="playas">
-        <h2 th:text="#{guia.playas.title}">Best Beaches</h2>
-        <div class="row g-4">
-            <div class="col-md-6 col-lg-4">
-                <div class="playa-card">
-                    <img src="/img/hero-playa-blanca.jpg" alt="Playa Blanca">
-                    <div class="p-3">
-                        <div class="d-flex align-items-center justify-content-between mb-1">
-                            <h6 class="fw-bold mb-0" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.15rem;" th:text="#{guia.p1.name}">Playa Blanca — Barú</h6>
-                            <span class="badge" style="background:var(--gold); color:#fff; font-size:.65rem;" th:text="#{guia.p1.badge}">Top</span>
-                        </div>
-                        <p class="text-muted small mb-1" th:text="#{guia.p1.desc}"></p>
-                        <small style="color:var(--gold); font-weight:700;" th:text="#{guia.p1.costo}"></small>
-                    </div>
-                </div>
+    <!-- ═══════════ 4. CUÁNDO IR ═══════════ -->
+    <section class="ed-band-alt guia-chapter" id="cuando">
+        <div class="container">
+            <div class="ed-section-head">
+                <span class="eyebrow"><i class="fas fa-sun"></i> <span th:text="#{guia.nav.cuando}">Cuándo ir</span></span>
+                <h2 th:text="#{guia.cuando.title}">Cuándo visitar Cartagena</h2>
             </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="playa-card">
-                    <img src="/img/act-playa-bocagrande.jpg" alt="Bocagrande">
-                    <div class="p-3">
-                        <div class="d-flex align-items-center justify-content-between mb-1">
-                            <h6 class="fw-bold mb-0" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.15rem;" th:text="#{guia.p2.name}">Bocagrande</h6>
-                            <span class="badge" style="background:var(--azul); color:#fff; font-size:.65rem;" th:text="#{guia.p2.badge}">Accessible</span>
-                        </div>
-                        <p class="text-muted small mb-1" th:text="#{guia.p2.desc}"></p>
-                        <small style="color:var(--gold); font-weight:700;" th:text="#{guia.p2.costo}"></small>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6 col-lg-4">
-                <div class="playa-card">
-                    <img src="/img/act-islas-rosario.jpg" alt="Islas del Rosario">
-                    <div class="p-3">
-                        <div class="d-flex align-items-center justify-content-between mb-1">
-                            <h6 class="fw-bold mb-0" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.15rem;" th:text="#{guia.p3.name}">Islas del Rosario</h6>
-                            <span class="badge" style="background:var(--coral); color:#fff; font-size:.65rem;" th:text="#{guia.p3.badge}">Diving</span>
-                        </div>
-                        <p class="text-muted small mb-1" th:text="#{guia.p3.desc}"></p>
-                        <small style="color:var(--gold); font-weight:700;" th:text="#{guia.p3.costo}"></small>
-                    </div>
-                </div>
+            <div class="guia-seasons-grid">
+                <article class="season-highlight">
+                    <i class="fas fa-sun"></i>
+                    <h3 th:text="#{guia.season1.title}">Mejor Temporada</h3>
+                    <strong th:text="#{guia.season1.months}">Diciembre — Abril</strong>
+                    <p th:text="#{guia.season1.desc}"></p>
+                </article>
+                <article>
+                    <i class="fas fa-cloud-sun"></i>
+                    <h3 th:text="#{guia.season2.title}">Temporada Media</h3>
+                    <strong th:text="#{guia.season2.months}">May — Jul / Oct — Nov</strong>
+                    <p th:text="#{guia.season2.desc}"></p>
+                </article>
+                <article>
+                    <i class="fas fa-cloud-showers-heavy"></i>
+                    <h3 th:text="#{guia.season3.title}">Temporada de Lluvias</h3>
+                    <strong th:text="#{guia.season3.months}">Agosto — Septiembre</strong>
+                    <p th:text="#{guia.season3.desc}"></p>
+                </article>
             </div>
         </div>
-        <div class="mt-4 p-4 rounded-3" style="background:var(--cream); border-left:4px solid var(--azul);">
-            <h6 class="fw-bold mb-2" style="color:var(--azul);">
-                <i class="fa fa-ship me-2" style="color:var(--gold);"></i>
-                <span th:text="#{guia.playas.howto.title}">How to get to the islands</span>
-            </h6>
-            <p class="text-muted small mb-0" th:utext="#{guia.playas.howto.desc}"></p>
-        </div>
-    </div>
+    </section>
 
-    <!-- ═══════════════════ WHEN TO GO ═══════════════════ -->
-    <div class="guia-sec" id="cuando">
-        <h2 th:text="#{guia.cuando.title}">When to Visit Cartagena</h2>
-        <div class="row g-4 mb-4">
-            <div class="col-md-4">
-                <div class="season-card" style="background:#e8f5e9; border-left:4px solid #27ae60; border-radius:14px;">
-                    <div style="font-size:2rem; margin-bottom:12px;">☀️</div>
-                    <h5 class="fw-bold" style="color:#1b5e20; font-family:'Cormorant Garamond',serif;" th:text="#{guia.season1.title}">Best Season</h5>
-                    <p class="fw-bold mb-1" style="color:#2d6a4f;" th:text="#{guia.season1.months}">December — April</p>
-                    <p class="text-muted small mb-0" th:text="#{guia.season1.desc}"></p>
-                </div>
+    <!-- ═══════════ 5. GASTRONOMÍA ═══════════ -->
+    <section class="ed-band guia-chapter" id="gastronomia">
+        <div class="container">
+            <div class="ed-section-head">
+                <span class="eyebrow"><i class="fas fa-utensils"></i> <span th:text="#{guia.nav.gastronomia}">Gastronomía</span></span>
+                <h2 th:text="#{guia.gastro.title}">Gastronomía Caribeña</h2>
+                <p th:text="#{guia.gastro.intro}"></p>
             </div>
-            <div class="col-md-4">
-                <div class="season-card" style="background:#fff8e1; border-left:4px solid var(--gold); border-radius:14px;">
-                    <div style="font-size:2rem; margin-bottom:12px;">⛅</div>
-                    <h5 class="fw-bold" style="color:#7c5200; font-family:'Cormorant Garamond',serif;" th:text="#{guia.season2.title}">Shoulder Season</h5>
-                    <p class="fw-bold mb-1" style="color:#8d6300;" th:text="#{guia.season2.months}">May — Jul / Oct — Nov</p>
-                    <p class="text-muted small mb-0" th:text="#{guia.season2.desc}"></p>
-                </div>
+            <div class="row g-3">
+                <div class="col-6 col-lg-3"><article class="dish-ed-card"><span class="dish-num">01</span><h4 th:text="#{guia.dish1.name}">Ceviche</h4><p th:text="#{guia.dish1.desc}"></p></article></div>
+                <div class="col-6 col-lg-3"><article class="dish-ed-card"><span class="dish-num">02</span><h4 th:text="#{guia.dish2.name}">Arepa de Huevo</h4><p th:text="#{guia.dish2.desc}"></p></article></div>
+                <div class="col-6 col-lg-3"><article class="dish-ed-card"><span class="dish-num">03</span><h4 th:text="#{guia.dish3.name}">Cazuela de Mariscos</h4><p th:text="#{guia.dish3.desc}"></p></article></div>
+                <div class="col-6 col-lg-3"><article class="dish-ed-card"><span class="dish-num">04</span><h4 th:text="#{guia.dish4.name}">Jugo de Corozo</h4><p th:text="#{guia.dish4.desc}"></p></article></div>
+                <div class="col-6 col-lg-3"><article class="dish-ed-card"><span class="dish-num">05</span><h4 th:text="#{guia.dish5.name}">Arroz con Coco</h4><p th:text="#{guia.dish5.desc}"></p></article></div>
+                <div class="col-6 col-lg-3"><article class="dish-ed-card"><span class="dish-num">06</span><h4 th:text="#{guia.dish6.name}">Carimañola</h4><p th:text="#{guia.dish6.desc}"></p></article></div>
+                <div class="col-6 col-lg-3"><article class="dish-ed-card"><span class="dish-num">07</span><h4 th:text="#{guia.dish7.name}">Ron + Chocolate</h4><p th:text="#{guia.dish7.desc}"></p></article></div>
+                <div class="col-6 col-lg-3"><article class="dish-ed-card"><span class="dish-num">08</span><h4 th:text="#{guia.dish8.name}">Langosta al Ajillo</h4><p th:text="#{guia.dish8.desc}"></p></article></div>
             </div>
-            <div class="col-md-4">
-                <div class="season-card" style="background:#fce4ec; border-left:4px solid var(--coral); border-radius:14px;">
-                    <div style="font-size:2rem; margin-bottom:12px;">🌧️</div>
-                    <h5 class="fw-bold" style="color:#880e4f; font-family:'Cormorant Garamond',serif;" th:text="#{guia.season3.title}">Rainy Season</h5>
-                    <p class="fw-bold mb-1" style="color:#ad1457;" th:text="#{guia.season3.months}">August — September</p>
-                    <p class="text-muted small mb-0" th:text="#{guia.season3.desc}"></p>
-                </div>
-            </div>
-        </div>
-    </div>
 
-    <!-- ═══════════════════ GASTRONOMY ═══════════════════ -->
-    <div class="guia-sec" id="gastronomia">
-        <h2 th:text="#{guia.gastro.title}">Caribbean Gastronomy</h2>
-        <p class="text-muted mb-4 lh-lg" th:text="#{guia.gastro.intro}"></p>
-        <div class="row g-3">
-            <div class="col-6 col-md-3">
-                <div class="text-center p-4 rounded-3" style="background:var(--cream);">
-                    <h6 class="fw-bold mt-2 mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{guia.dish1.name}">Shrimp Ceviche</h6>
-                    <p class="text-muted small mb-0" th:text="#{guia.dish1.desc}"></p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="text-center p-4 rounded-3" style="background:var(--cream);">
-                    <h6 class="fw-bold mt-2 mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{guia.dish2.name}">Arepa de Huevo</h6>
-                    <p class="text-muted small mb-0" th:text="#{guia.dish2.desc}"></p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="text-center p-4 rounded-3" style="background:var(--cream);">
-                    <h6 class="fw-bold mt-2 mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{guia.dish3.name}">Seafood Cazuela</h6>
-                    <p class="text-muted small mb-0" th:text="#{guia.dish3.desc}"></p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="text-center p-4 rounded-3" style="background:var(--cream);">
-                    <h6 class="fw-bold mt-2 mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{guia.dish4.name}">Corozo Juice</h6>
-                    <p class="text-muted small mb-0" th:text="#{guia.dish4.desc}"></p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="text-center p-4 rounded-3" style="background:var(--cream);">
-                    <h6 class="fw-bold mt-2 mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{guia.dish5.name}">Coconut Rice</h6>
-                    <p class="text-muted small mb-0" th:text="#{guia.dish5.desc}"></p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="text-center p-4 rounded-3" style="background:var(--cream);">
-                    <h6 class="fw-bold mt-2 mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{guia.dish6.name}">Carimañola de Yuca</h6>
-                    <p class="text-muted small mb-0" th:text="#{guia.dish6.desc}"></p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="text-center p-4 rounded-3" style="background:var(--cream);">
-                    <h6 class="fw-bold mt-2 mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{guia.dish7.name}">Rum + Chocolate</h6>
-                    <p class="text-muted small mb-0" th:text="#{guia.dish7.desc}"></p>
-                </div>
-            </div>
-            <div class="col-6 col-md-3">
-                <div class="text-center p-4 rounded-3" style="background:var(--cream);">
-                    <h6 class="fw-bold mt-2 mb-1" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{guia.dish8.name}">Garlic Lobster</h6>
-                    <p class="text-muted small mb-0" th:text="#{guia.dish8.desc}"></p>
+            <div class="ed-quote-bar mt-4">
+                <h5 class="mb-3" style="color:var(--azul-dark); font-family:'Playfair Display',serif;">
+                    <i class="fas fa-utensils me-2" style="color:var(--gold);"></i>
+                    <span th:text="#{guia.gastro.rests.title}">Restaurantes recomendados</span>
+                </h5>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <p class="mb-0 small" style="color:#66645f;">
+                            <strong style="color:var(--azul-dark);" th:text="#{guia.rest1.name}">Jardín Santa Clara</strong>
+                            — <span th:text="#{guia.rest1.desc}"></span>
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-0 small" style="color:#66645f;">
+                            <strong style="color:var(--azul-dark);" th:text="#{guia.rest2.name}">Alma</strong>
+                            — <span th:text="#{guia.rest2.desc}"></span>
+                        </p>
+                    </div>
+                    <div class="col-md-4">
+                        <p class="mb-0 small" style="color:#66645f;">
+                            <strong style="color:var(--azul-dark);" th:text="#{guia.rest3.name}">La Cevichería</strong>
+                            — <span th:text="#{guia.rest3.desc}"></span>
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="mt-4 p-4 rounded-3" style="background:var(--cream); border-left:4px solid var(--gold);">
-            <h6 class="fw-bold mb-2" style="color:var(--azul);">
-                <i class="fa fa-utensils me-2" style="color:var(--gold);"></i>
-                <span th:text="#{guia.gastro.rests.title}">Recommended restaurants</span>
-            </h6>
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <p class="mb-0 small text-muted">
-                        <strong style="color:var(--azul);" th:text="#{guia.rest1.name}">Jardín Santa Clara</strong>
-                        — <span th:text="#{guia.rest1.desc}"></span>
-                    </p>
-                </div>
-                <div class="col-md-4">
-                    <p class="mb-0 small text-muted">
-                        <strong style="color:var(--azul);" th:text="#{guia.rest2.name}">Alma</strong>
-                        — <span th:text="#{guia.rest2.desc}"></span>
-                    </p>
-                </div>
-                <div class="col-md-4">
-                    <p class="mb-0 small text-muted">
-                        <strong style="color:var(--azul);" th:text="#{guia.rest3.name}">La Cevichería</strong>
-                        — <span th:text="#{guia.rest3.desc}"></span>
-                    </p>
-                </div>
-            </div>
-        </div>
-    </div>
+    </section>
 
-    <!-- ═══════════════════ TIPS ═══════════════════ -->
-    <div class="guia-sec" id="consejos">
-        <h2 th:text="#{guia.consejos.title}">Travel Tips</h2>
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="p-4 rounded-3 bg-white shadow-sm">
-                    <h6 class="fw-bold mb-3" style="color:var(--azul);" th:text="#{guia.before.title}">Before you arrive</h6>
-                    <div class="consejo-item">
-                        <div class="consejo-num">1</div>
-                        <div>
-                            <strong class="d-block mb-1" style="color:var(--azul); font-size:.9rem;" th:text="#{guia.c1.title}">Download offline maps</strong>
-                            <p class="text-muted small mb-0" th:text="#{guia.c1.desc}"></p>
+    <!-- ═══════════ 6. CONSEJOS + CTA ═══════════ -->
+    <section class="ed-band-alt guia-chapter" id="consejos">
+        <div class="container">
+            <div class="ed-section-head">
+                <span class="eyebrow"><i class="fas fa-lightbulb"></i> <span th:text="#{guia.nav.consejos}">Consejos</span></span>
+                <h2 th:text="#{guia.consejos.title}">Consejos de Viaje</h2>
+            </div>
+            <div class="row g-4 mb-5">
+                <div class="col-lg-6">
+                    <div class="ed-surface h-100">
+                        <h4 class="mb-3" style="color:var(--azul-dark);" th:text="#{guia.before.title}">Antes de llegar</h4>
+                        <div class="consejo-row">
+                            <div class="consejo-badge-num">1</div>
+                            <div>
+                                <strong class="d-block mb-1" style="color:var(--azul-dark); font-size:.92rem;" th:text="#{guia.c1.title}">Descarga mapas</strong>
+                                <p class="text-muted small mb-0" th:text="#{guia.c1.desc}"></p>
+                            </div>
+                        </div>
+                        <div class="consejo-row">
+                            <div class="consejo-badge-num">2</div>
+                            <div>
+                                <strong class="d-block mb-1" style="color:var(--azul-dark); font-size:.92rem;" th:text="#{guia.c2.title}">Bloqueador SPF 50+</strong>
+                                <p class="text-muted small mb-0" th:text="#{guia.c2.desc}"></p>
+                            </div>
+                        </div>
+                        <div class="consejo-row">
+                            <div class="consejo-badge-num">3</div>
+                            <div>
+                                <strong class="d-block mb-1" style="color:var(--azul-dark); font-size:.92rem;" th:text="#{guia.c3.title}">Reserva con anticipación</strong>
+                                <p class="text-muted small mb-0" th:text="#{guia.c3.desc}"></p>
+                            </div>
+                        </div>
+                        <div class="consejo-row">
+                            <div class="consejo-badge-num">4</div>
+                            <div>
+                                <strong class="d-block mb-1" style="color:var(--azul-dark); font-size:.92rem;" th:text="#{guia.c4.title}">Camina el centro de noche</strong>
+                                <p class="text-muted small mb-0" th:text="#{guia.c4.desc}"></p>
+                            </div>
                         </div>
                     </div>
-                    <div class="consejo-item">
-                        <div class="consejo-num">2</div>
-                        <div>
-                            <strong class="d-block mb-1" style="color:var(--azul); font-size:.9rem;" th:text="#{guia.c2.title}">SPF 50+ sunscreen</strong>
-                            <p class="text-muted small mb-0" th:text="#{guia.c2.desc}"></p>
+                </div>
+                <div class="col-lg-6">
+                    <div class="ed-surface h-100">
+                        <h4 class="mb-3" style="color:var(--azul-dark);" th:text="#{guia.during.title}">Durante tu visita</h4>
+                        <div class="consejo-row">
+                            <div class="consejo-badge-num">5</div>
+                            <div>
+                                <strong class="d-block mb-1" style="color:var(--azul-dark); font-size:.92rem;" th:text="#{guia.c5.title}">Acuerda precios en playa</strong>
+                                <p class="text-muted small mb-0" th:text="#{guia.c5.desc}"></p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="consejo-item">
-                        <div class="consejo-num">3</div>
-                        <div>
-                            <strong class="d-block mb-1" style="color:var(--azul); font-size:.9rem;" th:text="#{guia.c3.title}">Book hotels in advance</strong>
-                            <p class="text-muted small mb-0" th:text="#{guia.c3.desc}"></p>
+                        <div class="consejo-row">
+                            <div class="consejo-badge-num">6</div>
+                            <div>
+                                <strong class="d-block mb-1" style="color:var(--azul-dark); font-size:.92rem;" th:text="#{guia.c6.title}">Usa InDriver o Uber</strong>
+                                <p class="text-muted small mb-0" th:text="#{guia.c6.desc}"></p>
+                            </div>
                         </div>
-                    </div>
-                    <div class="consejo-item">
-                        <div class="consejo-num">4</div>
-                        <div>
-                            <strong class="d-block mb-1" style="color:var(--azul); font-size:.9rem;" th:text="#{guia.c4.title}">Walk the center at night</strong>
-                            <p class="text-muted small mb-0" th:text="#{guia.c4.desc}"></p>
+                        <div class="consejo-row">
+                            <div class="consejo-badge-num">7</div>
+                            <div>
+                                <strong class="d-block mb-1" style="color:var(--azul-dark); font-size:.92rem;" th:text="#{guia.c7.title}">Ve temprano a las islas</strong>
+                                <p class="text-muted small mb-0" th:text="#{guia.c7.desc}"></p>
+                            </div>
+                        </div>
+                        <div class="consejo-row">
+                            <div class="consejo-badge-num">8</div>
+                            <div>
+                                <strong class="d-block mb-1" style="color:var(--azul-dark); font-size:.92rem;" th:text="#{guia.c8.title}">Atardecer en las murallas</strong>
+                                <p class="text-muted small mb-0" th:text="#{guia.c8.desc}"></p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="p-4 rounded-3 bg-white shadow-sm">
-                    <h6 class="fw-bold mb-3" style="color:var(--azul);" th:text="#{guia.during.title}">During your visit</h6>
-                    <div class="consejo-item">
-                        <div class="consejo-num">5</div>
-                        <div>
-                            <strong class="d-block mb-1" style="color:var(--azul); font-size:.9rem;" th:text="#{guia.c5.title}">Negotiate beach prices</strong>
-                            <p class="text-muted small mb-0" th:text="#{guia.c5.desc}"></p>
-                        </div>
-                    </div>
-                    <div class="consejo-item">
-                        <div class="consejo-num">6</div>
-                        <div>
-                            <strong class="d-block mb-1" style="color:var(--azul); font-size:.9rem;" th:text="#{guia.c6.title}">Use InDriver or Uber</strong>
-                            <p class="text-muted small mb-0" th:text="#{guia.c6.desc}"></p>
-                        </div>
-                    </div>
-                    <div class="consejo-item">
-                        <div class="consejo-num">7</div>
-                        <div>
-                            <strong class="d-block mb-1" style="color:var(--azul); font-size:.9rem;" th:text="#{guia.c7.title}">Head to the islands early</strong>
-                            <p class="text-muted small mb-0" th:text="#{guia.c7.desc}"></p>
-                        </div>
-                    </div>
-                    <div class="consejo-item">
-                        <div class="consejo-num">8</div>
-                        <div>
-                            <strong class="d-block mb-1" style="color:var(--azul); font-size:.9rem;" th:text="#{guia.c8.title}">Watch the sunset</strong>
-                            <p class="text-muted small mb-0" th:text="#{guia.c8.desc}"></p>
-                        </div>
-                    </div>
+
+            <div class="ed-cta-panel">
+                <div>
+                    <span class="eyebrow eyebrow-light">
+                        <i class="fas fa-robot"></i>
+                        <span>ODYSSEY CONCIERGE IA</span>
+                    </span>
+                    <h3 th:text="#{guia.cta.odyx}">Preguntar a ODYSSEY</h3>
+                    <p th:text="#{guia.hero.sub}">Todo lo que necesitas saber antes y durante tu visita</p>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <a href="#" onclick="toggleChat();return false;" class="button button-gold">
+                        <i class="fas fa-robot"></i>
+                        <span th:text="#{guia.cta.odyx}">Preguntar a ODYSSEY</span>
+                    </a>
+                    <a href="/lugares?categoriaId=0" class="button button-glass">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span th:text="#{guia.cta.lugares}">Ver todos los lugares</span>
+                    </a>
                 </div>
             </div>
         </div>
-        <div class="text-center mt-5">
-            <a href="#" onclick="toggleChat();return false;" class="btn btn-primary rounded-pill py-3 px-5 me-3">
-                <i class="fa fa-robot me-2"></i>
-                <span th:text="#{guia.cta.odyx}">Ask ODYSSEY</span>
-            </a>
-            <a href="/lugares?categoriaId=0" class="btn btn-outline-primary rounded-pill py-3 px-5">
-                <i class="fa fa-map-marker-alt me-2"></i>
-                <span th:text="#{guia.cta.lugares}">View all places</span>
-            </a>
-        </div>
-    </div>
-</div>
+    </section>
+</main>
 
 <div th:replace="fragments :: footer-interno"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>

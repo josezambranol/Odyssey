@@ -3,7 +3,9 @@
 <head>
     <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title>Mapa Cartográfico Interactivo — ODYSSEY Cartagena</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Jost:wght@500;600;700&amp;family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,600&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
@@ -82,12 +84,12 @@
 
         .hud-filter-pills {
             display: flex;
+            flex-wrap: wrap;
             gap: 6px;
-            overflow-x: auto;
             padding-bottom: 2px;
+            scrollbar-width: none;
         }
-        .hud-filter-pills::-webkit-scrollbar { height: 3px; }
-        .hud-filter-pills::-webkit-scrollbar-thumb { background: rgba(212, 166, 74, 0.4); border-radius: 4px; }
+        .hud-filter-pills::-webkit-scrollbar { display: none; }
 
         .hud-pill {
             white-space: nowrap;
@@ -274,10 +276,13 @@
 
         @media (max-width: 991px) {
             .hud-top-left { left: 12px; right: 12px; max-width: none; padding: 10px 12px; }
+            .hud-filter-pills { flex-wrap: nowrap; overflow-x: auto; }
             .hud-top-right { top: auto; bottom: 16px; right: 16px; display: none; }
             .hud-bottom-left { width: calc(100% - 76px); left: 12px; bottom: 12px; padding: 10px 12px; }
             .hud-place-inspector { width: calc(100% - 24px); left: 12px; bottom: 12px; }
             .map-command-stage { height: 560px; }
+            #chatFab { bottom: 148px !important; }
+            #chatBadge { bottom: 182px !important; }
         }
     </style>
 </head>
@@ -289,21 +294,21 @@
     <div class="container-fluid px-3 px-xl-5">
 
         <!-- Cabecera compacta del Centro Cartográfico -->
-        <div class="d-flex flex-wrap justify-content-between align-items-end mb-3 gap-2">
+        <div class="d-flex flex-wrap justify-content-between align-items-end mb-3 gap-3">
             <div>
-                <span class="badge rounded-pill px-3 py-1 mb-1" style="background:rgba(212,166,74,0.2);color:#f3c86b;border:1px solid rgba(212,166,74,0.4);font-size:0.72rem;">
-                    <i class="fas fa-satellite-dish me-1"></i> RADAR GEOESPACIAL HAVERSINE EN MYSQL
+                <span class="eyebrow eyebrow-light">
+                    <i class="fas fa-satellite-dish"></i> RADAR GEOESPACIAL HAVERSINE EN MYSQL
                 </span>
-                <h2 class="mb-0 fw-bold text-white" style="font-family:'Cormorant Garamond',serif;font-size:2.1rem;">
-                    Cartografía Interactiva de <em style="color:#d4a64a;">Cartagena de Indias</em>
+                <h2 class="mb-0 mt-1 fw-bold text-white" style="font-family:'Playfair Display',serif;font-size:clamp(1.7rem,3vw,2.35rem);letter-spacing:-0.02em;">
+                    Cartografía Interactiva de <em style="color:var(--gold-light);">Cartagena de Indias</em>
                 </h2>
             </div>
-            <div class="d-flex gap-2 align-items-center">
-                <button class="btn btn-sm rounded-pill px-3 py-2 fw-bold" style="background:#d4a64a;color:#071630;" onclick="activarMiGps()">
-                    <i class="fas fa-location-arrow me-1"></i> Detectar Mi Ubicación
+            <div class="d-flex gap-2 align-items-center flex-wrap">
+                <button class="button button-gold" style="min-height:42px;padding:9px 18px;" onclick="activarMiGps()">
+                    <i class="fas fa-location-arrow"></i> Detectar Mi Ubicación
                 </button>
-                <button class="btn btn-sm btn-outline-light rounded-pill px-3 py-2" onclick="resetearVistaCartagena()">
-                    <i class="fas fa-compress-arrows-alt me-1"></i> Vista General
+                <button class="button button-glass" style="min-height:42px;padding:9px 18px;" onclick="resetearVistaCartagena()">
+                    <i class="fas fa-compress-arrows-alt"></i> Vista General
                 </button>
             </div>
         </div>

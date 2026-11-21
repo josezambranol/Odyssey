@@ -71,121 +71,105 @@
 
 
 <!-- ═══ FRAGMENTO: navbar-interno ═══════════════════════════ -->
-<div th:fragment="navbar-interno">
-    <style>
-        .navbar .navbar-nav .nav-link {
-            color: rgba(255, 255, 255, 0.92) !important;
-            font-family: 'DM Sans', sans-serif;
-            font-size: 0.95rem;
-            font-weight: 600;
-            padding: 12px 16px !important;
-            letter-spacing: 0.3px;
-            transition: color 0.2s, transform 0.2s;
-        }
-        .navbar .navbar-nav .nav-link:hover,
-        .navbar .navbar-nav .nav-link.active {
-            color: var(--gold, #d4a64a) !important;
-            transform: translateY(-1px);
-        }
-        .navbar-toggler {
-            border-color: rgba(255, 255, 255, 0.25) !important;
-        }
-        .navbar-toggler .fa-bars {
-            color: var(--gold, #d4a64a) !important;
-        }
-    </style>
-
-    <!-- NAVBAR STICKY -->
-    <nav class="navbar navbar-expand-lg px-4 px-lg-5 py-3 py-lg-0 notranslate" style="background:var(--azul-dark, #0b1a3d);" translate="no">
-        <a href="/" class="navbar-brand p-0 text-decoration-none" style="line-height:1;">
-            <div style="display:flex; align-items:center; gap:10px;">
-                <i class="fa fa-anchor" style="color:var(--gold); font-size:1.6rem;"></i>
-                <div style="display:flex; gap:8px; align-items:stretch;">
-                    <div style="line-height:1.1;">
-                        <div style="font-family:'Cormorant Garamond',serif; font-size:1.15rem; font-weight:700; color:#ffffff; letter-spacing:.5px;">ODYSSEY</div>
-                        <div style="font-family:'DM Sans',sans-serif; font-size:.72rem; font-weight:600; color:var(--gold); letter-spacing:.3px;">cartagena.com.co</div>
-                    </div>
-                    <div style="width:2px; background:var(--gold); border-radius:2px; margin:1px 0;"></div>
-                    <div style="font-family:'DM Sans',sans-serif; font-size:.6rem; font-weight:700; color:#ffffff; text-transform:uppercase; letter-spacing:1px; line-height:1.25; display:flex; align-items:center;" th:utext="#{nav.tuGuia}">TU<br>GUÍA</div>
-                </div>
-            </div>
+<header th:fragment="navbar-interno" class="home-header notranslate" translate="no">
+    <nav class="home-nav container" aria-label="Navegación principal">
+        <a href="/" class="home-brand" aria-label="Odyssey, inicio">
+            <span class="home-brand-mark"><i class="fas fa-compass"></i></span>
+            <span><strong>Odyssey</strong><small>Cartagena de Indias</small></span>
         </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navInt">
-            <span class="fa fa-bars"></span>
+        <button class="home-nav-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#navInt"
+                aria-controls="navInt" aria-expanded="false" aria-label="Abrir navegación">
+            <span aria-hidden="true">☰</span>
         </button>
-        <div class="collapse navbar-collapse" id="navInt">
-            <div class="navbar-nav ms-auto py-0">
-                <a href="/"            class="nav-item nav-link" th:text="#{nav.inicio}">Inicio</a>
-                <a href="/guia"        class="nav-item nav-link" th:text="#{nav.guia}">Guía</a>
-                <a href="/eventos"     class="nav-item nav-link" th:text="#{nav.eventos}">Eventos</a>
-                <a href="/actividades" class="nav-item nav-link" th:text="#{nav.actividades}">Actividades</a>
-                <a href="/transporte"  class="nav-item nav-link" th:text="#{nav.transporte}">Transporte</a>
-                <a href="/mapa"        class="nav-item nav-link" th:text="#{nav.mapa}">Mapa</a>
-                <a href="/chatbot"     class="nav-item nav-link"><i class="fa fa-robot me-1" style="color:var(--gold);"></i>IA</a>
+        <div class="collapse home-nav-collapse" id="navInt">
+            <div class="home-nav-links" id="navIntLinks">
+                <a href="/"            th:text="#{nav.inicio}">Inicio</a>
+                <a href="/guia"        th:text="#{nav.guia}">Guía</a>
+                <a href="/eventos"     th:text="#{nav.eventos}">Eventos</a>
+                <a href="/actividades" th:text="#{nav.actividades}">Actividades</a>
+                <a href="/transporte"  th:text="#{nav.transporte}">Transporte</a>
+                <a href="/mapa"        th:text="#{nav.mapa}">Mapa</a>
+                <a href="/chatbot"     class="nav-ai-link"><i class="fa fa-robot me-1"></i>IA</a>
             </div>
-            <!-- Móvil: selector idioma dentro del menú -->
-            <div class="d-lg-none px-2 py-2 d-flex gap-2">
-                <a th:href="@{/idioma(lang='es')}" class="lang-btn-mobile"
+            <div class="home-lang-mobile">
+                <a th:href="@{/idioma(lang='es')}" class="home-lang-pill"
                    th:classappend="${#locale.language == 'es'} ? ' lang-active' : ''">🇨🇴 ES</a>
-                <a th:href="@{/idioma(lang='en')}" class="lang-btn-mobile"
+                <a th:href="@{/idioma(lang='en')}" class="home-lang-pill"
                    th:classappend="${#locale.language == 'en'} ? ' lang-active' : ''">🇺🇸 EN</a>
             </div>
-            <th:block th:if="${session.usuarioId != null}">
-                <a href="/menu" class="btn btn-primary rounded-pill py-2 px-4 ms-lg-3">
-                    <i class="fa fa-compass me-1"></i><span th:text="#{nav.miPanel}">Mi Panel</span>
-                </a>
-                <a href="/logout" class="btn btn-outline-light rounded-pill py-2 px-3 ms-2"
-                   th:title="#{nav.cerrarSesion}" style="font-size:.85rem; border-color:rgba(255,255,255,0.45);">
-                    <i class="fa fa-sign-out-alt me-1"></i><span th:text="#{nav.salir}">Salir</span>
-                </a>
-            </th:block>
-            <th:block th:if="${session.usuarioId == null}">
-                <a href="/login" class="btn btn-primary rounded-pill py-2 px-4 ms-lg-3"
-                   th:title="#{nav.loginHint}">
-                   <i class="fa fa-bell me-1"></i><span th:text="#{nav.iniciarSesion}">Iniciar sesión</span>
-                </a>
-            </th:block>
+            <div class="home-nav-actions">
+                <th:block th:if="${session.usuarioId != null}">
+                    <a href="/menu" class="home-nav-cta">
+                        <i class="fas fa-compass me-1"></i><span th:text="#{nav.miPanel}">Mi Panel</span>
+                    </a>
+                    <a href="/logout" class="home-nav-logout" th:title="#{nav.cerrarSesion}">
+                        <i class="fas fa-sign-out-alt"></i><span th:text="#{nav.salir}">Salir</span>
+                    </a>
+                </th:block>
+                <th:block th:if="${session.usuarioId == null}">
+                    <a href="/login" class="home-nav-cta" th:title="#{nav.loginHint}">
+                        <i class="fas fa-bell me-1"></i><span th:text="#{nav.iniciarSesion}">Iniciar sesión</span>
+                    </a>
+                </th:block>
+            </div>
         </div>
     </nav>
-</div>
+    <script>
+    (function(){
+        var p = window.location.pathname || '/';
+        var links = document.querySelectorAll('#navIntLinks a');
+        links.forEach(function(a){
+            var href = a.getAttribute('href');
+            if ((href === '/' && p === '/') || (href !== '/' && (p === href || p.indexOf(href + '/') === 0))) {
+                a.classList.add('active');
+            }
+        });
+    })();
+    </script>
+</header>
 
 
 <!-- ═══ FRAGMENTO: footer-interno + CHATBOT POPUP ═══════════ -->
 <div th:fragment="footer-interno">
 
-    <!-- Footer -->
-    <div class="container-fluid py-4 odyssey-footer-safe" style="background:var(--azul-dark);">
-        <div class="container py-3">
+    <!-- Footer Editorial -->
+    <footer class="ed-footer odyssey-footer-safe">
+        <div class="container">
             <div class="row g-4 align-items-center">
                 <div class="col-lg-4 text-center text-lg-start">
-                    <h5 class="text-white mb-1" style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;">
-                        <span style="color:#fff;">odyssey</span><span style="color:var(--gold);">cartagena.</span><span style="color:#fff;">com.co</span>
-                    </h5>
-                    <p class="mb-0 small" style="color:rgba(255,255,255,.45);" th:text="#{footer.tagline.short}">Guía Turística de Cartagena de Indias</p>
+                    <a href="/" class="ed-footer-brand">
+                        <span class="home-brand-mark"><i class="fas fa-compass"></i></span>
+                        <span>
+                            <strong>Odyssey</strong>
+                            <small>Cartagena de Indias</small>
+                        </span>
+                    </a>
+                    <p class="mb-0 mt-2 small" style="color:rgba(255,255,255,.52);" th:text="#{footer.tagline.short}">Guía Turística de Cartagena de Indias</p>
                 </div>
-                <div class="col-lg-4 text-center">
-                    <div class="d-flex justify-content-center gap-2 flex-wrap">
-                        <a href="/guia"        class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{nav.guia}">Guía</a>
-                        <span style="color:rgba(255,255,255,.2);">·</span>
-                        <a href="/eventos"     class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{nav.eventos}">Eventos</a>
-                        <span style="color:rgba(255,255,255,.2);">·</span>
-                        <a href="/actividades" class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{nav.actividades}">Actividades</a>
-                        <span style="color:rgba(255,255,255,.2);">·</span>
-                        <a href="/mapa"        class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{nav.mapa}">Mapa</a>
-                        <span style="color:rgba(255,255,255,.2);">·</span>
-                        <a href="/chatbot"     class="small text-decoration-none" style="color:var(--gold);" th:text="#{footer.concierge}">Concierge IA</a>
-                        <span style="color:rgba(255,255,255,.2);">·</span>
-                        <a href="/terminos"    class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{footer.terms}">Términos</a>
-                        <span style="color:rgba(255,255,255,.2);">·</span>
-                        <a href="/privacidad"  class="small text-decoration-none" style="color:rgba(255,255,255,.55);" th:text="#{footer.privacy}">Privacidad</a>
+                <div class="col-lg-5 text-center">
+                    <div class="ed-footer-links">
+                        <a href="/guia"        th:text="#{nav.guia}">Guía</a>
+                        <a href="/eventos"     th:text="#{nav.eventos}">Eventos</a>
+                        <a href="/actividades" th:text="#{nav.actividades}">Actividades</a>
+                        <a href="/transporte"  th:text="#{nav.transporte}">Transporte</a>
+                        <a href="/lugares?categoriaId=0" th:text="#{guia.cta.lugares}">Destinos</a>
+                        <a href="/mapa"        th:text="#{nav.mapa}">Mapa</a>
+                        <a href="/chatbot"     class="ed-footer-ai" th:text="#{footer.concierge}">Concierge IA</a>
                     </div>
                 </div>
-                <div class="col-lg-4 text-center text-lg-end">
-                    <p class="mb-0 small" style="color:rgba(255,255,255,.35);" th:text="#{footer.rights}">© 2026 ODYSSEY</p>
+                <div class="col-lg-3 text-center text-lg-end">
+                    <div class="d-inline-flex gap-3">
+                        <a href="/terminos"   class="small text-decoration-none" style="color:rgba(255,255,255,.58);" th:text="#{footer.terms}">Términos</a>
+                        <a href="/privacidad" class="small text-decoration-none" style="color:rgba(255,255,255,.58);" th:text="#{footer.privacy}">Privacidad</a>
+                    </div>
                 </div>
             </div>
+            <div class="ed-footer-bottom">
+                <span th:text="#{footer.rights}">© 2026 ODYSSEY</span>
+                <span><i class="fas fa-certificate me-1" style="color:var(--gold-light);"></i><span th:text="#{topbar.unesco}">Patrimonio UNESCO 1984</span></span>
+            </div>
         </div>
-    </div>
+    </footer>
 
     <!-- Back to top -->
     <a href="#" class="btn btn-primary btn-md-square back-to-top"><i class="fa fa-arrow-up"></i></a>

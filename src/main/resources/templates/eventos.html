@@ -3,339 +3,387 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
-    <title th:text="#{ev.page.title} + ' — ODYSSEY'">Eventos en Tiempo Real — ODYSSEY</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=Jost:wght@500;600;700&display=swap" rel="stylesheet">
+    <title th:text="#{ev.page.title}">Eventos — ODYSSEY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Jost:wght@500;600;700&amp;family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,600&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
     <style>
-        .ev-card {
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(11,45,107,.08);
-            transition: all .35s ease;
-            background: #fff;
-            position: relative;
-            display: flex;
-            flex-direction: column;
-            height: 100%;
-            border: 1px solid rgba(11,45,107,.06);
-        }
-        .ev-card:hover {
-            transform: translateY(-6px);
-            box-shadow: 0 16px 36px rgba(11,45,107,.18);
-        }
-        .ev-img {
-            height: 220px;
-            overflow: hidden;
-            position: relative;
-        }
-        .ev-img img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transition: transform .5s ease;
-        }
-        .ev-card:hover .ev-img img {
-            transform: scale(1.08);
-        }
-        .ev-status-badge {
-            position: absolute;
-            top: 14px;
-            right: 14px;
-            padding: 5px 12px;
-            border-radius: 50px;
-            font-size: .75rem;
-            font-weight: 700;
-            letter-spacing: .5px;
-            box-shadow: 0 4px 12px rgba(0,0,0,.2);
-            z-index: 2;
-        }
-        .badge-hoy {
-            background: #10b981;
-            color: #fff;
-            animation: pulse-badge 2s infinite;
-        }
-        .badge-proximo {
-            background: var(--azul-mid);
-            color: #fff;
-        }
-        .badge-finalizado {
-            background: #6c757d;
-            color: #fff;
-        }
-        @keyframes pulse-badge {
-            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16,185,129,0.7); }
-            70% { transform: scale(1.04); box-shadow: 0 0 0 8px rgba(16,185,129,0); }
-            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(16,185,129,0); }
-        }
-        .ev-meta {
-            display: flex;
-            background: #fcfdfe;
-            border-top: 1px solid rgba(11,45,107,.06);
-            border-bottom: 1px solid rgba(11,45,107,.06);
-        }
-        .ev-meta span {
-            flex: 1;
-            text-align: center;
-            padding: 10px 8px;
-            font-size: .8rem;
-            color: #555;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .ev-meta span + span {
-            border-left: 1px solid rgba(11,45,107,.06);
-        }
-        .ev-body {
-            padding: 20px;
-            display: flex;
-            flex-direction: column;
-            flex-grow: 1;
-        }
-        .ev-body h5 {
-            font-family: 'Cormorant Garamond', serif;
-            font-weight: 700;
-            color: var(--azul);
-            margin-bottom: 10px;
-            font-size: 1.25rem;
-            line-height: 1.3;
-        }
-        .nav-pills-odyssey {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            margin-bottom: 2.5rem;
-            flex-wrap: wrap;
-        }
-        .nav-pills-odyssey .nav-link {
-            border-radius: 50px;
-            padding: 10px 24px;
-            font-family: 'Jost', sans-serif;
-            font-weight: 700;
-            font-size: .85rem;
-            letter-spacing: .5px;
-            color: var(--azul);
-            background: #fff;
-            border: 2px solid rgba(11,45,107,.15);
-            transition: all .25s ease;
-        }
-        .nav-pills-odyssey .nav-link.active,
-        .nav-pills-odyssey .nav-link:hover {
-            background: var(--azul);
-            color: #fff;
-            border-color: var(--azul);
-            box-shadow: 0 4px 14px rgba(11,45,107,.25);
-        }
-        .sync-banner {
-            background: linear-gradient(135deg, rgba(200,150,62,.1) 0%, rgba(11,45,107,.06) 100%);
-            border: 1px solid rgba(200,150,62,.3);
-            border-radius: 16px;
-            padding: 18px 24px;
-            margin-bottom: 2rem;
+        .ev-toolbar {
             display: flex;
             align-items: center;
             justify-content: space-between;
             flex-wrap: wrap;
+            gap: 16px;
+        }
+        .ev-live-info {
+            display: flex;
+            align-items: center;
             gap: 12px;
         }
+        .ev-live-icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: var(--azul);
+            color: var(--gold-light);
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+        }
+        .ev-date-form {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .ev-date-input {
+            border: 1.5px solid #dfd6c5;
+            border-radius: 8px;
+            padding: 8px 12px;
+            font-size: .84rem;
+            color: var(--azul-dark);
+            background: #fffdf9;
+            outline: none;
+        }
+        .ev-date-input:focus { border-color: var(--azul); }
+
+        .ev-tabs-bar {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 32px;
+            padding: 0;
+            list-style: none;
+        }
+        .ev-tabs-bar .nav-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 18px;
+            border-radius: 999px;
+            border: 1px solid #d7cebd;
+            background: #fff;
+            color: #4f4c44;
+            font-family: 'Jost', sans-serif;
+            font-size: .74rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+            transition: .2s ease;
+        }
+        .ev-tabs-bar .nav-link:hover {
+            border-color: var(--azul);
+            color: var(--azul-dark);
+            background: var(--cream-dark);
+        }
+        .ev-tabs-bar .nav-link.active {
+            background: var(--azul);
+            color: #fff;
+            border-color: var(--azul);
+            box-shadow: 0 8px 20px rgba(11,45,107,.2);
+        }
+        .ev-tabs-bar .nav-link.active .ed-pill-count {
+            background: var(--gold-light);
+            color: var(--azul-dark);
+        }
+
+        .ev-status-pill {
+            position: absolute;
+            top: 13px;
+            right: 13px;
+            z-index: 2;
+            padding: 5px 11px;
+            border-radius: 999px;
+            font-family: 'Jost', sans-serif;
+            font-size: .58rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+        .ev-status-hoy { background: #10b981; color: #fff; }
+        .ev-status-proximo { background: var(--gold-light); color: var(--azul-dark); }
+        .ev-status-finalizado { background: rgba(7,30,74,.78); color: rgba(255,255,255,.85); }
+
+        .ev-card-meta-line {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .ev-time-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            border-radius: 999px;
+            background: var(--gold-pale);
+            color: var(--azul-dark);
+            font-size: .66rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: .04em;
+        }
+        .ev-place-chip {
+            color: #77736a;
+            font-size: .72rem;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .ev-place-chip i { color: #936615; }
     </style>
 </head>
-<body>
+<body class="odyssey-inner">
 <div th:replace="fragments :: topbar"></div>
 <div th:replace="fragments :: navbar-interno"></div>
 
-<!-- Hero Breadcrumb -->
-<div class="page-breadcrumb-hero">
-    <div style="position:relative;z-index:1;">
-        <h1 style="font-style:italic;" th:text="#{ev.hero.title}">Eventos en Cartagena</h1>
-        <div class="gold-line"></div>
-        <p th:text="#{ev.hero.sub}">Cartelera cultural, festivales y agenda en tiempo real</p>
-    </div>
-</div>
-
-<div class="container py-5">
-
-    <!-- Mensaje de éxito -->
-    <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert" th:if="${mensajeExito}">
-        <i class="fa fa-check-circle me-2"></i><span th:text="${mensajeExito}"></span>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-
-    <!-- Barra de Sincronización en Tiempo Real & Filtro -->
-    <div class="sync-banner">
-        <div class="d-flex align-items-center gap-3">
-            <div style="width:42px;height:42px;border-radius:50%;background:var(--azul);color:#fff;display:flex;align-items:center;justify-content:center;font-size:1.1rem;">
-                <i class="fa fa-satellite-dish"></i>
-            </div>
+<section class="editorial-subhero has-float-bar" style="--subhero-img: url('/img/pf-eventos.jpg');">
+    <div class="editorial-subhero-bg"></div>
+    <div class="container editorial-subhero-inner">
+        <nav class="ed-breadcrumb" aria-label="breadcrumb">
+            <a href="/" th:text="#{nav.inicio}">Inicio</a>
+            <span class="sep">/</span>
+            <span class="current" th:text="#{nav.eventos}">Eventos</span>
+        </nav>
+        <div class="editorial-subhero-grid">
             <div>
-                <h6 class="mb-0 fw-bold" style="color:var(--azul);">Cartelera Inteligente en Vivo</h6>
-                <small class="text-muted">Actualizado según la agenda de eventos de Cartagena de Indias</small>
+                <span class="eyebrow eyebrow-light">
+                    <i class="fas fa-calendar-star"></i>
+                    <span th:text="#{nav.eventos}">Eventos</span>
+                </span>
+                <h1><em th:text="#{ev.hero.title}">Eventos en Cartagena</em></h1>
+                <p class="editorial-subhero-lead" th:text="#{ev.hero.sub}">Cartelera cultural, festivales y agenda en tiempo real</p>
+            </div>
+            <div class="editorial-subhero-actions">
+                <a href="/eventos/sincronizar" class="button button-glass">
+                    <i class="fas fa-sync-alt"></i>
+                    <span th:text="#{ev.sync.btn}">Sincronizar en Tiempo Real</span>
+                </a>
+                <a href="/proponer-evento" class="button button-gold">
+                    <span th:text="#{ev.cta.btn}">Proponer evento</span>
+                </a>
             </div>
         </div>
-        <div class="d-flex gap-2 align-items-center">
-            <a href="/eventos/sincronizar" class="btn btn-outline-primary rounded-pill px-3 py-2 btn-sm fw-semibold">
-                <i class="fa fa-sync-alt me-1"></i> <span th:text="#{ev.sync.btn}">Sincronizar en Tiempo Real</span>
-            </a>
-        </div>
     </div>
+</section>
 
-    <!-- Filtro por fecha específica -->
-    <form method="get" action="/eventos" class="d-flex gap-2 align-items-center justify-content-center mb-4 flex-wrap">
-        <label class="fw-semibold small text-muted" th:text="#{ev.filter.desde}">Filtrar desde:</label>
-        <input type="date" name="desde" th:value="${desde}" class="form-control form-control-sm w-auto rounded-pill px-3"
-               style="border-color:rgba(11,45,107,.2);">
-        <button type="submit" class="btn btn-primary btn-sm rounded-pill px-3" th:text="#{ev.filter.btn}">Filtrar</button>
-        <a href="/eventos" class="btn btn-outline-secondary btn-sm rounded-pill px-3" th:text="#{ev.filter.verTodos}">Ver todos</a>
-    </form>
-
-    <!-- Vista de Resultados Filtrados si hay búsqueda activa -->
-    <div th:if="${eventosFiltrados != null}">
-        <h4 class="fw-bold mb-4" style="color:var(--azul);"><i class="fa fa-filter me-2 text-warning"></i>Resultados del filtro</h4>
-        <div class="row g-4 mb-5" th:if="${!#lists.isEmpty(eventosFiltrados)}">
-            <div class="col-md-6 col-lg-4" th:each="ev : ${eventosFiltrados}">
-                <div class="ev-card">
-                    <div class="ev-img">
-                        <img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/pf-eventos.jpg'}"
-                             th:alt="${ev.nombre}" loading="lazy" decoding="async" onerror="this.src='/img/pf-eventos.jpg'">
-                    </div>
-                    <div class="ev-meta">
-                        <span><i class="fa fa-calendar-alt text-warning"></i><span th:text="${#temporals.format(ev.fecha,'dd MMM yyyy')}"></span></span>
-                        <span><i class="fa fa-map-marker-alt text-warning"></i><span th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}"></span></span>
-                    </div>
-                    <div class="ev-body">
-                        <h5 th:text="${ev.nombre}"></h5>
-                        <p class="text-muted small mb-0" th:text="${#strings.abbreviate(ev.descripcion, 140)}"></p>
+<main>
+    <!-- Barra flotante de agenda y filtro por fecha -->
+    <div class="container ed-float-wrap">
+        <div class="ed-float-bar">
+            <div class="ev-toolbar">
+                <div class="ev-live-info">
+                    <div class="ev-live-icon"><i class="fas fa-satellite-dish"></i></div>
+                    <div>
+                        <strong style="color:var(--azul-dark); font-size:.94rem; display:block;">Cartelera Inteligente en Vivo</strong>
+                        <small style="color:#77736a;">Agenda cultural y festivales de Cartagena de Indias</small>
                     </div>
                 </div>
+                <form method="get" action="/eventos" class="ev-date-form">
+                    <label class="small fw-semibold" style="color:#66645f;" th:text="#{ev.filter.desde}">Filtrar desde:</label>
+                    <input type="date" name="desde" th:value="${desde}" class="ev-date-input">
+                    <button type="submit" class="button button-primary" style="min-height:38px; padding:7px 15px;" th:text="#{ev.filter.btn}">Filtrar</button>
+                    <a href="/eventos" class="ed-pill" th:text="#{ev.filter.verTodos}">Ver todos</a>
+                </form>
             </div>
-        </div>
-        <div th:if="${#lists.isEmpty(eventosFiltrados)}" class="text-center py-5 text-muted">
-            <i class="fa fa-calendar-times fa-3x mb-3 text-muted"></i>
-            <p>No se encontraron eventos a partir de la fecha seleccionada.</p>
         </div>
     </div>
 
-    <!-- Pestañas de Clasificación: HOY, PRÓXIMOS, FINALIZADOS -->
-    <div th:if="${eventosFiltrados == null}">
-        <ul class="nav nav-pills nav-pills-odyssey" id="eventsTab" role="tablist">
-            <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="tab-hoy-btn" data-bs-toggle="pill" data-bs-target="#tab-hoy" type="button" role="tab">
-                    🎉 <span th:text="#{ev.tab.hoy}">Eventos de Hoy</span>
-                    <span class="badge bg-success rounded-pill ms-1" th:text="${#lists.size(eventosHoy)}">0</span>
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-proximos-btn" data-bs-toggle="pill" data-bs-target="#tab-proximos" type="button" role="tab">
-                    📅 <span th:text="#{ev.tab.proximos}">Próximos Eventos</span>
-                    <span class="badge bg-primary rounded-pill ms-1" th:text="${#lists.size(eventosProximos)}">0</span>
-                </button>
-            </li>
-            <li class="nav-item" role="presentation">
-                <button class="nav-link" id="tab-finalizados-btn" data-bs-toggle="pill" data-bs-target="#tab-finalizados" type="button" role="tab">
-                    🏛️ <span th:text="#{ev.tab.finalizados}">Eventos Finalizados</span>
-                    <span class="badge bg-secondary rounded-pill ms-1" th:text="${#lists.size(eventosFinalizados)}">0</span>
-                </button>
-            </li>
-        </ul>
+    <section class="ed-band-compact pb-5">
+        <div class="container">
+            <!-- Mensaje de éxito -->
+            <div class="alert alert-success alert-dismissible fade show rounded-3 shadow-sm mb-4" role="alert" th:if="${mensajeExito}">
+                <i class="fa fa-check-circle me-2"></i><span th:text="${mensajeExito}"></span>
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
 
-        <div class="tab-content" id="eventsTabContent">
+            <!-- Resultados filtrados por fecha -->
+            <div th:if="${eventosFiltrados != null}">
+                <div class="ed-section-head">
+                    <span class="eyebrow"><i class="fas fa-filter"></i> <span th:text="#{ev.filter.btn}">Filtrar</span></span>
+                    <h2>Resultados del <em>filtro</em></h2>
+                </div>
+                <div class="event-grid mb-4" th:if="${!#lists.isEmpty(eventosFiltrados)}">
+                    <article class="ed-card" th:each="ev : ${eventosFiltrados}">
+                        <div class="ed-card-media">
+                            <img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/pf-eventos.jpg'}"
+                                 th:alt="${ev.nombre}" loading="lazy" decoding="async" onerror="this.src='/img/pf-eventos.jpg'">
+                        </div>
+                        <div class="ed-card-body">
+                            <div class="ev-card-meta-line">
+                                <span class="ev-time-chip">
+                                    <i class="far fa-calendar-alt"></i>
+                                    <span th:text="${#temporals.format(ev.fecha,'dd MMM yyyy')}"></span>
+                                </span>
+                                <span class="ev-place-chip">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}"></span>
+                                </span>
+                            </div>
+                            <h3 th:text="${ev.nombre}"></h3>
+                            <p class="mb-0" th:text="${#strings.abbreviate(ev.descripcion, 140)}"></p>
+                        </div>
+                    </article>
+                </div>
+                <div th:if="${#lists.isEmpty(eventosFiltrados)}" class="empty-editorial">
+                    <i class="far fa-calendar-times mb-3"></i>
+                    <h3 style="color:var(--azul-dark);">Sin eventos en esa fecha</h3>
+                    <p class="text-muted mb-4">No se encontraron eventos a partir de la fecha seleccionada.</p>
+                    <a href="/eventos" class="button button-primary" th:text="#{ev.filter.verTodos}">Ver todos</a>
+                </div>
+            </div>
 
-            <!-- 1. EVENTOS DE HOY -->
-            <div class="tab-pane fade show active" id="tab-hoy" role="tabpanel">
-                <div class="row g-4" th:if="${!#lists.isEmpty(eventosHoy)}">
-                    <div class="col-md-6 col-lg-4" th:each="ev : ${eventosHoy}">
-                        <div class="ev-card">
-                            <div class="ev-img">
-                                <span class="ev-status-badge badge-hoy"><i class="fa fa-bolt me-1"></i>HOY EN VIVO</span>
-                                <img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/pf-eventos.jpg'}"
-                                     th:alt="${ev.nombre}" onerror="this.src='/img/pf-eventos.jpg'">
-                            </div>
-                            <div class="ev-meta">
-                                <span><i class="fa fa-clock text-success"></i><strong>HOY</strong></span>
-                                <span><i class="fa fa-map-marker-alt text-warning"></i><span th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}"></span></span>
-                            </div>
-                            <div class="ev-body">
-                                <h5 th:text="${ev.nombre}"></h5>
-                                <p class="text-muted small mb-0" th:text="${ev.descripcion}"></p>
-                            </div>
+            <!-- Pestañas: HOY, PRÓXIMOS, FINALIZADOS -->
+            <div th:if="${eventosFiltrados == null}">
+                <ul class="nav ev-tabs-bar" id="eventsTab" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="tab-hoy-btn" data-bs-toggle="pill" data-bs-target="#tab-hoy" type="button" role="tab">
+                            🎉 <span th:text="#{ev.tab.hoy}">Eventos de Hoy</span>
+                            <span class="ed-pill-count" th:text="${#lists.size(eventosHoy)}">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-proximos-btn" data-bs-toggle="pill" data-bs-target="#tab-proximos" type="button" role="tab">
+                            📅 <span th:text="#{ev.tab.proximos}">Próximos Eventos</span>
+                            <span class="ed-pill-count" th:text="${#lists.size(eventosProximos)}">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="tab-finalizados-btn" data-bs-toggle="pill" data-bs-target="#tab-finalizados" type="button" role="tab">
+                            🏛️ <span th:text="#{ev.tab.finalizados}">Eventos Finalizados</span>
+                            <span class="ed-pill-count" th:text="${#lists.size(eventosFinalizados)}">0</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content" id="eventsTabContent">
+                    <!-- 1. HOY -->
+                    <div class="tab-pane fade show active" id="tab-hoy" role="tabpanel">
+                        <div class="event-grid" th:if="${!#lists.isEmpty(eventosHoy)}">
+                            <article class="ed-card" th:each="ev : ${eventosHoy}">
+                                <div class="ed-card-media">
+                                    <span class="ev-status-pill ev-status-hoy"><i class="fas fa-bolt me-1"></i>HOY EN VIVO</span>
+                                    <img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/pf-eventos.jpg'}"
+                                         th:alt="${ev.nombre}" loading="lazy" decoding="async" onerror="this.src='/img/pf-eventos.jpg'">
+                                </div>
+                                <div class="ed-card-body">
+                                    <div class="ev-card-meta-line">
+                                        <span class="ev-time-chip"><i class="far fa-clock"></i> HOY</span>
+                                        <span class="ev-place-chip">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}"></span>
+                                        </span>
+                                    </div>
+                                    <h3 th:text="${ev.nombre}"></h3>
+                                    <p class="mb-0" th:text="${ev.descripcion}"></p>
+                                </div>
+                            </article>
+                        </div>
+                        <div th:if="${#lists.isEmpty(eventosHoy)}" class="empty-editorial">
+                            <i class="far fa-calendar-check mb-3"></i>
+                            <h3 style="color:var(--azul-dark);">No hay eventos programados para hoy</h3>
+                            <p class="text-muted mb-4">Revisa la pestaña de <strong>Próximos Eventos</strong> o sincroniza la cartelera en tiempo real.</p>
+                            <a href="/eventos/sincronizar" class="button button-primary">
+                                <i class="fas fa-sync-alt"></i>
+                                <span th:text="#{ev.sync.btn}">Sincronizar en Tiempo Real</span>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 2. PRÓXIMOS -->
+                    <div class="tab-pane fade" id="tab-proximos" role="tabpanel">
+                        <div class="event-grid" th:if="${!#lists.isEmpty(eventosProximos)}">
+                            <article class="ed-card" th:each="ev : ${eventosProximos}">
+                                <div class="ed-card-media">
+                                    <span class="ev-status-pill ev-status-proximo">PRÓXIMAMENTE</span>
+                                    <img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/pf-eventos.jpg'}"
+                                         th:alt="${ev.nombre}" loading="lazy" decoding="async" onerror="this.src='/img/pf-eventos.jpg'">
+                                </div>
+                                <div class="ed-card-body">
+                                    <div class="ev-card-meta-line">
+                                        <span class="ev-time-chip">
+                                            <i class="far fa-calendar-alt"></i>
+                                            <span th:text="${#temporals.format(ev.fecha,'dd MMM yyyy')}"></span>
+                                        </span>
+                                        <span class="ev-place-chip">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}"></span>
+                                        </span>
+                                    </div>
+                                    <h3 th:text="${ev.nombre}"></h3>
+                                    <p class="mb-0" th:text="${#strings.abbreviate(ev.descripcion, 140)}"></p>
+                                </div>
+                            </article>
+                        </div>
+                        <div th:if="${#lists.isEmpty(eventosProximos)}" class="empty-editorial">
+                            <i class="far fa-calendar mb-3"></i>
+                            <p class="text-muted mb-0">No hay eventos futuros registrados.</p>
+                        </div>
+                    </div>
+
+                    <!-- 3. FINALIZADOS -->
+                    <div class="tab-pane fade" id="tab-finalizados" role="tabpanel">
+                        <div class="event-grid" th:if="${!#lists.isEmpty(eventosFinalizados)}">
+                            <article class="ed-card" style="opacity:.86;" th:each="ev : ${eventosFinalizados}">
+                                <div class="ed-card-media" style="filter:grayscale(28%);">
+                                    <span class="ev-status-pill ev-status-finalizado">FINALIZADO</span>
+                                    <img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/pf-eventos.jpg'}"
+                                         th:alt="${ev.nombre}" loading="lazy" decoding="async" onerror="this.src='/img/pf-eventos.jpg'">
+                                </div>
+                                <div class="ed-card-body">
+                                    <div class="ev-card-meta-line">
+                                        <span class="ev-time-chip" style="background:#ece6da; color:#5e5b54;">
+                                            <i class="fas fa-history"></i>
+                                            <span th:text="${#temporals.format(ev.fecha,'dd MMM yyyy')}"></span>
+                                        </span>
+                                        <span class="ev-place-chip">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                            <span th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}"></span>
+                                        </span>
+                                    </div>
+                                    <h3 style="color:#55524b;" th:text="${ev.nombre}"></h3>
+                                    <p class="mb-0" th:text="${#strings.abbreviate(ev.descripcion, 140)}"></p>
+                                </div>
+                            </article>
+                        </div>
+                        <div th:if="${#lists.isEmpty(eventosFinalizados)}" class="empty-editorial">
+                            <i class="fas fa-history mb-3"></i>
+                            <p class="text-muted mb-0">No hay registro de eventos pasados.</p>
                         </div>
                     </div>
                 </div>
-                <div th:if="${#lists.isEmpty(eventosHoy)}" class="text-center py-5 rounded-3 bg-light">
-                    <i class="fa fa-calendar-check fa-3x mb-3 text-muted"></i>
-                    <h6 class="fw-bold text-muted">No hay eventos programados para el día de hoy.</h6>
-                    <p class="small text-muted mb-3">Revisa la pestaña de <strong>Próximos Eventos</strong> o sincroniza la cartelera.</p>
-                    <a href="/eventos/sincronizar" class="btn btn-outline-primary btn-sm rounded-pill px-4">
-                        <i class="fa fa-sync-alt me-1"></i> Sincronizar Cartelera
-                    </a>
-                </div>
             </div>
-
-            <!-- 2. PRÓXIMOS EVENTOS -->
-            <div class="tab-pane fade" id="tab-proximos" role="tabpanel">
-                <div class="row g-4" th:if="${!#lists.isEmpty(eventosProximos)}">
-                    <div class="col-md-6 col-lg-4" th:each="ev : ${eventosProximos}">
-                        <div class="ev-card">
-                            <div class="ev-img">
-                                <span class="ev-status-badge badge-proximo">PRÓXIMAMENTE</span>
-                                <img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/pf-eventos.jpg'}"
-                                     th:alt="${ev.nombre}" onerror="this.src='/img/pf-eventos.jpg'">
-                            </div>
-                            <div class="ev-meta">
-                                <span><i class="fa fa-calendar-alt text-warning"></i><span th:text="${#temporals.format(ev.fecha,'dd MMM yyyy')}"></span></span>
-                                <span><i class="fa fa-map-marker-alt text-warning"></i><span th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}"></span></span>
-                            </div>
-                            <div class="ev-body">
-                                <h5 th:text="${ev.nombre}"></h5>
-                                <p class="text-muted small mb-0" th:text="${#strings.abbreviate(ev.descripcion, 140)}"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div th:if="${#lists.isEmpty(eventosProximos)}" class="text-center py-5 text-muted">
-                    <p>No hay eventos futuros registrados.</p>
-                </div>
-            </div>
-
-            <!-- 3. EVENTOS FINALIZADOS -->
-            <div class="tab-pane fade" id="tab-finalizados" role="tabpanel">
-                <div class="row g-4" th:if="${!#lists.isEmpty(eventosFinalizados)}">
-                    <div class="col-md-6 col-lg-4" th:each="ev : ${eventosFinalizados}">
-                        <div class="ev-card" style="opacity: 0.85;">
-                            <div class="ev-img" style="filter: grayscale(25%);">
-                                <span class="ev-status-badge badge-finalizado">FINALIZADO</span>
-                                <img th:src="${ev.imagenUrl != null ? ev.imagenUrl : '/img/pf-eventos.jpg'}"
-                                     th:alt="${ev.nombre}" onerror="this.src='/img/pf-eventos.jpg'">
-                            </div>
-                            <div class="ev-meta">
-                                <span><i class="fa fa-history text-muted"></i><span th:text="${#temporals.format(ev.fecha,'dd MMM yyyy')}"></span></span>
-                                <span><i class="fa fa-map-marker-alt text-muted"></i><span th:text="${ev.lugar != null ? ev.lugar : 'Cartagena'}"></span></span>
-                            </div>
-                            <div class="ev-body">
-                                <h5 th:text="${ev.nombre}" class="text-muted"></h5>
-                                <p class="text-muted small mb-0" th:text="${#strings.abbreviate(ev.descripcion, 140)}"></p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div th:if="${#lists.isEmpty(eventosFinalizados)}" class="text-center py-5 text-muted">
-                    <p>No hay registro de eventos pasados.</p>
-                </div>
-            </div>
-
         </div>
-    </div>
+    </section>
 
-    <!-- CTA Proponer Evento -->
-    <div class="text-center mt-5 p-4 rounded-3" style="background:var(--cream); border:1px dashed rgba(200,150,62,.4);">
-        <p class="text-muted mb-3" th:text="#{ev.cta.desc}">¿Organizas un evento en Cartagena? Puedes proponerlo en ODYSSEY.</p>
-        <a href="/proponer-evento" class="btn btn-primary rounded-pill px-5" th:text="#{ev.cta.btn}">➕ Proponer evento</a>
-    </div>
-</div>
+    <!-- Panel CTA oscuro -->
+    <section class="ed-band-alt">
+        <div class="container">
+            <div class="ed-cta-panel">
+                <div>
+                    <span class="eyebrow eyebrow-light">
+                        <i class="fas fa-calendar-plus"></i>
+                        <span th:text="#{nav.eventos}">Eventos</span>
+                    </span>
+                    <h3 th:text="#{ev.cta.btn}">Proponer evento</h3>
+                    <p th:text="#{ev.cta.desc}">¿Organizas un evento en Cartagena? Puedes proponerlo en ODYSSEY.</p>
+                </div>
+                <a href="/proponer-evento" class="button button-gold">
+                    <span th:text="#{ev.cta.btn}">Proponer evento</span>
+                </a>
+            </div>
+        </div>
+    </section>
+</main>
 
 <div th:replace="fragments :: footer-interno"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>

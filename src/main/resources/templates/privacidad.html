@@ -4,48 +4,58 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Política de Privacidad y Tratamiento de Datos — ODYSSEY</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&family=Jost:wght@500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Jost:wght@500;600;700&amp;family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,600&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
     <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
 </head>
-<body>
+<body class="odyssey-inner">
 <div th:replace="fragments :: topbar"></div>
 <div th:replace="fragments :: navbar-interno"></div>
 
-<div class="page-breadcrumb-hero">
-    <div style="position:relative; z-index:1;">
-        <h1 style="font-style:italic;">Política de Privacidad y Habeas Data</h1>
-        <div class="gold-line"></div>
-        <p>Tratamiento de datos personales conforme a la Ley 1581 de 2012 (Colombia)</p>
+<section class="editorial-subhero has-float-bar" style="--subhero-img: url('/img/hero-murallas.jpg');">
+    <div class="editorial-subhero-bg"></div>
+    <div class="container editorial-subhero-inner">
+        <nav class="ed-breadcrumb" aria-label="breadcrumb">
+            <a href="/" th:text="#{nav.inicio}">Inicio</a>
+            <span class="sep">/</span>
+            <span class="current" th:text="#{footer.privacy}">Privacidad</span>
+        </nav>
+        <span class="eyebrow eyebrow-light"><i class="fas fa-shield-alt"></i> Ley 1581 de 2012 · Colombia</span>
+        <h1>Política de Privacidad y <em>Habeas Data</em></h1>
+        <p class="editorial-subhero-lead">Tratamiento de datos personales conforme a la Ley 1581 de 2012 y el Decreto 1377 de 2013</p>
     </div>
-</div>
+</section>
 
-<main class="container py-5" style="max-width: 900px;">
-    <div class="card border-0 shadow-sm p-4 p-md-5" style="border-radius: 16px;">
-        <p class="text-muted small mb-4">En cumplimiento de la Ley Estatutaria 1581 de 2012 y el Decreto 1377 de 2013 de la República de Colombia.</p>
+<main class="pb-5">
+    <div class="container ed-float-wrap" style="max-width:920px;">
+        <div class="ed-form-card">
+            <p class="eyebrow mb-4">En cumplimiento de la Ley Estatutaria 1581 de 2012 · República de Colombia</p>
 
-        <h4 class="fw-bold mb-2" style="color:var(--azul);">1. Datos que recopilamos</h4>
-        <ul>
-            <li><strong>Registro y autenticación:</strong> nombre, correo electrónico, contraseña cifrada con BCrypt y, de forma opcional, país de origen y fecha de nacimiento.</li>
-            <li><strong>Participación comunitaria:</strong> reseñas publicadas, suscripciones a alertas de lugares y propuestas enviadas.</li>
-            <li><strong>Asistente virtual y seguridad:</strong> consultas enviadas al chatbot y metadatos técnicos mínimos necesarios para prevenir abuso y mantener la sesión (<code>JSESSIONID</code>).</li>
-        </ul>
+            <h3 class="mb-2" style="color:var(--azul-dark); font-size:1.35rem;">1. Datos que recopilamos</h3>
+            <ul style="color:#55524b; line-height:1.75;">
+                <li><strong>Registro y autenticación:</strong> nombre, correo electrónico, contraseña cifrada con BCrypt y, de forma opcional, país de origen y fecha de nacimiento.</li>
+                <li><strong>Participación comunitaria:</strong> reseñas publicadas, suscripciones a alertas de lugares y propuestas enviadas.</li>
+                <li><strong>Asistente virtual y seguridad:</strong> consultas enviadas al chatbot y metadatos técnicos mínimos necesarios para prevenir abuso y mantener la sesión (<code>JSESSIONID</code>).</li>
+            </ul>
 
-        <h4 class="fw-bold mt-4 mb-2" style="color:var(--azul);">2. Finalidad del tratamiento</h4>
-        <p>Tus datos se utilizan exclusivamente para gestionar tu cuenta, enviar códigos de verificación temporal (OTP) o recuperación de acceso cuando los solicites, mostrar tu nombre en tus reseñas, enviarte alertas de lugares si te suscribes y operar las funcionalidades interactivas de la guía.</p>
+            <h3 class="mt-4 mb-2" style="color:var(--azul-dark); font-size:1.35rem;">2. Finalidad del tratamiento</h3>
+            <p style="color:#55524b; line-height:1.75;">Tus datos se utilizan exclusivamente para gestionar tu cuenta, enviar códigos de verificación temporal (OTP) o recuperación de acceso cuando los solicites, mostrar tu nombre en tus reseñas, enviarte alertas de lugares si te suscribes y operar las funcionalidades interactivas de la guía.</p>
 
-        <h4 class="fw-bold mt-4 mb-2" style="color:var(--azul);">3. Cookies y terceros</h4>
-        <p>La plataforma utiliza cookies técnicas esenciales para la sesión (<code>JSESSIONID</code>) y preferencia de idioma. Cuando interactúas con el asistente IA (si está configurada la clave de Google Gemini) o el widget de clima/mapas, las solicitudes técnicas correspondientes pueden procesarse a través de esos proveedores externos bajo sus propias políticas. No envíes información sensible ni datos bancarios en el chat.</p>
+            <h3 class="mt-4 mb-2" style="color:var(--azul-dark); font-size:1.35rem;">3. Cookies y terceros</h3>
+            <p style="color:#55524b; line-height:1.75;">La plataforma utiliza cookies técnicas esenciales para la sesión (<code>JSESSIONID</code>) y preferencia de idioma. Cuando interactúas con el asistente IA (si está configurada la clave de Google Gemini) o el widget de clima/mapas, las solicitudes técnicas correspondientes pueden procesarse a través de esos proveedores externos bajo sus propias políticas. No envíes información sensible ni datos bancarios en el chat.</p>
 
-        <h4 id="contacto" class="fw-bold mt-4 mb-2" style="color:var(--azul);">4. Derechos del titular (ARCO) y retiro de contenido</h4>
-        <p>Como titular de los datos puedes conocer, actualizar, rectificar y solicitar la supresión de tu información, así como revocar la autorización otorgada o solicitar el retiro de contenido que vulnere derechos de autor, escribiendo a <strong>soporte@odyssey.com</strong>.</p>
+            <h3 id="contacto" class="mt-4 mb-2" style="color:var(--azul-dark); font-size:1.35rem;">4. Derechos del titular (ARCO) y retiro de contenido</h3>
+            <p style="color:#55524b; line-height:1.75;">Como titular de los datos puedes conocer, actualizar, rectificar y solicitar la supresión de tu información, así como revocar la autorización otorgada o solicitar el retiro de contenido que vulnere derechos de autor, escribiendo a <strong>soporte@odyssey.com</strong>.</p>
 
-        <div class="mt-4 pt-3 border-top d-flex justify-content-between flex-wrap gap-2">
-            <a href="/terminos" class="btn btn-outline-primary btn-sm rounded-pill px-3">Ver Términos y Condiciones</a>
-            <a href="/" class="btn btn-primary btn-sm rounded-pill px-3">Volver al inicio</a>
+            <div class="mt-4 pt-4 d-flex justify-content-between flex-wrap gap-2" style="border-top:1px solid #ece3d1;">
+                <a href="/terminos" class="ed-pill">Ver Términos y Condiciones</a>
+                <a href="/" class="button button-primary">Volver al inicio</a>
+            </div>
         </div>
     </div>
 </main>

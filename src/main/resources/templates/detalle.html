@@ -1,266 +1,352 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title th:text="${lugar.nombre + ' — ODYSSEY'}">Detalle — ODYSSEY</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Jost:wght@500;600;700&amp;family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,600&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
     <style>
-        .resena-card { background:#fff; border-radius:16px; padding:22px; margin-bottom:14px; box-shadow:0 4px 18px rgba(11,45,107,.07); border-left:4px solid var(--gold); transition: transform .25s ease; }
-        .resena-card:hover { transform: translateY(-2px); }
-        .user-avatar { width:44px; height:44px; border-radius:50%; background:linear-gradient(135deg,var(--azul-mid),var(--azul)); color:#fff; display:flex; align-items:center; justify-content:center; flex-shrink:0; font-size:1rem; }
-        .star-filled { color:var(--gold); }
-        .star-empty  { color:#ddd; }
-        .info-sidebar-card { background:#fff; border-radius:20px; padding:26px; box-shadow:0 8px 28px rgba(11,45,107,.1); margin-bottom:24px; border:1px solid rgba(11,45,107,.06); }
-        .info-row { display:flex; gap:14px; align-items:flex-start; padding:12px 0; border-bottom:1px solid rgba(11,45,107,.06); }
-        .info-row:last-child { border-bottom:none; }
-        .info-icon-sm { width:38px; height:38px; border-radius:11px; background:var(--gold-pale); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
-        .info-icon-sm i { color:var(--gold); font-size:.95rem; }
+        .detalle-editorial-hero {
+            position: relative;
+            min-height: 430px;
+            display: flex;
+            align-items: flex-end;
+            background-size: cover;
+            background-position: center;
+            color: #fff;
+            padding: 64px 0 48px;
+        }
+        .detalle-editorial-hero::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background:
+                radial-gradient(circle at 82% 24%, rgba(200,150,62,.2), transparent 36%),
+                linear-gradient(to top, rgba(7,30,74,.96) 0%, rgba(7,30,74,.58) 54%, rgba(7,30,74,.28) 100%);
+        }
+        .detalle-editorial-hero > .container {
+            position: relative;
+            z-index: 2;
+        }
+        .detalle-editorial-hero h1 {
+            color: #fff;
+            font-size: clamp(2.1rem, 4.4vw, 3.6rem);
+            line-height: 1.06;
+            margin: 12px 0 12px;
+        }
+        .resena-ed-card {
+            background: #fff;
+            border: 1px solid rgba(11,45,107,.08);
+            border-left: 3px solid var(--gold);
+            border-radius: 14px;
+            padding: 22px 24px;
+            margin-bottom: 14px;
+            box-shadow: 0 4px 14px rgba(7,30,74,.05);
+            transition: transform .25s ease;
+        }
+        .resena-ed-card:hover { transform: translateY(-2px); }
+        .user-avatar-ed {
+            width: 42px;
+            height: 42px;
+            border-radius: 50%;
+            background: var(--azul);
+            color: var(--gold-light);
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            font-size: .95rem;
+        }
+        .star-filled { color: var(--gold); }
+        .star-empty  { color: #dfd6c5; }
+        .info-row {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+            padding: 13px 0;
+            border-bottom: 1px solid #f0e8d8;
+        }
+        .info-row:last-child { border-bottom: 0; }
+        .info-icon-sm {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: var(--gold-pale);
+            color: #8a630e;
+            display: grid;
+            place-items: center;
+            flex-shrink: 0;
+            font-size: .9rem;
+        }
         .alert-sub-card {
+            position: relative;
+            overflow: hidden;
             background: linear-gradient(135deg, #071630 0%, #0b2d6b 100%);
             color: #fff;
-            border-radius: 20px;
-            padding: 24px;
-            border: 1px solid rgba(212, 166, 74, 0.4);
-            box-shadow: 0 14px 34px rgba(7, 22, 48, 0.22);
+            border-radius: 18px;
+            padding: 26px;
+            border: 1px solid rgba(232,180,85,.35);
+            box-shadow: 0 16px 36px rgba(7,22,48,.22);
         }
+        .alert-sub-card::before {
+            content: '';
+            position: absolute;
+            top: -80px; right: -80px;
+            width: 210px; height: 210px;
+            background: radial-gradient(circle, rgba(232,180,85,.2), transparent 70%);
+            pointer-events: none;
+        }
+        .alert-sub-card > * { position: relative; z-index: 1; }
         #miniMapaDetalle {
             height: 220px;
             width: 100%;
-            border-radius: 14px;
-            margin-top: 14px;
+            border-radius: 12px;
+            margin-top: 16px;
             border: 1px solid rgba(11,45,107,.12);
         }
     </style>
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
 </head>
-<body>
+<body class="odyssey-inner">
 <div th:replace="fragments :: topbar"></div>
 <div th:replace="fragments :: navbar-interno"></div>
 
-<!-- HERO -->
-<div class="detalle-hero"
-     th:style="${'background-image:url(' + (lugar.imagenUrl != null ? lugar.imagenUrl : '/img/hero-murallas.jpg') + ')'}">
-    <div class="detalle-hero-caption">
-        <nav aria-label="breadcrumb" class="mb-3">
-            <ol class="breadcrumb mb-0" style="background:none; padding:0;">
-                <li class="breadcrumb-item"><a href="/" class="text-white-50 text-decoration-none">Inicio</a></li>
-                <li class="breadcrumb-item">
-                    <a class="text-white-50 text-decoration-none"
-                       th:href="@{/lugares(categoriaId=${lugar.categoria.id})}"
-                       th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</a>
-                </li>
-                <li class="breadcrumb-item active text-white" th:text="${lugar.nombre}">Lugar</li>
-            </ol>
+<!-- HERO EDITORIAL FULL-BLEED -->
+<section class="detalle-editorial-hero"
+         th:style="${'background-image:url(' + (lugar.imagenUrl != null ? lugar.imagenUrl : '/img/hero-murallas.jpg') + ')'}">
+    <div class="container">
+        <nav class="ed-breadcrumb" aria-label="breadcrumb">
+            <a href="/" th:text="#{nav.inicio}">Inicio</a>
+            <span class="sep">/</span>
+            <a th:href="@{/lugares(categoriaId=${lugar.categoria.id})}"
+               th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</a>
+            <span class="sep">/</span>
+            <span class="current" th:text="${lugar.nombre}">Lugar</span>
         </nav>
-        <div class="d-flex flex-wrap gap-2 align-items-center mb-2">
-            <span class="badge rounded-pill px-3 py-2" style="background:var(--gold); font-size:.75rem;"
+
+        <div class="d-flex flex-wrap gap-2 align-items-center">
+            <span class="ed-pill" style="background:var(--gold-light); color:var(--azul-dark); border-color:transparent;"
                   th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Categoría</span>
-            <span class="badge rounded-pill px-3 py-2" style="background:rgba(255,255,255,0.18);backdrop-filter:blur(6px);font-size:.75rem;"
+            <span class="ed-pill" style="background:rgba(255,255,255,.15); color:#fff; border-color:rgba(255,255,255,.24); backdrop-filter:blur(6px);"
                   th:if="${visitasLugar != null && visitasLugar > 0}">
-                <i class="fas fa-fire text-warning me-1"></i><span th:text="${visitasLugar}">1</span> <span th:text="${visitasLugar == 1 ? #messages.msg('plural.visita') : #messages.msg('plural.visitas')}">visitas recientes</span>
+                <i class="fas fa-fire" style="color:var(--gold-light);"></i>
+                <span th:text="${visitasLugar}">1</span>
+                <span th:text="${visitasLugar == 1 ? #messages.msg('plural.visita') : #messages.msg('plural.visitas')}">visitas recientes</span>
             </span>
         </div>
-        <h1 data-db class="fw-bold mb-2" style="font-family:'Cormorant Garamond',serif; font-size:2.8rem; line-height:1.1;" th:text="${lugar.nombre}">Nombre</h1>
-        <p class="mb-0 fs-6" style="color:rgba(255,255,255,.88);">
-            <i class="fa fa-map-marker-alt me-2" style="color:var(--gold);"></i>
+
+        <h1 data-db th:text="${lugar.nombre}">Nombre</h1>
+
+        <p class="mb-0" style="color:rgba(255,255,255,.86); font-size:.96rem;">
+            <i class="fas fa-map-marker-alt me-2" style="color:var(--gold-light);"></i>
             <span data-db th:text="${lugar.ubicacion}">Ubicación</span>
             <span class="ms-3" th:if="${lugar.esOficial}">
-                <i class="fa fa-check-circle me-1" style="color:var(--gold);"></i><span th:text="#{detalle.verificado}">Verificado por ODYSSEY</span>
+                <i class="fas fa-check-circle me-1" style="color:var(--gold-light);"></i>
+                <span th:text="#{detalle.verificado}">Verificado por ODYSSEY</span>
             </span>
         </p>
     </div>
-</div>
+</section>
 
-<div class="container py-5">
-    <div class="row g-5">
-
-        <!-- Columna principal -->
-        <div class="col-lg-8">
-
-            <!-- Descripción -->
-            <div class="p-4 rounded-3 mb-4" style="background:var(--cream); border-left:4px solid var(--gold);">
-                <h4 class="fw-bold mb-3" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.55rem;">
-                    <i class="fa fa-info-circle me-2" style="color:var(--gold);"></i><span th:text="#{detalle.sobre}">Sobre este lugar</span>
-                </h4>
-                <p data-db class="text-muted lh-lg mb-0" style="font-size:1.03rem;" th:text="${lugar.descripcion}">Descripción</p>
-            </div>
-
-            <!-- Botones de acción -->
-            <div class="d-flex flex-wrap gap-2 mb-5">
-                <a th:if="${lugar.urlMapa != null}"
-                   th:href="${lugar.urlMapa.startsWith('http') ? lugar.urlMapa : 'https://www.google.com/maps/search/?api=1&query=' + lugar.urlMapa}"
-                   target="_blank" class="btn btn-primary rounded-pill px-4 py-2">
-                    <i class="fa fa-map-marker-alt me-2"></i><span th:text="#{detalle.googlemaps}">Cómo llegar en Google Maps</span>
-                </a>
-                <a href="/mapa" class="btn btn-outline-primary rounded-pill px-4 py-2">
-                    <i class="fa fa-compass me-2"></i>Abrir en Mapa Cartográfico
-                </a>
-            </div>
-
-            <!-- RESEÑAS -->
-            <div>
-                <div class="d-flex align-items-center justify-content-between mb-4">
-                    <h4 class="fw-bold mb-0" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.55rem;">
-                        <i class="fa fa-comments me-2" style="color:var(--gold);"></i><span th:text="#{detalle.resenas}">Reseñas de viajeros</span>
-                    </h4>
-                    <span class="badge rounded-pill px-3 py-2" style="background:var(--azul); color:#fff; font-size:.82rem;"
-                          th:text="${#lists.size(resenas) + ' ' + (#lists.size(resenas) == 1 ? #messages.msg('plural.resena') : #messages.msg('plural.resenas'))}">0 reseñas</span>
+<main class="ed-band">
+    <div class="container">
+        <div class="row g-5">
+            <!-- Columna principal -->
+            <div class="col-lg-8">
+                <!-- Descripción -->
+                <div class="ed-quote-bar mb-4">
+                    <span class="eyebrow"><i class="fas fa-info-circle"></i> <span th:text="#{detalle.sobre}">Sobre este lugar</span></span>
+                    <h2 class="mt-2 mb-3" style="color:var(--azul-dark); font-size:1.7rem;" th:text="#{detalle.sobre}">Sobre este lugar</h2>
+                    <p data-db class="mb-0" style="color:#4f4c44; font-size:1rem; line-height:1.78;" th:text="${lugar.descripcion}">Descripción</p>
                 </div>
 
-                <!-- Lista reseñas -->
-                <div th:each="resena : ${resenas}" class="resena-card">
-                    <div class="d-flex align-items-center gap-3 mb-3">
-                        <div class="user-avatar">
-                            <i class="fa fa-user"></i>
-                        </div>
-                        <div class="flex-grow-1">
-                            <span class="fw-semibold d-block" style="color:var(--azul);" th:text="${resena.usuario.nombre}">Usuario</span>
-                            <span class="text-muted small" th:text="${#temporals.format(resena.fecha,'dd MMM yyyy')}">Fecha</span>
-                        </div>
+                <!-- Acciones -->
+                <div class="d-flex flex-wrap gap-2 mb-5">
+                    <a th:if="${lugar.urlMapa != null}"
+                       th:href="${lugar.urlMapa.startsWith('http') ? lugar.urlMapa : 'https://www.google.com/maps/search/?api=1&query=' + lugar.urlMapa}"
+                       target="_blank" class="button button-primary">
+                        <i class="fas fa-map-marker-alt"></i>
+                        <span th:text="#{detalle.googlemaps}">Cómo llegar en Google Maps</span>
+                    </a>
+                    <a href="/mapa" class="button button-gold">
+                        <i class="fas fa-compass"></i>
+                        <span>Abrir en Mapa Cartográfico</span>
+                    </a>
+                </div>
+
+                <!-- RESEÑAS -->
+                <div>
+                    <div class="d-flex align-items-center justify-content-between flex-wrap gap-2 mb-4">
                         <div>
-                            <th:block th:each="i : ${#numbers.sequence(1,5)}">
-                                <i th:class="${i <= resena.calificacion ? 'fas fa-star star-filled' : 'far fa-star star-empty'}"
-                                   style="font-size:.85rem;"></i>
-                            </th:block>
+                            <span class="eyebrow"><i class="fas fa-comments"></i> Comunidad Odyssey</span>
+                            <h2 class="mt-1 mb-0" style="color:var(--azul-dark); font-size:1.75rem;" th:text="#{detalle.resenas}">Reseñas de viajeros</h2>
                         </div>
+                        <span class="ed-pill active"
+                              th:text="${#lists.size(resenas) + ' ' + (#lists.size(resenas) == 1 ? #messages.msg('plural.resena') : #messages.msg('plural.resenas'))}">0 reseñas</span>
                     </div>
-                    <p data-db class="text-muted mb-0 lh-lg ps-2" th:text="${resena.comentario}">Comentario</p>
-                </div>
 
-                <div class="text-center py-4" th:if="${#lists.isEmpty(resenas)}">
-                    <div style="font-size:2.5rem; margin-bottom:8px;">💬</div>
-                    <p class="text-muted" th:text="#{detalle.resenas.empty}">Aún no hay reseñas. ¡Sé el primero en comentar!</p>
-                </div>
-
-                <!-- Formulario para usuarios autenticados -->
-                <div class="p-4 rounded-3 mt-4" style="background:var(--cream); border:1px solid rgba(200,150,62,.2);"
-                     th:if="${session.usuarioId != null}">
-                    <div class="alert alert-danger py-2 small mb-3" th:if="${errorResena}" th:text="${errorResena}"></div>
-                    <div class="alert alert-success py-2 small mb-3" th:if="${mensajeResena}" th:text="${mensajeResena}"></div>
-                    <h5 class="fw-bold mb-4" style="color:var(--azul); font-family:'Cormorant Garamond',serif;" th:text="#{detalle.resena.form.title}">Escribe tu reseña</h5>
-                    <form th:action="@{/resenas}" method="post">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <input type="hidden" name="lugarId" th:value="${lugar.id}">
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold" style="color:var(--azul);" th:text="#{detalle.resena.calificacion}">Calificación</label>
-                            <div class="resena-star-input">
-                                <input type="radio" name="calificacion" id="s5" value="5" checked>
-                                <label for="s5"><i class="fas fa-star"></i></label>
-                                <input type="radio" name="calificacion" id="s4" value="4">
-                                <label for="s4"><i class="fas fa-star"></i></label>
-                                <input type="radio" name="calificacion" id="s3" value="3">
-                                <label for="s3"><i class="fas fa-star"></i></label>
-                                <input type="radio" name="calificacion" id="s2" value="2">
-                                <label for="s2"><i class="fas fa-star"></i></label>
-                                <input type="radio" name="calificacion" id="s1" value="1">
-                                <label for="s1"><i class="fas fa-star"></i></label>
+                    <!-- Lista reseñas -->
+                    <div th:each="resena : ${resenas}" class="resena-ed-card">
+                        <div class="d-flex align-items-center gap-3 mb-3">
+                            <div class="user-avatar-ed"><i class="fas fa-user"></i></div>
+                            <div class="flex-grow-1">
+                                <strong class="d-block" style="color:var(--azul-dark);" th:text="${resena.usuario.nombre}">Usuario</strong>
+                                <span class="text-muted small" th:text="${#temporals.format(resena.fecha,'dd MMM yyyy')}">Fecha</span>
+                            </div>
+                            <div>
+                                <th:block th:each="i : ${#numbers.sequence(1,5)}">
+                                    <i th:class="${i <= resena.calificacion ? 'fas fa-star star-filled' : 'far fa-star star-empty'}" style="font-size:.85rem;"></i>
+                                </th:block>
                             </div>
                         </div>
-                        <div class="mb-3">
-                            <label class="form-label fw-semibold" style="color:var(--azul);" th:text="#{detalle.resena.comentario}">Comentario</label>
-                            <textarea name="comentario" class="form-control" rows="3" maxlength="500"
-                                      placeholder="Comparte tu experiencia y consejos para otros viajeros..." required
-                                      style="border-color:rgba(11,45,107,.2); border-radius:12px;"></textarea>
+                        <p data-db class="mb-0" style="color:#55524b; line-height:1.68;" th:text="${resena.comentario}">Comentario</p>
+                    </div>
+
+                    <div class="empty-editorial mb-4" th:if="${#lists.isEmpty(resenas)}">
+                        <i class="far fa-comments mb-2"></i>
+                        <p class="text-muted mb-0" th:text="#{detalle.resenas.empty}">Aún no hay reseñas. ¡Sé el primero en comentar!</p>
+                    </div>
+
+                    <!-- Formulario reseña autenticados -->
+                    <div class="ed-form-card mt-4" th:if="${session.usuarioId != null}">
+                        <div class="alert alert-danger py-2 small mb-3" th:if="${errorResena}" th:text="${errorResena}"></div>
+                        <div class="alert alert-success py-2 small mb-3" th:if="${mensajeResena}" th:text="${mensajeResena}"></div>
+                        <h3 class="mb-3" style="color:var(--azul-dark); font-size:1.45rem;" th:text="#{detalle.resena.form.title}">Escribe tu reseña</h3>
+                        <form th:action="@{/resenas}" method="post">
+                            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                            <input type="hidden" name="lugarId" th:value="${lugar.id}">
+                            <div class="mb-3">
+                                <label class="form-label" th:text="#{detalle.resena.calificacion}">Calificación</label>
+                                <div class="resena-star-input">
+                                    <input type="radio" name="calificacion" id="s5" value="5" checked>
+                                    <label for="s5"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="calificacion" id="s4" value="4">
+                                    <label for="s4"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="calificacion" id="s3" value="3">
+                                    <label for="s3"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="calificacion" id="s2" value="2">
+                                    <label for="s2"><i class="fas fa-star"></i></label>
+                                    <input type="radio" name="calificacion" id="s1" value="1">
+                                    <label for="s1"><i class="fas fa-star"></i></label>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" th:text="#{detalle.resena.comentario}">Comentario</label>
+                                <textarea name="comentario" class="form-control" rows="3" maxlength="500"
+                                          placeholder="Comparte tu experiencia y consejos para otros viajeros..." required></textarea>
+                            </div>
+                            <button type="submit" class="button button-primary">
+                                <i class="fas fa-paper-plane"></i>
+                                <span th:text="#{detalle.publicar}">Publicar reseña</span>
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Invitación editorial para visitantes no autenticados -->
+                    <div class="ed-cta-panel mt-4" th:if="${session.usuarioId == null}">
+                        <div>
+                            <span class="eyebrow eyebrow-light"><i class="fas fa-star"></i> Comunidad Odyssey</span>
+                            <h3 style="font-size:1.55rem;">¿Visitaste este lugar o deseas recibir sus novedades?</h3>
+                            <p>En ODYSSEY toda la exploración es libre. Inicia sesión únicamente para publicar reseñas y suscribirte a alertas de tus sitios favoritos.</p>
                         </div>
-                        <button type="submit" class="btn btn-primary rounded-pill px-5">
-                            <i class="fa fa-paper-plane me-2"></i><span th:text="#{detalle.publicar}">Publicar reseña</span>
+                        <div class="d-flex gap-2 flex-wrap">
+                            <a href="/login" class="button button-gold">
+                                <i class="fas fa-sign-in-alt"></i>
+                                <span>Iniciar sesión / Código OTP</span>
+                            </a>
+                            <a href="/registro" class="button button-glass">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Crear cuenta gratis</span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="col-lg-4">
+                <!-- Alertas por correo -->
+                <div class="alert-sub-card mb-4">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="eyebrow eyebrow-light" style="font-size:.62rem;">
+                            <i class="fas fa-bell"></i> ALERTAS POR CORREO
+                        </span>
+                        <span class="small" style="color:rgba(255,255,255,.65);" id="subCountLabel"
+                              th:text="${totalSuscriptores + ' ' + (totalSuscriptores == 1 ? #messages.msg('plural.suscrito') : #messages.msg('plural.suscritos'))}">0 suscritos</span>
+                    </div>
+                    <h4 class="text-white mb-2" style="font-size:1.38rem;">Recibir novedades de este sitio</h4>
+                    <p class="small mb-3" style="color:rgba(255,255,255,.76); line-height:1.58;">
+                        Entérate en tu correo cuando haya eventos culturales, cambios de tarifa o festivales en <strong th:text="${lugar.nombre}">este lugar</strong>.
+                    </p>
+                    <div id="subAlertToast"></div>
+
+                    <div th:if="${session.usuarioId != null}">
+                        <button type="button" id="btnToggleSub"
+                                th:data-id="${lugar.id}"
+                                th:data-active="${estaSuscrito}"
+                                onclick="alternarSuscripcionSitio(this)"
+                                class="button w-100"
+                                th:style="${estaSuscrito ? 'background:#10b981;color:#fff;' : 'background:var(--gold-light);color:var(--azul-dark);'}">
+                            <i th:class="${estaSuscrito ? 'fas fa-check-circle' : 'fas fa-bell'}"></i>
+                            <span th:text="${estaSuscrito ? 'Suscrito a novedades (Activo)' : 'Activar alertas en mi correo'}">Activar alertas</span>
                         </button>
-                    </form>
+                    </div>
+                    <div th:if="${session.usuarioId == null}">
+                        <a href="/login" class="button button-gold w-100">
+                            <i class="fas fa-envelope"></i>
+                            <span>Inicia sesión para recibir alertas</span>
+                        </a>
+                    </div>
                 </div>
 
-                <!-- Invitación para visitantes no autenticados -->
-                <div class="p-4 rounded-3 mt-4 text-center" style="background:var(--cream); border:1px dashed rgba(200,150,62,.4);"
-                     th:if="${session.usuarioId == null}">
-                    <div style="font-size:2rem; margin-bottom:8px;">⭐</div>
-                    <h5 class="fw-bold mb-2" style="color:var(--azul); font-family:'Cormorant Garamond',serif;">¿Visitaste este lugar o deseas recibir sus novedades?</h5>
-                    <p class="text-muted small mb-4">En ODYSSEY toda la exploración es libre. Inicia sesión (con contraseña o código de 6 dígitos al correo) únicamente para publicar reseñas y suscribirte a alertas de tus sitios favoritos.</p>
-                    <div class="d-flex justify-content-center gap-3 flex-wrap">
-                        <a href="/login" class="btn btn-primary rounded-pill px-4 py-2 small">
-                            <i class="fa fa-sign-in-alt me-1"></i> Iniciar sesión / Código OTP
-                        </a>
-                        <a href="/registro" class="btn btn-outline-primary rounded-pill px-4 py-2 small">
-                            <i class="fa fa-user-plus me-1"></i> Crear cuenta gratis
+                <!-- Ficha de Información + Mini-Mapa -->
+                <div class="ed-surface">
+                    <span class="eyebrow"><i class="fas fa-map-pin"></i> Ficha</span>
+                    <h4 class="mt-1 mb-3 pb-2" style="color:var(--azul-dark); border-bottom:1px solid #f0e8d8;"
+                        th:text="#{detalle.info.titulo}">Información y Ubicación</h4>
+
+                    <div class="info-row">
+                        <div class="info-icon-sm"><i class="fas fa-tag"></i></div>
+                        <div>
+                            <strong class="d-block small" style="color:var(--azul-dark);" th:text="#{detalle.categoria}">Categoría</strong>
+                            <span class="text-muted small" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Cat</span>
+                        </div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-icon-sm"><i class="fas fa-map-marker-alt"></i></div>
+                        <div>
+                            <strong class="d-block small" style="color:var(--azul-dark);" th:text="#{detalle.ubicacion}">Ubicación</strong>
+                            <span class="text-muted small" th:text="${lugar.ubicacion}">Ubicación</span>
+                        </div>
+                    </div>
+                    <div class="info-row" th:if="${lugar.esOficial}">
+                        <div class="info-icon-sm"><i class="fas fa-check-circle"></i></div>
+                        <div>
+                            <strong class="d-block small" style="color:var(--azul-dark);" th:text="#{detalle.estado}">Estado</strong>
+                            <span class="text-muted small" th:text="#{detalle.verificado.check}">Verificado por ODYSSEY ✓</span>
+                        </div>
+                    </div>
+
+                    <div id="miniMapaDetalle" th:data-coords="${lugar.urlMapa}" th:data-nombre="${lugar.nombre}"></div>
+
+                    <div class="mt-3 pt-2 text-center" style="border-top:1px solid #f0e8d8;">
+                        <a href="/privacidad#contacto" class="small text-muted">
+                            <i class="fas fa-flag me-1"></i>¿Detectaste un error o infracción de derechos? Repórtalo
                         </a>
                     </div>
                 </div>
             </div>
         </div>
-
-        <!-- Sidebar -->
-        <div class="col-lg-4">
-
-            <!-- WIDGET DE SUSCRIPCIÓN A NOVEDADES DEL SITIO -->
-            <div class="alert-sub-card mb-4">
-                <div class="d-flex align-items-center justify-content-between mb-2">
-                    <span class="badge rounded-pill px-3 py-1" style="background:rgba(212,166,74,0.22);color:#f3c86b;font-size:0.7rem;">
-                        <i class="fas fa-bell me-1"></i> ALERTAS POR CORREO
-                    </span>
-                    <span class="small text-white-50" id="subCountLabel" th:text="${totalSuscriptores + ' ' + (totalSuscriptores == 1 ? #messages.msg('plural.suscrito') : #messages.msg('plural.suscritos'))}">0 suscritos</span>
-                </div>
-                <h5 class="fw-bold mb-2 text-white" style="font-family:'Cormorant Garamond',serif;font-size:1.35rem;">
-                    Recibir novedades de este sitio
-                </h5>
-                <p class="small mb-3" style="color:rgba(255,255,255,0.78);line-height:1.5;">
-                    Entérate en tu Gmail o correo cuando haya eventos culturales, cambios de tarifa o festivales en <strong th:text="${lugar.nombre}">este lugar</strong>.
-                </p>
-                <div id="subAlertToast"></div>
-
-                <div th:if="${session.usuarioId != null}">
-                    <button type="button" id="btnToggleSub"
-                            th:data-id="${lugar.id}"
-                            th:data-active="${estaSuscrito}"
-                            onclick="alternarSuscripcionSitio(this)"
-                            class="btn w-100 rounded-pill py-2 fw-bold"
-                            th:style="${estaSuscrito ? 'background:#2ecc71;color:#fff;' : 'background:#d4a64a;color:#071630;'}">
-                        <i th:class="${estaSuscrito ? 'fas fa-check-circle me-2' : 'fas fa-bell me-2'}"></i>
-                        <span th:text="${estaSuscrito ? 'Suscrito a novedades (Activo)' : 'Activar alertas en mi correo'}">Activar alertas</span>
-                    </button>
-                </div>
-                <div th:if="${session.usuarioId == null}">
-                    <a href="/login" class="btn w-100 rounded-pill py-2 fw-bold" style="background:#d4a64a;color:#071630;">
-                        <i class="fas fa-envelope me-2"></i>Inicia sesión para recibir alertas
-                    </a>
-                </div>
-            </div>
-
-            <!-- Ficha de Información + Mini-Mapa Geoespacial -->
-            <div class="info-sidebar-card">
-                <h5 class="fw-bold mb-3" style="color:var(--azul); font-family:'Cormorant Garamond',serif; font-size:1.25rem; border-bottom:2px solid var(--gold-pale); padding-bottom:12px;">
-                    📍 <span th:text="#{detalle.info.titulo}">Información y Ubicación</span>
-                </h5>
-                <div class="info-row">
-                    <div class="info-icon-sm"><i class="fa fa-tag"></i></div>
-                    <div><strong class="d-block small" style="color:var(--azul);" th:text="#{detalle.categoria}">Categoría</strong>
-                        <span class="text-muted small" th:text="${#messages.msg('cat.' + lugar.categoria.nombreClave)}">Cat</span></div>
-                </div>
-                <div class="info-row">
-                    <div class="info-icon-sm"><i class="fa fa-map-marker-alt"></i></div>
-                    <div><strong class="d-block small" style="color:var(--azul);" th:text="#{detalle.ubicacion}">Ubicación</strong>
-                        <span class="text-muted small" th:text="${lugar.ubicacion}">Ubicación</span></div>
-                </div>
-                <div class="info-row" th:if="${lugar.esOficial}">
-                    <div class="info-icon-sm"><i class="fa fa-check-circle"></i></div>
-                    <div><strong class="d-block small" style="color:var(--azul);" th:text="#{detalle.estado}">Estado</strong>
-                        <span class="text-muted small" th:text="#{detalle.verificado.check}">Verificado por ODYSSEY ✓</span></div>
-                </div>
-
-                <!-- Mini-Mapa Interactivo del Lugar -->
-                <div id="miniMapaDetalle" th:data-coords="${lugar.urlMapa}" th:data-nombre="${lugar.nombre}"></div>
-
-                <div class="mt-3 pt-2 border-top text-center">
-                    <a href="/privacidad#contacto" class="small text-muted text-decoration-none">
-                        <i class="fas fa-flag me-1"></i>¿Detectaste un error o infracción de derechos? Repórtalo
-                    </a>
-                </div>
-            </div>
-        </div>
-
     </div>
-</div>
+</main>
 
 <div th:replace="fragments :: footer-interno"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -268,7 +354,6 @@
 <script th:inline="javascript">
 const SUB_SINGULAR = /*[[#{plural.suscrito}]]*/ 'suscrito';
 const SUB_PLURAL   = /*[[#{plural.suscritos}]]*/ 'suscritos';
-// Inicializar Mini-Mapa en la ficha de detalle
 (function(){
     const el = document.getElementById('miniMapaDetalle');
     if (!el) return;
@@ -300,11 +385,11 @@ async function alternarSuscripcionSitio(btn) {
         }
         if (data.exito) {
             const activo = data.suscrito;
-            btn.style.background = activo ? '#2ecc71' : '#d4a64a';
-            btn.style.color = activo ? '#fff' : '#071630';
+            btn.style.background = activo ? '#10b981' : 'var(--gold-light)';
+            btn.style.color = activo ? '#fff' : 'var(--azul-dark)';
             btn.innerHTML = activo
-                ? '<i class="fas fa-check-circle me-2"></i><span>Suscrito a novedades (Activo)</span>'
-                : '<i class="fas fa-bell me-2"></i><span>Activar alertas en mi correo</span>';
+                ? '<i class="fas fa-check-circle"></i><span>Suscrito a novedades (Activo)</span>'
+                : '<i class="fas fa-bell"></i><span>Activar alertas en mi correo</span>';
             const totalSubs = data.totalSuscriptores || 0;
             document.getElementById('subCountLabel').textContent = totalSubs + ' ' + (totalSubs === 1 ? SUB_SINGULAR : SUB_PLURAL);
             toast.innerHTML = `<div class="alert alert-success py-2 small mb-2">${data.mensaje}</div>`;

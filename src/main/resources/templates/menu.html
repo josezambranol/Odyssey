@@ -1,174 +1,284 @@
 <!DOCTYPE html>
 <html lang="es" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
     <title th:text="#{menu.page.title}">Mi Panel — ODYSSEY</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,400&family=DM+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Jost:wght@500;600;700&amp;family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,600&amp;display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
+    <style>
+        .menu-search-form {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 10px;
+            align-items: center;
+        }
+        .menu-search-input {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 4px 14px;
+            border: 1.5px solid #e7dfd0;
+            border-radius: 10px;
+            background: #fffdf9;
+        }
+        .menu-search-input i { color: #936615; }
+        .menu-search-input input {
+            width: 100%;
+            min-width: 0;
+            border: 0;
+            outline: 0;
+            background: transparent;
+            font-size: .96rem;
+            padding: 9px 0;
+            color: var(--azul-dark);
+        }
+        .sub-chip-card {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            padding: 14px;
+            background: var(--cream-bright);
+            border: 1px solid rgba(11,45,107,.08);
+            border-left: 3px solid var(--gold);
+            border-radius: 14px;
+            transition: transform .25s ease, box-shadow .25s ease;
+        }
+        .sub-chip-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(7,30,74,.08);
+        }
+        .menu-mosaic-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        .menu-ed-tile {
+            position: relative;
+            min-height: 220px;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            overflow: hidden;
+            padding: 22px;
+            color: #fff;
+            border-radius: 14px;
+            background: linear-gradient(to top, rgba(7,30,74,.95) 0%, rgba(7,30,74,.25) 62%, rgba(7,30,74,.08) 100%), var(--tile-img) center/cover;
+            box-shadow: 0 6px 20px rgba(7,30,74,.1);
+            transition: transform .35s cubic-bezier(.16,1,.3,1), box-shadow .35s ease;
+        }
+        .menu-ed-tile::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border: 1px solid rgba(255,255,255,.16);
+            border-radius: inherit;
+            pointer-events: none;
+        }
+        .menu-ed-tile:hover {
+            color: #fff;
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(7,30,74,.22);
+        }
+        .menu-ed-tile > * { position: relative; z-index: 1; }
+        .menu-ed-tile span {
+            color: var(--gold-light);
+            font-family: 'Jost', sans-serif;
+            font-size: .6rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        .menu-ed-tile h3 {
+            margin: 6px 0 4px;
+            color: #fff;
+            font-size: 1.28rem;
+        }
+        .menu-ed-tile p {
+            margin: 0;
+            color: rgba(255,255,255,.76);
+            font-size: .76rem;
+        }
+        @media (max-width: 991px) {
+            .menu-mosaic-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 640px) {
+            .menu-search-form { grid-template-columns: 1fr; }
+            .menu-search-form .button { width: 100%; }
+            .menu-mosaic-grid { grid-template-columns: 1fr; }
+            .menu-ed-tile { min-height: 185px; }
+        }
+    </style>
     <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <link rel="icon" type="image/png" sizes="32x32" th:href="@{/img/favicon-32x32.png}">
+    <link rel="icon" type="image/png" sizes="16x16" th:href="@{/img/favicon-16x16.png}">
+    <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
 </head>
-<body>
+<body class="odyssey-inner">
 <div th:replace="fragments :: topbar"></div>
 <div th:replace="fragments :: navbar-interno"></div>
 
-<!-- Hero personalizado -->
-<div class="page-breadcrumb-hero" style="min-height:200px; background:linear-gradient(135deg,var(--azul-dark) 0%,var(--azul-mid) 60%, rgba(200,150,62,.3) 100%);">
-    <div style="position:relative; z-index:1; text-align:center;">
-        <h1 style="font-style:italic;" th:text="#{menu.hello(${nombre})}">¡Hola!</h1>
-        <div class="gold-line"></div>
-        <p style="color:rgba(255,255,255,.85);" th:utext="#{menu.hero.sub}">Administra tus alertas de sitios de interés y explora <strong>Cartagena de Indias</strong></p>
+<section class="editorial-subhero has-float-bar" style="--subhero-img: url('/img/hero-murallas.jpg');">
+    <div class="editorial-subhero-bg"></div>
+    <div class="container editorial-subhero-inner">
+        <nav class="ed-breadcrumb" aria-label="breadcrumb">
+            <a href="/" th:text="#{nav.inicio}">Inicio</a>
+            <span class="sep">/</span>
+            <span class="current" th:text="#{nav.miPanel}">Mi Panel</span>
+        </nav>
+        <span class="eyebrow eyebrow-light">
+            <i class="fas fa-compass"></i>
+            <span th:text="#{nav.miPanel}">Mi Panel</span>
+        </span>
+        <h1><em th:text="#{menu.hello(${nombre})}">¡Hola!</em></h1>
+        <p class="editorial-subhero-lead" th:utext="#{menu.hero.sub}">Administra tus alertas de sitios de interés y explora <strong>Cartagena de Indias</strong></p>
     </div>
-</div>
+</section>
 
-<div class="container py-5">
-
-    <!-- Acceso rápido buscador -->
-    <form action="/buscar" method="get" class="mb-5">
-        <div class="d-flex gap-3 justify-content-center">
-            <div class="input-group" style="max-width:560px;">
-                <span class="input-group-text" style="background:var(--azul); border:none; color:var(--gold); border-radius:40px 0 0 40px;">
-                    <i class="fa fa-search"></i>
-                </span>
-                <input name="q" class="form-control" style="border-color:rgba(11,45,107,.2); padding:12px 18px;" th:placeholder="#{menu.search.placeholder}" placeholder="Buscar en Cartagena...">
-            </div>
-            <button type="submit" class="btn btn-primary rounded-pill px-4" th:text="#{index.buscar}">Buscar</button>
+<main>
+    <!-- Buscador flotante -->
+    <div class="container ed-float-wrap">
+        <div class="ed-float-bar">
+            <form action="/buscar" method="get" class="menu-search-form">
+                <div class="menu-search-input">
+                    <i class="fas fa-search"></i>
+                    <input name="q" th:placeholder="#{menu.search.placeholder}" placeholder="Buscar en Cartagena...">
+                </div>
+                <button type="submit" class="button button-primary">
+                    <i class="fas fa-search"></i>
+                    <span th:text="#{index.buscar}">Buscar</span>
+                </button>
+            </form>
         </div>
-    </form>
+    </div>
 
-    <!-- MIS SITIOS DE INTERÉS & ALERTAS POR CORREO -->
-    <div class="p-4 rounded-4 mb-5 shadow-sm" style="background:#fff;border:1px solid rgba(200,150,62,.3);">
-        <div class="d-flex flex-wrap justify-content-between align-items-center mb-3">
-            <div>
-                <span class="badge rounded-pill px-3 py-1 mb-1" style="background:var(--gold-pale);color:var(--azul);font-weight:700;font-size:.72rem;">
-                    <i class="fas fa-bell me-1" style="color:var(--gold);"></i> <span th:text="#{menu.subs.badge}">NOVEDADES &amp; ALERTAS EN TU CORREO</span>
-                </span>
-                <h4 class="fw-bold mb-0" style="color:var(--azul);font-family:'Cormorant Garamond',serif;" th:text="#{menu.subs.title}">Mis Sitios de Interés Suscritos</h4>
-            </div>
-            <a href="/lugares" class="btn btn-sm btn-outline-primary rounded-pill px-3">
-                <i class="fas fa-plus me-1"></i> <span th:text="#{menu.subs.more}">Explorar más sitios</span>
-            </a>
-        </div>
+    <!-- Suscripciones de sitios -->
+    <section class="ed-band-compact">
+        <div class="container">
+            <div class="ed-surface">
+                <div class="d-flex flex-wrap justify-content-between align-items-end gap-3 mb-4">
+                    <div>
+                        <span class="eyebrow">
+                            <i class="fas fa-bell"></i>
+                            <span th:text="#{menu.subs.badge}">NOVEDADES &amp; ALERTAS EN TU CORREO</span>
+                        </span>
+                        <h2 class="mt-2 mb-0" style="color:var(--azul-dark); font-size:1.75rem;" th:text="#{menu.subs.title}">Mis Sitios de Interés Suscritos</h2>
+                    </div>
+                    <a href="/lugares" class="ed-pill">
+                        <i class="fas fa-plus"></i>
+                        <span th:text="#{menu.subs.more}">Explorar más sitios</span>
+                    </a>
+                </div>
 
-        <div class="row g-3" th:if="${!#lists.isEmpty(suscripciones)}">
-            <div class="col-md-6 col-lg-4" th:each="sub : ${suscripciones}">
-                <div class="d-flex align-items-center gap-3 p-3 rounded-3" style="background:var(--cream);border-left:4px solid var(--gold);">
-                    <img th:src="${sub.imagenLugar != null ? sub.imagenLugar : '/img/hero-murallas.jpg'}"
-                         style="width:64px;height:64px;object-fit:cover;border-radius:12px;flex-shrink:0;" alt="Sitio">
-                    <div class="flex-grow-1 min-w-0">
-                        <span class="badge bg-warning text-dark mb-1" style="font-size:0.65rem;" th:text="${sub.categoriaLugar}">Categoría</span>
-                        <h6 class="fw-bold mb-1 text-truncate" style="color:var(--azul);" th:text="${sub.nombreLugar}">Nombre</h6>
-                        <a th:href="@{/lugares/{id}(id=${sub.lugarId})}" class="small fw-semibold text-decoration-none" style="color:var(--gold);">
-                            <span th:text="#{menu.subs.view}">Ver ficha y reseñas</span> <i class="fas fa-arrow-right ms-1"></i>
-                        </a>
+                <div class="row g-3" th:if="${!#lists.isEmpty(suscripciones)}">
+                    <div class="col-md-6 col-lg-4" th:each="sub : ${suscripciones}">
+                        <div class="sub-chip-card">
+                            <img th:src="${sub.imagenLugar != null ? sub.imagenLugar : '/img/hero-murallas.jpg'}"
+                                 loading="lazy" decoding="async"
+                                 style="width:62px;height:62px;object-fit:cover;border-radius:10px;flex-shrink:0;" alt="Sitio">
+                            <div class="flex-grow-1 min-w-0">
+                                <span class="eyebrow" style="font-size:.58rem;" th:text="${sub.categoriaLugar}">Categoría</span>
+                                <h6 class="fw-bold mb-1 text-truncate" style="color:var(--azul-dark); font-family:'Playfair Display',serif; font-size:1.05rem;" th:text="${sub.nombreLugar}">Nombre</h6>
+                                <a th:href="@{/lugares/{id}(id=${sub.lugarId})}" class="small fw-bold" style="color:#936615;">
+                                    <span th:text="#{menu.subs.view}">Ver ficha y reseñas</span> <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                        </div>
                     </div>
                 </div>
+
+                <div class="empty-editorial" th:if="${#lists.isEmpty(suscripciones)}">
+                    <i class="far fa-bell mb-2"></i>
+                    <p class="text-muted small mb-3" th:utext="#{menu.subs.empty}">Aún no has activado alertas para ningún sitio turístico.</p>
+                    <a href="/lugares" class="button button-primary" th:text="#{menu.subs.cta}">Descubrir lugares emblemáticos</a>
+                </div>
             </div>
         </div>
+    </section>
 
-        <div class="text-center py-4" th:if="${#lists.isEmpty(suscripciones)}">
-            <p class="text-muted small mb-2" th:utext="#{menu.subs.empty}">Aún no has activado alertas para ningún sitio turístico. Entra a cualquier lugar de Cartagena y pulsa <strong>"Activar alertas en mi correo"</strong>.</p>
-            <a href="/lugares" class="btn btn-primary btn-sm rounded-pill px-4" th:text="#{menu.subs.cta}">Descubrir lugares emblemáticos</a>
-        </div>
-    </div>
+    <!-- Mosaico editorial de secciones -->
+    <section class="ed-band-alt">
+        <div class="container">
+            <div class="ed-section-head">
+                <span class="eyebrow"><i class="fas fa-compass"></i> ODYSSEY · CARTAGENA</span>
+                <h2>Explora cada rincón de la <em>Ciudad Heroica</em></h2>
+            </div>
 
-    <!-- Tarjetas de navegación -->
-    <div class="row g-4">
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="/lugares?categoriaId=1" class="menu-card"
-               style="background-image:url('/img/hero-playa-blanca.jpg')">
-                <div class="menu-card-body">
-                    <p class="menu-card-title" th:text="#{menu.c1.title}">Playas</p>
-                    <p class="menu-card-sub" th:text="#{menu.c1.sub}">Barú · Rosario · Bocagrande</p>
-                </div>
-            </a>
+            <div class="menu-mosaic-grid">
+                <a href="/lugares?categoriaId=1" class="menu-ed-tile" style="--tile-img: url('/img/hero-playa-blanca.jpg');">
+                    <span>01 · Caribe</span>
+                    <h3 th:text="#{menu.c1.title}">Playas</h3>
+                    <p th:text="#{menu.c1.sub}">Barú · Rosario · Bocagrande</p>
+                </a>
+                <a href="/eventos" class="menu-ed-tile" style="--tile-img: url('/img/pf-eventos.jpg');">
+                    <span>02 · Agenda</span>
+                    <h3 th:text="#{menu.c2.title}">Eventos</h3>
+                    <p th:text="#{menu.c2.sub}">Hay Festival · FICCI · Fiestas</p>
+                </a>
+                <a href="/actividades" class="menu-ed-tile" style="--tile-img: url('/img/pf-actividades.jpg');">
+                    <span>03 · Experiencias</span>
+                    <h3 th:text="#{menu.c3.title}">Actividades</h3>
+                    <p th:text="#{menu.c3.sub}">Tours · Buceo · Manglares</p>
+                </a>
+                <a href="/transporte" class="menu-ed-tile" style="--tile-img: url('/img/pf-transporte.jpg');">
+                    <span>04 · Movilidad</span>
+                    <h3 th:text="#{menu.c4.title}">Transporte</h3>
+                    <p th:text="#{menu.c4.sub}">Transcaribe · Tarifas DATT</p>
+                </a>
+                <a href="/guia" class="menu-ed-tile" style="--tile-img: url('/img/pf-guia.jpg');">
+                    <span>05 · Editorial</span>
+                    <h3 th:text="#{menu.c5.title}">Guía Turística</h3>
+                    <p th:text="#{menu.c5.sub}">Historia · Clima · Consejos</p>
+                </a>
+                <a href="/mapa" class="menu-ed-tile" style="--tile-img: url('/img/pf-mapa.jpg');">
+                    <span>06 · Cartografía</span>
+                    <h3 th:text="#{menu.c6.title}">Mapa Cartográfico</h3>
+                    <p th:text="#{menu.c6.sub}">Radar Haversine en vivo</p>
+                </a>
+                <a href="/chatbot" class="menu-ed-tile" style="--tile-img: url('/img/pf-chatbot.jpg');">
+                    <span>07 · Inteligencia Artificial</span>
+                    <h3 th:text="#{menu.c7.title}">Concierge IA</h3>
+                    <p th:text="#{menu.c7.sub}">Asistente 24/7</p>
+                </a>
+                <a href="/proponer-lugar" class="menu-ed-tile" style="--tile-img: url('/img/pf-proponer-lugar.jpg');">
+                    <span>08 · Comunidad</span>
+                    <h3 th:text="#{menu.c8.title}">Proponer Lugar</h3>
+                    <p th:text="#{menu.c8.sub}">Comparte un sitio</p>
+                </a>
+                <a href="/admin" class="menu-ed-tile" th:if="${session.usuarioRol == 'ADMIN'}"
+                   style="background:linear-gradient(135deg,#7f1d1d 0%,#b91c1c 100%);">
+                    <span>Administración</span>
+                    <h3 th:text="#{menu.admin.title}">Panel Admin</h3>
+                    <p th:text="#{menu.admin.sub}">Gestión completa</p>
+                </a>
+            </div>
         </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="/eventos" class="menu-card"
-               style="background-image:url('/img/pf-eventos.jpg')">
-                <div class="menu-card-body">
-                    <p class="menu-card-title" th:text="#{menu.c2.title}">Eventos</p>
-                    <p class="menu-card-sub" th:text="#{menu.c2.sub}">Hay Festival · FICCI · Fiestas</p>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="/actividades" class="menu-card"
-               style="background-image:url('/img/pf-actividades.jpg')">
-                <div class="menu-card-body">
-                    <p class="menu-card-title" th:text="#{menu.c3.title}">Actividades</p>
-                    <p class="menu-card-sub" th:text="#{menu.c3.sub}">Tours · Buceo · Manglares</p>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="/transporte" class="menu-card"
-               style="background-image:url('/img/pf-transporte.jpg')">
-                <div class="menu-card-body">
-                    <p class="menu-card-title" th:text="#{menu.c4.title}">Transporte</p>
-                    <p class="menu-card-sub" th:text="#{menu.c4.sub}">Transcaribe · Tarifas DATT</p>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="/guia" class="menu-card"
-               style="background-image:url('/img/pf-guia.jpg')">
-                <div class="menu-card-body">
-                    <p class="menu-card-title" th:text="#{menu.c5.title}">Guía Turística</p>
-                    <p class="menu-card-sub" th:text="#{menu.c5.sub}">Historia · Clima · Consejos</p>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="/mapa" class="menu-card"
-               style="background-image:url('/img/pf-mapa.jpg')">
-                <div class="menu-card-body">
-                    <p class="menu-card-title" th:text="#{menu.c6.title}">Mapa Cartográfico</p>
-                    <p class="menu-card-sub" th:text="#{menu.c6.sub}">Radar Haversine en vivo</p>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="/chatbot" class="menu-card"
-               style="background-image:url('/img/pf-chatbot.jpg')">
-                <div class="menu-card-body">
-                    <p class="menu-card-title" style="color:rgb(255, 255, 255)!important;" th:text="#{menu.c7.title}">Concierge IA</p>
-                    <p class="menu-card-sub" style="color:rgba(255, 255, 255, 0.804)!important;" th:text="#{menu.c7.sub}">Asistente 24/7</p>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3">
-            <a href="/proponer-lugar" class="menu-card"
-               style="background-image:url('/img/pf-proponer-lugar.jpg')">
-                <div class="menu-card-body">
-                    <p class="menu-card-title" th:text="#{menu.c8.title}">Proponer Lugar</p>
-                    <p class="menu-card-sub" th:text="#{menu.c8.sub}">Comparte un sitio</p>
-                </div>
-            </a>
-        </div>
-        <div class="col-6 col-md-4 col-lg-3" th:if="${session.usuarioRol == 'ADMIN'}">
-            <a href="/admin" class="menu-card"
-               style="background:linear-gradient(135deg,#b71c1c 0%,#c62828 100%);">
-                <div class="menu-card-body">
-                    <div class="menu-card-icon">⚙️</div>
-                    <p class="menu-card-title" th:text="#{menu.admin.title}">Panel Admin</p>
-                    <p class="menu-card-sub" th:text="#{menu.admin.sub}">Gestión completa</p>
-                </div>
-            </a>
-        </div>
-    </div>
+    </section>
 
-    <!-- Tip del día -->
-    <div class="mt-5 p-4 rounded-3 d-flex align-items-center gap-4" style="background:var(--cream); border:1px solid rgba(200,150,62,.25);">
-        <div style="font-size:2.5rem; flex-shrink:0;">💡</div>
-        <div>
-            <h6 class="fw-bold mb-1" style="color:var(--azul);" th:text="#{menu.tip.title}">Consejo del día</h6>
-            <p class="text-muted mb-0 small" th:text="#{menu.tip.body}">El mejor momento para visitar el Castillo San Felipe es temprano (8:00 AM) o después de las 4:00 PM: evitas el sol intenso y disfrutas de la brisa marina sobre la bahía.</p>
+    <!-- Consejo del día -->
+    <section class="ed-band">
+        <div class="container">
+            <div class="ed-cta-panel">
+                <div>
+                    <span class="eyebrow eyebrow-light">
+                        <i class="fas fa-lightbulb"></i>
+                        <span th:text="#{menu.tip.title}">Consejo del día</span>
+                    </span>
+                    <h3 th:text="#{menu.tip.title}">Consejo del día</h3>
+                    <p th:text="#{menu.tip.body}">El mejor momento para visitar el Castillo San Felipe es temprano (8:00 AM) o después de las 4:00 PM.</p>
+                </div>
+                <a href="/guia" class="button button-gold">
+                    <i class="fas fa-book-open"></i>
+                    <span th:text="#{menu.tip.btn}">Leer guía</span>
+                </a>
+            </div>
         </div>
-        <a href="/guia" class="btn btn-outline-primary rounded-pill px-4 flex-shrink-0" style="white-space:nowrap;" th:text="#{menu.tip.btn}">Leer guía</a>
-    </div>
-</div>
+    </section>
+</main>
 
 <div th:replace="fragments :: footer-interno"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
