@@ -13,7 +13,9 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -49,12 +51,22 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authenticationProvider(authenticationProvider())
+            .headers(headers -> headers
+                .frameOptions(frame -> frame.sameOrigin())
+                .contentTypeOptions(Customizer.withDefaults())
+                .referrerPolicy(ref -> ref.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.STRICT_ORIGIN_WHEN_CROSS_ORIGIN))
+                .permissionsPolicy(perm -> perm.policy("geolocation=(self), microphone=(self), camera=()"))
+            )
             .authorizeHttpRequests(auth -> auth
-                // Recursos estáticos públicos
+                // Recursos estáticos públicos + PWA Offline-First
                 .requestMatchers(
                     "/css/**", "/js/**", "/img/**", "/uploads/**",
-                    "/favicon.ico", "/favicon.svg", "/favicon*.png", "/apple-touch-icon.png"
+                    "/favicon.ico", "/favicon.svg", "/favicon*.png", "/apple-touch-icon.png",
+                    "/manifest.webmanifest", "/sw.js", "/offline.html"
                 ).permitAll()
+                // Sondas Cloud-Native (Docker / Render / K8s) públicas; resto de Actuator solo ADMIN
+                .requestMatchers("/actuator/health", "/actuator/health/**", "/actuator/info").permitAll()
+                .requestMatchers("/actuator/**").hasRole("ADMIN")
                 // Endpoints administrativos o de configuración/exportación sensible (evaluar ANTES de rutas públicas)
                 .requestMatchers(
                     "/admin/**",

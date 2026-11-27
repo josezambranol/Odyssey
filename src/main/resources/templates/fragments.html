@@ -31,6 +31,10 @@
         </div>
         <div class="col-lg-4 text-end">
             <div class="d-inline-flex align-items-center" style="height:44px; gap:10px;">
+                <button type="button" data-pwa-install onclick="instalarOdysseyPwa()"
+                        style="display:none;align-items:center;gap:5px;background:rgba(212,166,74,.2);border:1px solid rgba(212,166,74,.5);color:#f3c86b;font-size:.7rem;font-weight:700;padding:3px 10px;border-radius:999px;cursor:pointer;">
+                    <i class="fa fa-download"></i> Instalar App
+                </button>
                 <div class="lang-switcher">
                     <a th:href="@{/idioma(lang='es')}" class="lang-btn"
                        th:classappend="${#locale.language == 'es'} ? ' lang-active' : ''">🇨🇴 ES</a>
@@ -418,6 +422,30 @@
             addUserMsg(clean);
             document.getElementById('chatInputPop').value = '';
             addTyping();
+            if (window.odysseyStreamAi) {
+                let acc = '', bubbleEl = null;
+                window.odysseyStreamAi(clean, {
+                    onToken: function(chunk) {
+                        const t = document.getElementById('chatTyping');
+                        if (t) t.remove();
+                        if (!bubbleEl) {
+                            const box = document.getElementById('chatMessages');
+                            const d = document.createElement('div');
+                            d.className = 'chat-msg-bot';
+                            d.innerHTML = '<div class="chat-av-bot">🤖</div><div class="chat-bubble-bot"></div>';
+                            box.appendChild(d);
+                            bubbleEl = d.querySelector('.chat-bubble-bot');
+                        }
+                        acc += chunk;
+                        bubbleEl.innerHTML = formatChatMd(acc);
+                        const box = document.getElementById('chatMessages');
+                        box.scrollTop = box.scrollHeight;
+                    },
+                    onDone: function() { const t = document.getElementById('chatTyping'); if (t) t.remove(); },
+                    onError: function() { const t = document.getElementById('chatTyping'); if (t) t.remove(); addBotMsg('Lo siento, hubo un error técnico. Inténtalo de nuevo 🙏'); }
+                });
+                return;
+            }
             try {
                 const res  = await fetch('/chatbot/respuesta', {
                     method:'POST',
@@ -448,6 +476,7 @@
             onScroll();
         })();
     </script>
+    <script src="/js/odyssey-pwa.js" defer></script>
 </div>
 <!-- ═══ FIN footer-interno ══════════════════════════════════ -->
 

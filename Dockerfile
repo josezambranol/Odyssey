@@ -1,41 +1,45 @@
-# ── Etapa 1: Runtime Optimizado con Java 21 LTS ─────────────────
+# ══════════════════════════════════════════════════════════════════
+# ETAPA 1: Compilación Reproducible con Maven 3.9 + JDK 21 LTS
+# ══════════════════════════════════════════════════════════════════
+FROM maven:3.9.9-eclipse-temurin-21-alpine AS builder
+
+WORKDIR /build
+COPY pom.xml .
+RUN mvn dependency:go-offline -B
+
+COPY src ./src
+RUN mvn clean package -DskipTests -B
+
+# ══════════════════════════════════════════════════════════════════
+# ETAPA 2: Runtime Optimizado con JRE 21 Alpine + Virtual Threads
+# ══════════════════════════════════════════════════════════════════
 FROM eclipse-temurin:21-jre-alpine AS runner
 
 LABEL maintainer="Equipo Odyssey <soporte@odyssey.com>"
-LABEL description="Odyssey - Guía Turística & Asistente IA para Cartagena de Indias"
+LABEL description="Odyssey 3.0/4.0 - Guía Turística Inteligente, PWA & Concierge IA para Cartagena de Indias"
 
-# Instalar curl para healthchecks y herramientas de diagnóstico
 RUN apk add --no-cache curl tzdata
 
-# Configurar zona horaria de Colombia
 ENV TZ=America/Bogota
+ENV ODYSSEY_UPLOAD_DIR=/app/uploads
 
-# Crear usuario y grupo de seguridad sin privilegios de root
 RUN addgroup -g 10001 -S odyssey && \
-    adduser -u 10001 -S odyssey -G odyssey
+    adduser -u 10001 -S -h /home/odyssey -G odyssey odyssey
 
 WORKDIR /app
 
-# Crear directorio para uploads de imágenes y asignar permisos
-RUN mkdir -p /app/uploads/lugares /app/uploads/actividades /app/uploads/eventos && \
-    chown -R odyssey:odyssey /app
+RUN mkdir -p /app/uploads/lugares /app/uploads/actividades /app/uploads/eventos /home/odyssey && \
+    chown -R odyssey:odyssey /app /home/odyssey
 
-# Copiar el ejecutable empaquetado de Spring Boot
-COPY target/odyssey-0.0.1-SNAPSHOT.jar /app/odyssey.jar
-RUN chown odyssey:odyssey /app/odyssey.jar
+COPY --from=builder --chown=odyssey:odyssey /build/target/odyssey-0.0.1-SNAPSHOT.jar /app/odyssey.jar
 
-# Cambiar al usuario sin privilegios
 USER odyssey:odyssey
 
-# Exponer el puerto de la aplicación
 EXPOSE 8080
 
-# Variables de entorno JVM para contenedores
 ENV JAVA_OPTS="-XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom"
 
-# Healthcheck del contenedor
 HEALTHCHECK --interval=30s --timeout=5s --start-period=45s --retries=3 \
-  CMD curl -f http://localhost:8080/v3/api-docs || exit 1
+  CMD curl -fsS http://localhost:${PORT:-8080}/actuator/health/liveness || exit 1
 
-# Comando de arranque
 ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar /app/odyssey.jar"]

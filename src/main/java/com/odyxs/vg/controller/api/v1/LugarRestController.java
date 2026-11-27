@@ -6,6 +6,7 @@ import com.odyxs.vg.entity.Lugar;
 import com.odyxs.vg.service.LugarGeoService;
 import com.odyxs.vg.service.LugarService;
 import com.odyxs.vg.service.MetricsService;
+import com.odyxs.vg.service.SemanticVectorService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -28,6 +29,9 @@ public class LugarRestController {
 
     @Autowired
     private LugarGeoService lugarGeoService;
+
+    @Autowired
+    private SemanticVectorService semanticVectorService;
 
     @Operation(summary = "Listar lugares aprobados (con caché en memoria)",
                description = "Obtiene todos los sitios turísticos aprobados desde MySQL con caché en memoria.")
@@ -73,5 +77,15 @@ public class LugarRestController {
     public ResponseEntity<ApiResponse<List<Lugar>>> buscar(@RequestParam String q) {
         List<Lugar> resultados = lugarService.buscar(q);
         return ResponseEntity.ok(ApiResponse.ok(resultados));
+    }
+
+    @Operation(summary = "Búsqueda Vectorial Semántica (Embeddings + Similitud del Coseno v4.0)",
+               description = "Comprende la intención natural del viajero mediante vectores L2-normalizados y similitud del coseno.")
+    @GetMapping("/semantico")
+    public ResponseEntity<ApiResponse<List<SemanticVectorService.ResultadoSemanticoDto>>> buscarSemantico(
+            @Parameter(description = "Consulta en lenguaje natural") @RequestParam String q,
+            @Parameter(description = "Cantidad máxima de resultados (1..12)") @RequestParam(defaultValue = "5") int topK) {
+        List<SemanticVectorService.ResultadoSemanticoDto> resultados = semanticVectorService.buscarSemanticamente(q, topK);
+        return ResponseEntity.ok(ApiResponse.ok("Resultados ordenados por Similitud del Coseno vectorial", resultados));
     }
 }

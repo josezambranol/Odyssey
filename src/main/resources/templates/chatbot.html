@@ -262,8 +262,13 @@
                 </div>
             </div>
 
-            <!-- Input -->
+            <!-- Input + Dictado por Voz Web Speech API -->
             <div class="chat-inp">
+                <button type="button" id="micBtn" onclick="alternarDictadoVoz()"
+                        class="button button-glass" style="min-height:52px;width:52px;padding:0;border-radius:12px;border:1.5px solid #dfd6c5;color:var(--azul-dark);"
+                        title="Hablar por micrófono">
+                    <i class="fas fa-microphone" id="micIcon"></i>
+                </button>
                 <textarea id="chatInput" th:placeholder="#{chatpage.input.placeholder}" placeholder="Pregúntame sobre Cartagena (ej: playas, tarifas, restaurantes...)" rows="1"
                           onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault();enviarInput();}"
                           oninput="this.style.height='auto';this.style.height=Math.min(this.scrollHeight,150)+'px'"></textarea>
@@ -343,6 +348,43 @@ async function enviar(msg) {
     typingRow.classList.add('show');
     chatBox.scrollTop = chatBox.scrollHeight;
 
+    if (window.odysseyStreamAi) {
+        let textoAcum = '';
+        let contentEl = null, metaEl = null;
+        window.odysseyStreamAi(limpio, {
+            onToken: (chunk) => {
+                typingRow.classList.remove('show');
+                if (!contentEl) {
+                    const div = document.createElement('div');
+                    div.className = 'msg bot';
+                    div.innerHTML = `<div class="msg-av"><i class="fas fa-compass"></i></div><div class="bubble"><div class="sse-body"></div><div class="sse-meta mt-2 pt-1 border-top d-none justify-content-between align-items-center" style="font-size:0.68rem;color:#77736a;"></div></div>`;
+                    chatBox.appendChild(div);
+                    contentEl = div.querySelector('.sse-body');
+                    metaEl = div.querySelector('.sse-meta');
+                }
+                textoAcum += chunk;
+                contentEl.innerHTML = formatearMarkdownLigero(textoAcum);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            },
+            onDone: (info) => {
+                typingRow.classList.remove('show');
+                if (metaEl) {
+                    metaEl.classList.remove('d-none');
+                    metaEl.classList.add('d-flex');
+                    const motor = (info && info.motor) ? info.motor : 'Odyssey Hybrid SSE';
+                    const ttft = (info && info.ttftMs !== undefined) ? ` · TTFT ${info.ttftMs}ms` : '';
+                    metaEl.innerHTML = `<span><i class="fas fa-bolt me-1" style="color:var(--gold);"></i>${motor}${ttft}</span><button type="button" class="btn btn-link btn-sm p-0 text-decoration-none" style="font-size:0.7rem;color:var(--azul);" onclick="narrarRespuestaBot(this)"><i class="fas fa-volume-up me-1"></i>Escuchar</button>`;
+                    metaEl.dataset.raw = textoAcum;
+                }
+            },
+            onError: () => {
+                typingRow.classList.remove('show');
+                agregarMsg(CHAT_ERR_CONEXION, 'bot');
+            }
+        });
+        return;
+    }
+
     try {
         const res = await fetch('/chatbot/respuesta', {
             method: 'POST',
@@ -356,6 +398,37 @@ async function enviar(msg) {
         typingRow.classList.remove('show');
         agregarMsg(CHAT_ERR_CONEXION, 'bot');
     }
+}
+
+function narrarRespuestaBot(btn) {
+    if (!('speechSynthesis' in window)) return;
+    const raw = (btn.parentElement && btn.parentElement.dataset.raw) || '';
+    if (!raw) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(raw.replace(/[*`#•]/g, ''));
+    utter.lang = document.documentElement.lang === 'en' ? 'en-US' : 'es-CO';
+    window.speechSynthesis.speak(utter);
+}
+
+let recVoz = null, escuchandoVoz = false;
+function alternarDictadoVoz() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) { alert('Tu navegador no soporta reconocimiento de voz directo.'); return; }
+    const btn = document.getElementById('micBtn');
+    if (escuchandoVoz && recVoz) { recVoz.stop(); return; }
+    recVoz = new SR();
+    recVoz.lang = document.documentElement.lang === 'en' ? 'en-US' : 'es-CO';
+    recVoz.interimResults = true;
+    recVoz.onstart = () => { escuchandoVoz = true; btn.style.background = '#ef4444'; btn.style.color = '#fff'; };
+    recVoz.onresult = (ev) => {
+        let t = '';
+        for (let i = ev.resultIndex; i < ev.results.length; i++) t += ev.results[i][0].transcript;
+        document.getElementById('chatInput').value = t;
+        if (ev.results[ev.results.length - 1].isFinal) { recVoz.stop(); setTimeout(() => enviarInput(), 180); }
+    };
+    recVoz.onend = () => { escuchandoVoz = false; btn.style.background = ''; btn.style.color = 'var(--azul-dark)'; };
+    recVoz.onerror = () => { escuchandoVoz = false; btn.style.background = ''; btn.style.color = 'var(--azul-dark)'; };
+    recVoz.start();
 }
 
 function enviarInput() {

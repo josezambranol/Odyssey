@@ -349,6 +349,11 @@
                             <button class="layer-btn active" onclick="cambiarCapaMapa('voyager', this)">🗺️ Editorial</button>
                             <button class="layer-btn" onclick="cambiarCapaMapa('dark', this)">🌙 Nocturno</button>
                         </div>
+                        <div id="marineStatusBadge" class="px-2 py-1 rounded-3 small d-flex align-items-center justify-content-between"
+                             style="background:rgba(46,204,113,0.14);border:1px solid rgba(46,204,113,0.35);font-size:0.71rem;">
+                            <span id="marineStatusText">⚓ Calculando viento marino...</span>
+                            <strong id="marineWindValue" class="ms-2">-- km/h</strong>
+                        </div>
                     </div>
 
                     <!-- WIDGET 3 (BOTTOM-LEFT): Radar de Proximidad -->
@@ -382,16 +387,21 @@
                                 <h5 class="fw-bold mb-0 text-white" style="font-family:'Cormorant Garamond',serif;font-size:1.3rem;" id="inspNombre">Lugar</h5>
                                 <span class="badge bg-light text-dark small" id="inspDistancia">0 m</span>
                             </div>
-                            <p class="small mb-3" style="color:rgba(255,255,255,0.78);line-height:1.45;" id="inspDesc">Descripción</p>
+                            <p class="small mb-2" style="color:rgba(255,255,255,0.78);line-height:1.45;" id="inspDesc">Descripción</p>
+                            <div id="routeInfoPill" class="small mb-2 px-2 py-1 rounded-3 d-none"
+                                 style="background:rgba(212,166,74,0.16);border:1px solid rgba(212,166,74,0.35);color:#f3c86b;font-size:0.73rem;"></div>
                             <div class="d-flex flex-wrap gap-2">
                                 <a id="inspDetailLink" href="/lugares/1" class="btn btn-sm rounded-pill px-3 fw-bold" style="background:#d4a64a;color:#071630;">
-                                    <i class="fas fa-star me-1"></i>Ficha &amp; Reseñas
+                                    <i class="fas fa-star me-1"></i>Ficha
                                 </a>
+                                <button type="button" class="btn btn-sm btn-outline-info rounded-pill px-3" onclick="trazarRutaInteractiva()">
+                                    <i class="fas fa-route me-1"></i>Trazar Ruta
+                                </button>
                                 <button type="button" class="btn btn-sm btn-outline-warning rounded-pill px-3" onclick="narrarLugarActivo()">
                                     <i class="fas fa-volume-up me-1"></i>Audioguía
                                 </button>
                                 <a id="inspGmapsLink" href="#" target="_blank" class="btn btn-sm btn-outline-light rounded-pill px-3">
-                                    <i class="fas fa-directions me-1"></i>Ruta
+                                    <i class="fas fa-directions me-1"></i>GPS
                                 </a>
                             </div>
                         </div>
@@ -466,6 +476,7 @@ let radarCircle = L.circle([centroRadar.lat, centroRadar.lng], {
 }).addTo(map);
 
 let marcadoresLayer = L.layerGroup().addTo(map);
+let rutaActivaLayer = L.layerGroup().addTo(map);
 
 function cambiarCapaMapa(clave, btn) {
     document.querySelectorAll('.layer-btn').forEach(b => b.classList.remove('active'));
@@ -595,8 +606,81 @@ function enfocarPunto(idx) {
 
 function cerrarInspector() {
     document.getElementById('inspectorCard').style.display = 'none';
+    rutaActivaLayer.clearLayers();
+    const pill = document.getElementById('routeInfoPill');
+    if (pill) pill.classList.add('d-none');
     if ('speechSynthesis' in window) window.speechSynthesis.cancel();
 }
+
+async function trazarRutaInteractiva() {
+    if (!lugarSeleccionado) return;
+    rutaActivaLayer.clearLayers();
+    const pill = document.getElementById('routeInfoPill');
+    pill.classList.remove('d-none');
+    pill.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i>Calculando trazado geodésico...';
+
+    if (lugarSeleccionado.lat < 10.35) {
+        const bodeguita = [10.4216, -75.5495];
+        const destino = [lugarSeleccionado.lat, lugarSeleccionado.lng];
+        const poly = L.polyline([bodeguita, [10.3650, -75.5750], destino], {
+            color: '#38bdf8', weight: 4, dashArray: '8, 8', opacity: 0.92
+        }).addTo(rutaActivaLayer);
+        map.fitBounds(poly.getBounds(), { padding: [50, 50] });
+        pill.innerHTML = '🚤 <strong>Ruta Náutica desde Muelle de la Bodeguita:</strong> ~45–55 min en lancha ($70.000–$90.000 COP + tasa).';
+        return;
+    }
+
+    try {
+        const osrmUrl = `https://router.project-osrm.org/route/v1/foot/${centroRadar.lng},${centroRadar.lat};${lugarSeleccionado.lng},${lugarSeleccionado.lat}?overview=full&geometries=geojson`;
+        const res = await fetch(osrmUrl);
+        const data = await res.json();
+        if (data.code === 'Ok' && data.routes && data.routes.length > 0) {
+            const route = data.routes[0];
+            const coords = route.geometry.coordinates.map(c => [c[1], c[0]]);
+            const poly = L.polyline(coords, { color: '#f3c86b', weight: 5, opacity: 0.92 }).addTo(rutaActivaLayer);
+            map.fitBounds(poly.getBounds(), { padding: [60, 60] });
+            const km = (route.distance / 1000).toFixed(2);
+            const minPie = Math.max(2, Math.round((route.distance / 1000) * 13));
+            const tarifaDatt = route.distance <= 3500 ? '$10.000 COP' : '~$16.000 COP';
+            pill.innerHTML = `🚶 <strong>Desde ${centroRadar.nombre}:</strong> ${km} km (~${minPie} min a pie · Taxi DATT: ${tarifaDatt})`;
+            return;
+        }
+    } catch (_) {}
+
+    const poly = L.polyline([[centroRadar.lat, centroRadar.lng], [lugarSeleccionado.lat, lugarSeleccionado.lng]], {
+        color: '#d4a64a', weight: 4, dashArray: '6, 6'
+    }).addTo(rutaActivaLayer);
+    map.fitBounds(poly.getBounds(), { padding: [60, 60] });
+    pill.innerHTML = `🧭 <strong>Rumbo directo desde ${centroRadar.nombre}:</strong> ${lugarSeleccionado.distanciaTexto}`;
+}
+
+async function cargarSemaforoMaritimo() {
+    const badge = document.getElementById('marineStatusBadge');
+    const txt = document.getElementById('marineStatusText');
+    const val = document.getElementById('marineWindValue');
+    if (!badge || !txt || !val) return;
+    try {
+        const r = await fetch('https://api.open-meteo.com/v1/forecast?latitude=10.3910&longitude=-75.4794&current=wind_speed_10m&timezone=America%2FBogota');
+        const d = await r.json();
+        const wind = Math.round((d.current && d.current.wind_speed_10m) || 16);
+        val.textContent = `${wind} km/h`;
+        if (wind < 20) {
+            txt.textContent = '🟢 Mar calmo · Zarpe óptimo a Islas';
+        } else if (wind <= 32) {
+            badge.style.background = 'rgba(241,196,15,0.16)';
+            badge.style.borderColor = 'rgba(241,196,15,0.45)';
+            txt.textContent = '🟡 Brisa alisios · Navegación normal';
+        } else {
+            badge.style.background = 'rgba(231,76,60,0.2)';
+            badge.style.borderColor = 'rgba(231,76,60,0.5)';
+            txt.textContent = '🔴 Mar picado · Precaución en lanchas';
+        }
+    } catch (_) {
+        txt.textContent = '🟢 Bahía protegida · Consulta capitanía';
+        val.textContent = '~18 km/h';
+    }
+}
+cargarSemaforoMaritimo();
 
 function narrarLugarActivo() {
     if (!lugarSeleccionado || !('speechSynthesis' in window)) return;

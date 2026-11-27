@@ -1,0 +1,52 @@
+{
+  "name": "ODYSSEY — Guía Turística & Concierge IA de Cartagena",
+  "short_name": "Odyssey CTG",
+  "description": "Guía turística bilingüe, radar geoespacial Haversine, tarifas oficiales DATT y Concierge con IA en tiempo real para Cartagena de Indias.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#071630",
+  "theme_color": "#0b2d6b",
+  "lang": "es-CO",
+  "categories": ["travel", "navigation", "lifestyle"],
+  "icons": [
+    {
+      "src": "/img/favicon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/img/favicon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/img/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Radar Cerca de Mí",
+      "short_name": "Mapa Radar",
+      "url": "/mapa",
+      "icons": [{ "src": "/img/favicon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Concierge IA en Vivo",
+      "short_name": "Concierge IA",
+      "url": "/chatbot",
+      "icons": [{ "src": "/img/favicon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tarifas DATT y Transporte",
+      "short_name": "Transporte",
+      "url": "/transporte",
+      "icons": [{ "src": "/img/favicon-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

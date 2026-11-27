@@ -12,12 +12,16 @@ import com.odyxs.vg.repository.ChatbotLogRepository;
 import com.odyxs.vg.repository.ChatbotRespuestaRepository;
 import com.odyxs.vg.repository.EventoRepository;
 import com.odyxs.vg.repository.LugarRepository;
+import io.micrometer.core.instrument.MeterRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -26,6 +30,8 @@ import java.nio.charset.StandardCharsets;
 import java.text.Normalizer;
 import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Service
@@ -34,7 +40,7 @@ public class GeminiAiService {
     private static final Logger log = LoggerFactory.getLogger(GeminiAiService.class);
 
     @Value("${gemini.api.key:}")
-    private String geminiApiKey;
+    private volatile String geminiApiKey;
 
     @Autowired(required = false)
     private ChatbotLogRepository chatbotLogRepository;
@@ -54,9 +60,15 @@ public class GeminiAiService {
     @Autowired(required = false)
     private MetricsService metricsService;
 
+    @Autowired(required = false)
+    private SemanticVectorService semanticVectorService;
+
+    @Autowired(required = false)
+    private MeterRegistry meterRegistry;
+
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final HttpClient httpClient = HttpClient.newBuilder()
-            .version(HttpClient.Version.HTTP_1_1)
+            .version(HttpClient.Version.HTTP_2)
             .connectTimeout(Duration.ofSeconds(8))
             .build();
 
@@ -80,6 +92,8 @@ public class GeminiAiService {
             "Official facts: Transcaribe bus is $3,000 COP (Line T102 Airport-Center; T103 Bocagrande). " +
             "Yellow taxis use DATT flat rates (Airport-Center ~$16,000 COP). Boats to Rosario Islands depart from Muelle de la Bodeguita.";
 
+    public record ResultadoStreamIa(String respuestaCompleta, String motor, String categoria, long duracionMs) {}
+
     public synchronized void actualizarApiKey(String nuevaKey) {
         if (nuevaKey != null && !nuevaKey.isBlank()) {
             this.geminiApiKey = nuevaKey.trim();
@@ -88,15 +102,83 @@ public class GeminiAiService {
     }
 
     public boolean tieneGeminiKeyConfigurada() {
-        return geminiApiKey != null && !geminiApiKey.isBlank()
-                && !geminiApiKey.contains("TU_KEY")
-                && !geminiApiKey.contains("tu_api_key");
+        String k = this.geminiApiKey;
+        return k != null && !k.isBlank()
+                && !k.contains("TU_KEY")
+                && !k.contains("tu_api_key");
+    }
+
+    public String obtenerNombreMotorActivo() {
+        return tieneGeminiKeyConfigurada()
+                ? "Google Gemini 2.5 Flash (SSE Stream + Vector RAG)"
+                : "Odyssey Semantic Vector RAG · Cartagena";
     }
 
     public static String normalizarTexto(String input) {
         if (input == null) return "";
         String norm = Normalizer.normalize(input, Normalizer.Form.NFD);
         return norm.replaceAll("\\p{InCombiningDiacriticalMarks}+", "").toLowerCase(Locale.ROOT);
+    }
+
+    public ResultadoStreamIa responderEnStream(String mensajeRaw, boolean enIngles, String clientIp,
+                                               Consumer<String> onTokenChunk) {
+        long inicio = System.currentTimeMillis();
+        if (mensajeRaw == null || mensajeRaw.isBlank()) {
+            String bienvenida = enIngles
+                    ? "How can I help you explore Cartagena de Indias today? 🌊"
+                    : "¿En qué puedo ayudarte a explorar Cartagena de Indias hoy? 🌊";
+            onTokenChunk.accept(bienvenida);
+            return new ResultadoStreamIa(bienvenida, obtenerNombreMotorActivo(), "saludo", 1L);
+        }
+
+        String mensaje = mensajeRaw.replace("[[", "").replace("]]", "").trim();
+        if (metricsService != null && !metricsService.verificarLimiteRateChatbot(clientIp)) {
+            String limite = enIngles
+                    ? "⚠️ Too many requests. Please wait a minute before asking again."
+                    : "⚠️ Has enviado muchas preguntas en poco tiempo. Por favor espera un minuto.";
+            onTokenChunk.accept(limite);
+            return new ResultadoStreamIa(limite, "Rate Limiter Guard", "rate_limit", 1L);
+        }
+
+        String categoria = detectarCategoria(normalizarTexto(mensaje));
+        String contextoCompacto = construirContextoCompactoRag(mensaje);
+        String systemPrompt = (enIngles ? BASE_SYSTEM_EN : BASE_SYSTEM_ES)
+                + (contextoCompacto.isBlank() ? "" : "\n" + contextoCompacto);
+
+        StringBuilder acumulado = new StringBuilder();
+        String motorUsado = "Odyssey Vector RAG Local";
+        boolean exito = false;
+        String errorMsg = null;
+
+        if (tieneGeminiKeyConfigurada()) {
+            try {
+                boolean streameado = streamDesdeGoogleGemini(mensaje, systemPrompt, chunk -> {
+                    acumulado.append(chunk);
+                    onTokenChunk.accept(chunk);
+                });
+                if (streameado && !acumulado.isEmpty()) {
+                    exito = true;
+                    motorUsado = "Google Gemini 2.5 Flash · Live SSE";
+                }
+            } catch (Exception ex) {
+                log.warn("[ODYSSEY-AI-STREAM] Fallo en stream Gemini: {}. Usando RAG vectorial local.", ex.getMessage());
+                errorMsg = ex.getMessage();
+            }
+        }
+
+        if (!exito || acumulado.isEmpty()) {
+            String completa = sintetizarRespuestaRagLocal(mensaje, categoria, enIngles);
+            exito = true;
+            emitirTextoEnChunksProgresivos(completa, chunk -> {
+                acumulado.append(chunk);
+                onTokenChunk.accept(chunk);
+            });
+        }
+
+        long duracionMs = System.currentTimeMillis() - inicio;
+        registrarMetricasIa(categoria, motorUsado, duracionMs, exito);
+        registrarLogChatbot(mensaje, acumulado.toString(), duracionMs, categoria, clientIp, enIngles ? "en" : "es", exito, errorMsg);
+        return new ResultadoStreamIa(acumulado.toString(), motorUsado, categoria, duracionMs);
     }
 
     public String responder(String mensajeRaw, boolean enIngles, String clientIp) {
@@ -123,13 +205,14 @@ public class GeminiAiService {
         String respuesta = null;
         boolean exito = false;
         String errorMsg = null;
+        String motorUsado = "Odyssey Vector RAG Local";
 
-        // NIVEL 1: Google Gemini API Oficial (si la API Key está configurada)
         if (tieneGeminiKeyConfigurada()) {
             try {
                 respuesta = llamarGoogleGeminiMultiModelo(mensaje, systemPrompt);
                 if (respuesta != null && !respuesta.isBlank()) {
                     exito = true;
+                    motorUsado = "Google Gemini 2.5 Flash";
                 }
             } catch (Exception ex) {
                 log.warn("[ODYSSEY-AI] Fallo en Gemini API directa: {}. Usando motor RAG local.", ex.getMessage());
@@ -137,23 +220,117 @@ public class GeminiAiService {
             }
         }
 
-        // NIVEL 2: Motor RAG Local Inteligente + Síntesis Dinámica de Planes y Lugares
         if (!exito || respuesta == null || respuesta.isBlank()) {
             respuesta = sintetizarRespuestaRagLocal(mensaje, categoriaDetectada, enIngles);
+            exito = true;
         }
 
         long duracionMs = System.currentTimeMillis() - inicio;
+        registrarMetricasIa(categoriaDetectada, motorUsado, duracionMs, exito);
         registrarLogChatbot(mensaje, respuesta, duracionMs, categoriaDetectada, clientIp, enIngles ? "en" : "es", exito, errorMsg);
 
         return respuesta;
     }
 
-    /**
-     * Construye un contexto RAG ultracompacto (< 700 caracteres) con los lugares más relevantes a la pregunta
-     * para garantizar respuestas rápidas (< 4s) en los motores generativos.
-     */
+    private boolean streamDesdeGoogleGemini(String mensaje, String systemPrompt, Consumer<String> onChunk) throws Exception {
+        String requestJson = construirPayloadGeminiJson(mensaje, systemPrompt);
+        Exception lastEx = null;
+
+        for (String model : GEMINI_MODELS) {
+            try {
+                String url = "https://generativelanguage.googleapis.com/v1beta/models/"
+                        + model + ":streamGenerateContent?alt=sse&key=" + geminiApiKey;
+                HttpRequest request = HttpRequest.newBuilder()
+                        .uri(URI.create(url))
+                        .timeout(Duration.ofSeconds(20))
+                        .header("Content-Type", "application/json; charset=utf-8")
+                        .POST(HttpRequest.BodyPublishers.ofString(requestJson, StandardCharsets.UTF_8))
+                        .build();
+
+                HttpResponse<InputStream> resp = httpClient.send(request, HttpResponse.BodyHandlers.ofInputStream());
+                if (resp.statusCode() == 200) {
+                    boolean recibio = false;
+                    try (BufferedReader reader = new BufferedReader(new InputStreamReader(resp.body(), StandardCharsets.UTF_8))) {
+                        String line;
+                        while ((line = reader.readLine()) != null) {
+                            if (line.startsWith("data:")) {
+                                String jsonChunk = line.substring(5).trim();
+                                if (jsonChunk.isEmpty() || "[DONE]".equals(jsonChunk)) continue;
+                                JsonNode root = objectMapper.readTree(jsonChunk);
+                                JsonNode parts = root.path("candidates").path(0).path("content").path("parts");
+                                if (parts.isArray() && !parts.isEmpty()) {
+                                    String piece = parts.get(0).path("text").asText("");
+                                    if (!piece.isEmpty()) {
+                                        onChunk.accept(piece);
+                                        recibio = true;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (recibio) return true;
+                } else {
+                    lastEx = new RuntimeException("Gemini SSE HTTP " + resp.statusCode());
+                }
+            } catch (Exception ex) {
+                lastEx = ex;
+            }
+        }
+        if (lastEx != null) throw lastEx;
+        return false;
+    }
+
+    private void emitirTextoEnChunksProgresivos(String texto, Consumer<String> onChunk) {
+        if (texto == null || texto.isEmpty()) return;
+        String[] tokens = texto.split("(?<=\\s)");
+        StringBuilder buffer = new StringBuilder();
+        int count = 0;
+        for (String tok : tokens) {
+            buffer.append(tok);
+            count++;
+            if (count >= 3) {
+                onChunk.accept(buffer.toString());
+                buffer.setLength(0);
+                count = 0;
+                try {
+                    Thread.sleep(16);
+                } catch (InterruptedException ie) {
+                    Thread.currentThread().interrupt();
+                    break;
+                }
+            }
+        }
+        if (!buffer.isEmpty()) {
+            onChunk.accept(buffer.toString());
+        }
+    }
+
+    private String construirPayloadGeminiJson(String mensaje, String systemPrompt) throws Exception {
+        Map<String, Object> systemPart = Map.of("text", systemPrompt);
+        Map<String, Object> systemInstruction = Map.of("parts", List.of(systemPart));
+        Map<String, Object> userPart = Map.of("text", mensaje);
+        Map<String, Object> userContent = Map.of("role", "user", "parts", List.of(userPart));
+        Map<String, Object> generationConfig = Map.of(
+                "maxOutputTokens", 750,
+                "temperature", 0.65
+        );
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("systemInstruction", systemInstruction);
+        payload.put("contents", List.of(userContent));
+        payload.put("generationConfig", generationConfig);
+        return objectMapper.writeValueAsString(payload);
+    }
+
     private String construirContextoCompactoRag(String consulta) {
         try {
+            if (semanticVectorService != null) {
+                var topSemanticos = semanticVectorService.buscarSemanticamente(consulta, 4);
+                if (!topSemanticos.isEmpty()) {
+                    return "Contexto Vectorial Odyssey (Cosine Top-4): " + topSemanticos.stream()
+                            .map(r -> r.nombre() + " [" + r.ubicacion() + " · afinidad " + r.porcentajeAfinidad() + "%]")
+                            .collect(Collectors.joining("; "));
+                }
+            }
             if (lugarRepository == null) return "";
             String qNorm = normalizarTexto(consulta);
             List<String> tokens = Arrays.stream(qNorm.split("[^a-z0-9]+"))
@@ -191,23 +368,7 @@ public class GeminiAiService {
     }
 
     private String llamarGoogleGeminiMultiModelo(String mensaje, String systemPrompt) throws Exception {
-        Map<String, Object> systemPart = Map.of("text", systemPrompt);
-        Map<String, Object> systemInstruction = Map.of("parts", List.of(systemPart));
-
-        Map<String, Object> userPart = Map.of("text", mensaje);
-        Map<String, Object> userContent = Map.of("role", "user", "parts", List.of(userPart));
-
-        Map<String, Object> generationConfig = Map.of(
-                "maxOutputTokens", 700,
-                "temperature", 0.65
-        );
-
-        Map<String, Object> payload = new LinkedHashMap<>();
-        payload.put("systemInstruction", systemInstruction);
-        payload.put("contents", List.of(userContent));
-        payload.put("generationConfig", generationConfig);
-
-        String requestJson = objectMapper.writeValueAsString(payload);
+        String requestJson = construirPayloadGeminiJson(mensaje, systemPrompt);
         Exception lastEx = null;
 
         for (String model : GEMINI_MODELS) {
@@ -239,26 +400,20 @@ public class GeminiAiService {
         throw lastEx != null ? lastEx : new RuntimeException("No se pudo conectar con Google Gemini API");
     }
 
-    /**
-     * Motor RAG Local Inteligente con normalización sin tildes y generador de planes dinámicos.
-     */
     private String sintetizarRespuestaRagLocal(String mensaje, String categoria, boolean enIngles) {
         String qNorm = normalizarTexto(mensaje);
         List<String> tokens = Arrays.stream(qNorm.split("[^a-z0-9]+"))
                 .filter(w -> w.length() >= 4 && !Set.of("para", "como", "donde", "cual", "cuales", "quiero", "puedo", "cartagena", "hacer", "recomiendas", "recomendacion").contains(w))
                 .toList();
 
-        // 1. Si el usuario pide un PLAN, ITINERARIO, CITA ROMÁNTICA o RUTA:
         if (qNorm.matches(".*(plan|itinerario|romantic|pareja|cita|atardecer|noche|ruta|recorrido|dia|dias).*")) {
             return construirPlanPersonalizadoRag(qNorm, tokens);
         }
 
-        // 2. Si el usuario pregunta por los MEJORES LUGARES, QUÉ VISITAR, SITIOS RECOMENDADOS:
         if (qNorm.matches(".*(mejor|lugares|sitios|visitar|conocer|imperdibl|atracci|destacado|top|recomend|must see|best places|places to visit).*")) {
             return construirGuiaMejoresLugaresRag(enIngles);
         }
 
-        // 2. Buscar lugares específicos por relevancia (sin importar tildes)
         if (lugarRepository != null && !tokens.isEmpty()) {
             try {
                 List<Lugar> aprobados = lugarRepository.findByEstado(Lugar.Estado.APROBADO);
@@ -280,7 +435,6 @@ public class GeminiAiService {
             } catch (Exception ignored) {}
         }
 
-        // 3. Buscar en la base de conocimiento MySQL según la categoría detectada
         if (chatbotRespuestaRepository != null && !"general".equals(categoria)) {
             Optional<ChatbotRespuesta> opt = chatbotRespuestaRepository.findByClave(categoria);
             if (opt.isPresent()) {
@@ -288,7 +442,6 @@ public class GeminiAiService {
             }
         }
 
-        // 4. Respuesta general enriquecida
         if (chatbotRespuestaRepository != null) {
             Optional<ChatbotRespuesta> saludo = chatbotRespuestaRepository.findByClave("saludo");
             if (saludo.isPresent()) {
@@ -347,6 +500,16 @@ public class GeminiAiService {
           .append("🌇 **Tarde y Noche Cultural (4:30 PM - 9:00 PM):**\n")
           .append("Sube a las murallas en el **Baluarte de Santo Domingo** para el atardecer y termina la noche explorando los murales, artistas callejeros y gastronomía de **Getsemaní** (Plaza de la Trinidad y **Celele**).");
         return sb.toString();
+    }
+
+    private void registrarMetricasIa(String categoria, String motor, long duracionMs, boolean exito) {
+        if (meterRegistry == null) return;
+        try {
+            meterRegistry.counter("odyssey.ai.consultas",
+                    "categoria", categoria, "motor", motor, "exito", String.valueOf(exito)).increment();
+            meterRegistry.timer("odyssey.ai.latencia", "motor", motor)
+                    .record(duracionMs, TimeUnit.MILLISECONDS);
+        } catch (Exception ignored) {}
     }
 
     private void registrarLogChatbot(String mensaje, String respuesta, long duracionMs,
