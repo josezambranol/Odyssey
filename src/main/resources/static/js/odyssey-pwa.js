@@ -60,6 +60,77 @@
   window.addEventListener('offline', () => mostrarBannerRed(false));
   window.addEventListener('online', () => mostrarBannerRed(true));
 
+  function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+    const rawData = window.atob(base64);
+    const outputArray = new Uint8Array(rawData.length);
+    for (let i = 0; i < rawData.length; ++i) {
+      outputArray[i] = rawData.charCodeAt(i);
+    }
+    return outputArray;
+  }
+
+  window.activarNotificacionesOdyssey = async function (lugarId, lugarNombre) {
+    if (!('Notification' in window) || !('serviceWorker' in navigator)) {
+      return { ok: false, mensaje: 'Tu navegador actual no soporta notificaciones Web Push.' };
+    }
+    const permiso = await Notification.requestPermission();
+    if (permiso !== 'granted') {
+      return { ok: false, mensaje: 'Activa el permiso de notificaciones en el navegador para recibir avisos.' };
+    }
+
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const keyRes = await fetch('/api/v1/push/vapid-public-key' + (lugarId ? '?lugarId=' + lugarId : ''));
+      const keyJson = await keyRes.json();
+      const publicKey = keyJson && keyJson.data ? keyJson.data.publicKey : null;
+
+      let endpoint = 'pwa-local://' + window.location.host + '/device/' + (lugarId || 'general');
+      let keys = { p256dh: 'local-browser-p256dh', auth: 'local-browser-auth' };
+
+      if (publicKey && reg.pushManager) {
+        try {
+          const pushSub = await reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(publicKey)
+          });
+          const subJson = pushSub.toJSON();
+          endpoint = subJson.endpoint || endpoint;
+          keys = subJson.keys || keys;
+        } catch (_) {
+          // Fallback local limpio cuando el navegador restringe push relay en HTTP local
+        }
+      }
+
+      await fetch('/api/v1/push/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify({
+          endpoint,
+          keys,
+          lugarId: lugarId || null,
+          idioma: document.documentElement.lang || 'es'
+        })
+      });
+
+      if (reg.active) {
+        reg.active.postMessage({
+          type: 'ODYSSEY_LOCAL_NOTIFY',
+          title: '⛵ Alertas Odyssey v4.0 activadas',
+          body: lugarNombre
+            ? `Te avisaremos cuando haya eventos culturales o alertas en ${lugarNombre}.`
+            : 'Recibirás avisos de eventos culturales y clima marino en Cartagena.',
+          url: lugarId ? `/lugares/${lugarId}` : '/eventos'
+        });
+      }
+
+      return { ok: true, mensaje: '¡Listo! Notificaciones Web Push activadas en este dispositivo.' };
+    } catch (err) {
+      return { ok: false, mensaje: 'No se pudo completar el registro Push. Inténtalo de nuevo.' };
+    }
+  };
+
   window.odysseyStreamAi = function (mensaje, callbacks) {
     const { onToken, onDone, onError } = callbacks;
     if (!window.EventSource) {

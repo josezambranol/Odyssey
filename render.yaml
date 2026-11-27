@@ -1,0 +1,31 @@
+# ══════════════════════════════════════════════════════════════════════════════
+# ODYSSEY v4.0.0 — Blueprint de Despliegue Cloud Gratuito ($0.00 / mes)
+# Diseñado con hibernación bajo demanda (SIN auto-ping keep-alive) para jamás
+# agotar las 750 horas mensuales gratuitas ni disparar suspensiones HTTP 503.
+# Base de datos recomendada ($0): TiDB Cloud Serverless (5 GB MySQL 8 gratis) o Aiven Free.
+# ══════════════════════════════════════════════════════════════════════════════
+services:
+  - type: web
+    name: odyssey-cartagena
+    runtime: docker
+    plan: free
+    region: ohio
+    autoDeploy: true
+    healthCheckPath: /actuator/health/liveness
+    envVars:
+      - key: TZ
+        value: America/Bogota
+      - key: JAVA_OPTS
+        value: "-XX:+UseContainerSupport -XX:MaxRAMPercentage=70.0 -XX:+UseSerialGC -XX:+ExitOnOutOfMemoryError -Djava.security.egd=file:/dev/./urandom"
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: MAIL_USERNAME
+        sync: false
+      - key: MAIL_PASSWORD
+        sync: false

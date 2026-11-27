@@ -87,14 +87,17 @@
                 <a href="/buscar?q=castillo" class="ed-pill">Castillo</a>
                 <a href="/buscar?q=hotel" class="ed-pill">Hotel</a>
                 <a href="/buscar?q=restaurante" class="ed-pill">Restaurante</a>
-                <a href="/buscar?q=isla" class="ed-pill">Islas</a>
+                <a href="/buscar?q=aniversario+romantico+frente+al+mar" class="ed-pill">💍 Plan romántico</a>
+                <a href="/buscar?q=tuneles+e+historia+de+piratas" class="ed-pill">🏴‍☠️ Historia pirata</a>
+                <a href="/buscar?q=snorkel+en+arrecifes+de+coral" class="ed-pill">🤿 Snorkel coral</a>
+                <a href="/buscar?q=plan+gratis+y+economico" class="ed-pill">💸 Plan gratis</a>
             </div>
         </div>
     </div>
 
     <section class="ed-band-compact pb-5">
         <div class="container">
-            <div th:if="${!#strings.isEmpty(query)}" class="ed-section-head">
+            <div th:if="${!#strings.isEmpty(query) and !#lists.isEmpty(lugares)}" class="ed-section-head">
                 <span class="eyebrow">
                     <i class="fas fa-compass"></i>
                     <span th:text="${#lists.size(lugares) + ' ' + (#lists.size(lugares) == 1 ? #messages.msg('plural.lugar') : #messages.msg('plural.lugares'))}">N resultados</span>
@@ -127,10 +130,53 @@
                 </a>
             </div>
 
-            <div class="empty-editorial my-4" th:if="${#lists.isEmpty(lugares)}">
+            <!-- Motor de Búsqueda Semántica Vectorial v4.0 -->
+            <div th:if="${!#strings.isEmpty(query) and !#lists.isEmpty(resultadosSemanticos)}" class="mt-5 pt-3">
+                <div class="ed-section-head">
+                    <span class="eyebrow">
+                        <i class="fas fa-brain"></i>
+                        <span>Inteligencia Semántica Vectorial v4.0</span>
+                    </span>
+                    <h2>Recomendados por <em>intención de viaje</em></h2>
+                    <p class="text-muted small mb-0">
+                        Calculado por similitud del coseno sobre embeddings vectoriales ·
+                        <strong th:text="${motorVectorial}">Odyssey Vector Engine</strong>
+                    </p>
+                </div>
+
+                <div class="destination-grid">
+                    <a th:each="sem : ${resultadosSemanticos}"
+                       th:href="@{/lugares/{id}(id=${sem.lugarId})}"
+                       class="destination-card">
+                        <div class="destination-card-image">
+                            <img th:src="${sem.imagenUrl != null ? sem.imagenUrl : '/img/hero-murallas.jpg'}"
+                                 th:alt="${sem.nombre}"
+                                 loading="lazy" decoding="async"
+                                 onerror="this.src='/img/hero-murallas.jpg'">
+                            <span class="destination-badge" th:text="${sem.categoria}">Categoría</span>
+                            <span class="verified-badge" style="background:rgba(7,22,48,.88); color:#f3c86b;">
+                                <i class="fas fa-sparkles me-1"></i>
+                                <span th:text="${sem.porcentajeAfinidad + '% afinidad'}">92% afinidad</span>
+                            </span>
+                        </div>
+                        <div class="destination-card-body">
+                            <h3 th:text="${sem.nombre}">Nombre</h3>
+                            <p class="mb-2">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span th:text="${sem.ubicacion}">Ubicación</span>
+                            </p>
+                            <p class="small text-muted mb-2" style="line-height:1.45;"
+                               th:text="${#strings.abbreviate(sem.descripcion, 115)}">Descripción semántica</p>
+                            <span><span th:text="#{lugares.verDetalles}">Ver detalles</span> <i class="fas fa-arrow-right ms-1"></i></span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <div class="empty-editorial my-4" th:if="${#lists.isEmpty(lugares) and #lists.isEmpty(resultadosSemanticos)}">
                 <i class="fas fa-search mb-3"></i>
                 <h3 style="color:var(--azul-dark);" th:text="${!#strings.isEmpty(query) ? 'Sin resultados para: &quot;' + query + '&quot;' : 'Explora Cartagena'}">Sin resultados</h3>
-                <p class="text-muted mb-4">Intenta con términos más generales: playa, museo, restaurante, hotel...</p>
+                <p class="text-muted mb-4">Prueba describiendo tu plan ideal: "aniversario frente al mar", "snorkel en arrecifes" o "historia militar".</p>
                 <div class="d-flex justify-content-center gap-2 flex-wrap">
                     <a href="/lugares?categoriaId=0" class="button button-primary" th:text="#{lugares.verTodos}">Ver todos</a>
                     <a href="/" class="button button-gold" th:text="#{nav.inicio}">Inicio</a>

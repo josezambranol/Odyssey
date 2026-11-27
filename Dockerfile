@@ -16,7 +16,7 @@ RUN mvn clean package -DskipTests -B
 FROM eclipse-temurin:21-jre-alpine AS runner
 
 LABEL maintainer="Equipo Odyssey <soporte@odyssey.com>"
-LABEL description="Odyssey 3.0/4.0 - Guía Turística Inteligente, PWA & Concierge IA para Cartagena de Indias"
+LABEL description="Odyssey 4.0.0 - Guía Turística Inteligente, RAG Vectorial, Clima Marino & PWA Web Push"
 
 RUN apk add --no-cache curl tzdata
 
@@ -31,7 +31,7 @@ WORKDIR /app
 RUN mkdir -p /app/uploads/lugares /app/uploads/actividades /app/uploads/eventos /home/odyssey && \
     chown -R odyssey:odyssey /app /home/odyssey
 
-COPY --from=builder --chown=odyssey:odyssey /build/target/odyssey-0.0.1-SNAPSHOT.jar /app/odyssey.jar
+COPY --from=builder --chown=odyssey:odyssey /build/target/odyssey-*.jar /app/odyssey.jar
 
 USER odyssey:odyssey
 

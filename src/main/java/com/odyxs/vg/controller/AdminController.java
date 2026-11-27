@@ -10,6 +10,7 @@ import com.odyxs.vg.service.ActividadService;
 import com.odyxs.vg.service.CategoriaService;
 import com.odyxs.vg.service.FileStorageService;
 import com.odyxs.vg.service.LugarService;
+import com.odyxs.vg.service.WebPushNotificationService;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.annotation.CacheEvict;
@@ -34,6 +35,7 @@ public class AdminController {
     @Autowired private EventoRepository  eventoRepo;
     @Autowired private ActividadService  actividadService;
     @Autowired private FileStorageService fileStorageService;
+    @Autowired(required = false) private WebPushNotificationService pushNotificationService;
 
     @GetMapping("/admin")
     public String panelAdmin(Model model) {
@@ -166,6 +168,14 @@ public class AdminController {
             }
             e.setActivo(true);
             eventoRepo.save(e);
+            if (pushNotificationService != null) {
+                pushNotificationService.publicarAlertaEvento(
+                        "🎭 Nuevo evento: " + e.getNombre(),
+                        (e.getLugar() != null ? e.getLugar() + " · " : "") + e.getFecha(),
+                        "/eventos",
+                        null
+                );
+            }
             redirectAttributes.addFlashAttribute("mensajeAdmin", "Evento creado correctamente.");
         } catch (DateTimeParseException ex) {
             redirectAttributes.addFlashAttribute("errorAdmin", "Formato de fecha de evento no válido.");
@@ -180,6 +190,14 @@ public class AdminController {
         if (e != null) {
             e.setActivo(true);
             eventoRepo.save(e);
+            if (pushNotificationService != null) {
+                pushNotificationService.publicarAlertaEvento(
+                        "🎉 Evento confirmado: " + e.getNombre(),
+                        (e.getLugar() != null ? e.getLugar() + " · " : "") + e.getFecha(),
+                        "/eventos",
+                        null
+                );
+            }
         }
         return "redirect:/admin";
     }

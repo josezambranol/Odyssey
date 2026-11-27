@@ -302,9 +302,39 @@
                     <div th:if="${session.usuarioId == null}">
                         <a href="/login" class="button button-gold w-100">
                             <i class="fas fa-envelope"></i>
-                            <span>Inicia sesión para recibir alertas</span>
+                            <span>Inicia sesión para alertas por correo</span>
                         </a>
                     </div>
+
+                    <div class="mt-2 pt-2" style="border-top:1px solid rgba(255,255,255,.14);">
+                        <button type="button" id="btnWebPushDetalle"
+                                th:data-id="${lugar.id}"
+                                th:data-nombre="${lugar.nombre}"
+                                onclick="activarPushSitioDetalle(this)"
+                                class="button w-100"
+                                style="background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(243,200,107,.4);font-size:.82rem;">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>Activar Notificación Push (PWA)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Estado Marino & UV en Tiempo Real (Odyssey v4.0) -->
+                <div class="ed-surface mb-4" id="cardClimaMarinoDetalle">
+                    <div class="d-flex align-items-center justify-content-between mb-2">
+                        <span class="eyebrow"><i class="fas fa-anchor"></i> Clima Marino &amp; UV</span>
+                        <span id="badgeSemaforoMarino" class="badge rounded-pill" style="background:#0b2d6b;color:#fff;font-size:.7rem;">Cargando...</span>
+                    </div>
+                    <div class="d-flex align-items-baseline gap-3 mb-2">
+                        <strong id="climaMarinoTemp" style="font-size:1.65rem;color:var(--azul-dark);">--°C</strong>
+                        <span class="small text-muted">
+                            💨 <span id="climaMarinoViento">-- km/h</span> · ☀️ UV <strong id="climaMarinoUv">--</strong>
+                        </span>
+                    </div>
+                    <p id="climaMarinoEstado" class="small mb-1" style="color:#3e3c36;line-height:1.5;">
+                        Consultando condiciones de zarpe e índice solar en Cartagena...
+                    </p>
+                    <small id="climaMarinoFranja" class="text-muted d-block" style="font-size:.76rem;"></small>
                 </div>
 
                 <!-- Ficha de Información + Mini-Mapa -->
@@ -399,6 +429,47 @@ async function alternarSuscripcionSitio(btn) {
         toast.innerHTML = '<div class="alert alert-danger py-2 small mb-2">Error al actualizar tu suscripción.</div>';
     }
 }
+
+async function activarPushSitioDetalle(btn) {
+    const toast = document.getElementById('subAlertToast');
+    if (!window.activarNotificacionesOdyssey) {
+        toast.innerHTML = '<div class="alert alert-warning py-2 small mb-2">Espera un instante mientras carga el módulo PWA...</div>';
+        return;
+    }
+    btn.disabled = true;
+    const res = await window.activarNotificacionesOdyssey(Number(btn.dataset.id), btn.dataset.nombre);
+    btn.disabled = false;
+    if (res.ok) {
+        btn.style.background = '#10b981';
+        btn.style.borderColor = '#10b981';
+        btn.innerHTML = '<i class="fas fa-check-circle"></i><span>Push PWA activado en este equipo</span>';
+        toast.innerHTML = `<div class="alert alert-success py-2 small mb-2">${res.mensaje}</div>`;
+    } else {
+        toast.innerHTML = `<div class="alert alert-warning py-2 small mb-2">${res.mensaje}</div>`;
+    }
+}
+
+(function cargarClimaMarinoV4() {
+    fetch('/api/v1/clima/marino')
+        .then(r => r.json())
+        .then(payload => {
+            if (!payload || !payload.data) return;
+            const d = payload.data;
+            const badge = document.getElementById('badgeSemaforoMarino');
+            if (badge) {
+                const colores = { VERDE: '#10b981', AMARILLO: '#d97706', ROJO: '#dc2626' };
+                badge.style.background = colores[d.semaforoNautico] || '#0b2d6b';
+                badge.textContent = 'Zarpe ' + d.semaforoNautico;
+            }
+            const setTxt = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+            setTxt('climaMarinoTemp', d.temperaturaC + '°C');
+            setTxt('climaMarinoViento', d.vientoKmh + ' km/h (' + d.vientoNudos + ' kt)');
+            setTxt('climaMarinoUv', d.indiceUv + ' (' + d.nivelUv + ')');
+            setTxt('climaMarinoEstado', d.estadoZarpeIslas);
+            setTxt('climaMarinoFranja', '🕒 Mejor horario sugerido: ' + d.mejorFranjaHoraria);
+        })
+        .catch(() => {});
+})();
 </script>
 </body>
 </html>

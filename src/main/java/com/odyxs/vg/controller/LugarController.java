@@ -19,6 +19,7 @@ public class LugarController {
     @Autowired private CategoriaService  categoriaService;
     @Autowired(required = false) private AuthCodigoService authCodigoService;
     @Autowired(required = false) private MetricsService metricsService;
+    @Autowired(required = false) private SemanticVectorService semanticVectorService;
 
     // ── Listado por categoría (Público) ───────────────────────
     @GetMapping("/lugares")
@@ -81,14 +82,29 @@ public class LugarController {
         return "detalle";
     }
 
-    // ── Búsqueda global (Público) ─────────────────────────────
+    // ── Búsqueda global híbrida: SQL + Semántica Vectorial v4.0 (Público) ─
     @GetMapping("/buscar")
     public String buscar(@RequestParam(defaultValue = "") String q, Model model) {
-        List<Lugar> resultados = q.isBlank()
+        String consulta = q != null ? q.trim() : "";
+        List<Lugar> resultados = consulta.isBlank()
                 ? lugarService.obtenerAprobados()
-                : lugarService.buscar(q);
+                : lugarService.buscar(consulta);
+
+        List<SemanticVectorService.ResultadoSemanticoDto> semanticos = List.of();
+        String motorVectorial = null;
+        if (!consulta.isBlank() && semanticVectorService != null) {
+            semanticos = semanticVectorService.buscarSemanticamente(consulta, 6).stream()
+                    .filter(r -> r.porcentajeAfinidad() >= 10)
+                    .toList();
+            if (!semanticos.isEmpty()) {
+                motorVectorial = semanticos.get(0).motorVectorial();
+            }
+        }
+
         model.addAttribute("lugares", resultados);
-        model.addAttribute("query",   q);
+        model.addAttribute("resultadosSemanticos", semanticos);
+        model.addAttribute("motorVectorial", motorVectorial);
+        model.addAttribute("query", consulta);
         return "buscar";
     }
 

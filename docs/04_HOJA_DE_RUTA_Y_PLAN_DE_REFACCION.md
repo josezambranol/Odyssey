@@ -28,11 +28,12 @@ El ciclo de vida de **ODYSSEY (Guía Turística Inteligente & Concierge IA para 
 
 ---
 
-## 🚀 Versión `v4.0.0` — Inteligencia Vectorial Semántica & Cartografía Activa *(En Desarrollo Activo)*
-- [x] **Motor RAG Vectorial Semántico (`SemanticVectorService` + `/api/v1/lugares/semantico`):** Vectores densos L2-normalizados de 256 dimensiones + integración con *Google Gemini Embeddings (`text-embedding-004`)* y búsqueda por **Similitud del Coseno** ($\cos\theta$).
-- [x] **Rutas Peatonales y Náuticas en Vivo (`/mapa`):** Trazado interactivo sobre Leaflet con cálculo OSRM peatonal, rutas marítimas desde el Muelle de la Bodeguita y **Semáforo Climático Marino en Tiempo Real** (viento Open-Meteo para zarpe a Islas del Rosario).
-- [ ] **Despliegue Cloud Público Persistente (\$0.00):** Publicación continua en Hugging Face Spaces / Render Free conectada a MySQL Serverless (TiDB/Aiven) y CDN de imágenes.
-- [ ] **Notificaciones Web Push (VAPID):** Alertas nativas en el teléfono cuando se publiquen eventos culturales en tus sitios suscritos.
+## ✅ Versión `v4.0.0` — Inteligencia Vectorial Semántica, Clima Marino & Web Push *(Completada)*
+- [x] **Búsqueda Híbrida SQL + Semántica Vectorial (`/buscar` + `/api/v1/lugares/semantico`):** Vectores densos L2-normalizados de 256 dimensiones + integración con *Google Gemini Embeddings (`text-embedding-004`)* y **Similitud del Coseno** ($\cos\theta$) integrada directamente en la interfaz de búsqueda.
+- [x] **Inteligencia Meteorológica y Marina Costera (`MarineWeatherService` + `/api/v1/clima/marino`):** Semáforo náutico (`VERDE`/`AMARILLO`/`ROJO`) para zarpe a Islas del Rosario, velocidad de viento en nudos, alerta de radiación UV y caché TTL en memoria de 15 minutos con respaldo resiliente.
+- [x] **Rutas Peatonales y Náuticas en Vivo (`/mapa`):** Trazado interactivo sobre Leaflet con cálculo OSRM peatonal y rutas marítimas desde el Muelle de la Bodeguita.
+- [x] **Notificaciones Web Push PWA (Estándar W3C + VAPID `P-256`):** Generación criptográfica EC `secp256r1` (`WebPushNotificationService`), persistencia JPA (`suscripciones_push`), listeners nativos en `sw.js` y emisión automática al publicar/aprobar eventos culturales.
+- [x] **Infraestructura Cloud Pública \$0.00 sin Suspensión (`render.yaml` + `Dockerfile`):** Blueprint Docker optimizado en memoria (`-XX:+UseSerialGC`, `MaxRAMPercentage=70.0`) y libre de auto-pings para preservar las 750 h/mes gratuitas junto a MySQL Serverless (TiDB Cloud / Aiven).
 
 ---
 

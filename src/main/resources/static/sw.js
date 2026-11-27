@@ -1,4 +1,4 @@
-const CACHE_VERSION = 'odyssey-pwa-v3.0';
+const CACHE_VERSION = 'odyssey-pwa-v4.0';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const RUNTIME_CACHE = `${CACHE_VERSION}-runtime`;
 
@@ -69,7 +69,8 @@ self.addEventListener('fetch', (event) => {
     url.pathname.startsWith('/css/') ||
     url.pathname.startsWith('/js/') ||
     url.pathname.startsWith('/img/') ||
-    url.pathname.startsWith('/api/v1/lugares')
+    url.pathname.startsWith('/api/v1/lugares') ||
+    url.pathname.startsWith('/api/v1/clima')
   ) {
     event.respondWith(
       caches.match(request).then((cached) => {
@@ -86,4 +87,62 @@ self.addEventListener('fetch', (event) => {
       })
     );
   }
+});
+
+// ── Web Push API + Notificaciones Nativas PWA (Odyssey v4.0) ──
+self.addEventListener('push', (event) => {
+  let payload = {
+    title: '⛵ ODYSSEY Cartagena',
+    body: 'Nueva actualización cultural disponible en tus sitios favoritos.',
+    url: '/eventos'
+  };
+  if (event.data) {
+    try {
+      const parsed = event.data.json();
+      payload = {
+        title: parsed.title || parsed.titulo || payload.title,
+        body: parsed.body || parsed.cuerpo || payload.body,
+        url: parsed.url || parsed.urlDestino || payload.url
+      };
+    } catch (_) {
+      payload.body = event.data.text() || payload.body;
+    }
+  }
+
+  event.waitUntil(
+    self.registration.showNotification(payload.title, {
+      body: payload.body,
+      icon: '/img/favicon-192x192.png',
+      badge: '/img/favicon-32x32.png',
+      vibrate: [120, 60, 120],
+      data: { url: payload.url }
+    })
+  );
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'ODYSSEY_LOCAL_NOTIFY') {
+    self.registration.showNotification(event.data.title || '⛵ ODYSSEY Cartagena', {
+      body: event.data.body || 'Alertas inteligentes activadas en este dispositivo.',
+      icon: '/img/favicon-192x192.png',
+      badge: '/img/favicon-32x32.png',
+      data: { url: event.data.url || '/eventos' }
+    });
+  }
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  const targetUrl = (event.notification.data && event.notification.data.url) || '/eventos';
+  event.waitUntil(
+    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((windowClients) => {
+      for (const client of windowClients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.navigate(targetUrl);
+          return client.focus();
+        }
+      }
+      return clients.openWindow ? clients.openWindow(targetUrl) : null;
+    })
+  );
 });
