@@ -17,4 +17,6 @@ public interface ItinerarioRepository extends JpaRepository<Itinerario, String> 
     List<Itinerario> findByUsuarioId(Long usuarioId);
 
     Page<Itinerario> findByEstiloViaje(String estiloViaje, Pageable pageable);
+
+    void deleteByUsuarioId(Long usuarioId);
 }

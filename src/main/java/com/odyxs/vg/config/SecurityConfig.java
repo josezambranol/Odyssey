@@ -92,9 +92,9 @@ public class SecurityConfig {
                 ).permitAll()
                 // Resto de API pública de consulta, itinerarios y métricas
                 .requestMatchers("/api/**").permitAll()
-                // El inicio de sesión solo es fundamental para dejar reseñas y panel personal de novedades
+                // El inicio de sesión solo es fundamental para dejar reseñas y panel personal de novedades / ARCO
                 .requestMatchers(
-                    "/menu", "/resenas/**"
+                    "/menu", "/menu/**", "/resenas/**"
                 ).hasAnyRole("USUARIO", "ADMIN")
                 .anyRequest().permitAll()
             )

@@ -13,4 +13,5 @@ public interface SuscripcionPushRepository extends JpaRepository<SuscripcionPush
     List<SuscripcionPush> findByActivaTrue();
     long countByActivaTrue();
     long countByLugarIdAndActivaTrue(Long lugarId);
+    void deleteByUsuarioId(Long usuarioId);
 }

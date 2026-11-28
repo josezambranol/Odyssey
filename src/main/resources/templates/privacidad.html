@@ -25,32 +25,32 @@
             <span class="sep">/</span>
             <span class="current" th:text="#{footer.privacy}">Privacidad</span>
         </nav>
-        <span class="eyebrow eyebrow-light"><i class="fas fa-shield-alt"></i> Ley 1581 de 2012 · Colombia</span>
+        <span class="eyebrow eyebrow-light"><i class="fas fa-shield-alt"></i> Ley 1581 de 2012 · Decreto 1377 de 2013</span>
         <h1>Política de Privacidad y <em>Habeas Data</em></h1>
-        <p class="editorial-subhero-lead">Tratamiento de datos personales conforme a la Ley 1581 de 2012 y el Decreto 1377 de 2013</p>
+        <p class="editorial-subhero-lead">Tratamiento transparente de datos personales conforme a la Ley Estatutaria 1581 de 2012 y el Decreto 1377 de 2013</p>
     </div>
 </section>
 
 <main class="pb-5">
     <div class="container ed-float-wrap" style="max-width:920px;">
         <div class="ed-form-card">
-            <p class="eyebrow mb-4">En cumplimiento de la Ley Estatutaria 1581 de 2012 · República de Colombia</p>
+            <p class="eyebrow mb-4">Versión vigente: Ley1581-v2026.4 · República de Colombia</p>
 
-            <h3 class="mb-2" style="color:var(--azul-dark); font-size:1.35rem;">1. Datos que recopilamos</h3>
+            <h3 class="mb-2" style="color:var(--azul-dark); font-size:1.35rem;">1. Datos recopilados y minimización</h3>
             <ul style="color:#55524b; line-height:1.75;">
-                <li><strong>Registro y autenticación:</strong> nombre, correo electrónico, contraseña cifrada con BCrypt y, de forma opcional, país de origen y fecha de nacimiento.</li>
-                <li><strong>Participación comunitaria:</strong> reseñas publicadas, suscripciones a alertas de lugares y propuestas enviadas.</li>
-                <li><strong>Asistente virtual y seguridad:</strong> consultas enviadas al chatbot y metadatos técnicos mínimos necesarios para prevenir abuso y mantener la sesión (<code>JSESSIONID</code>).</li>
+                <li><strong>Registro y prueba de autorización:</strong> nombre, correo electrónico, contraseña cifrada irreversiblemente con <code>BCrypt</code>, país de origen, fecha de nacimiento (solo mayores de 18 años conforme al Art. 7 de la Ley 1581 de 2012 y Ley 1098 de 2006), fecha exacta de consentimiento y versión de política aceptada (Art. 8 del Decreto 1377 de 2013).</li>
+                <li><strong>Participación y suscripciones:</strong> reseñas publicadas, suscripciones voluntarias por correo y credenciales técnicas anónimas del navegador para notificaciones <strong>Web Push PWA (VAPID P-256)</strong> cuando el usuario las activa expresamente.</li>
+                <li><strong>Asistente virtual y seudonimización:</strong> consultas enviadas al Concierge IA y metadatos técnicos mínimos de seguridad. Las direcciones IP nunca se almacenan en texto claro: se seudonimizan mediante hash criptográfico <code>SHA-256</code> con sal y los códigos OTP vencidos se purgan automáticamente cada madrugada.</li>
             </ul>
 
             <h3 class="mt-4 mb-2" style="color:var(--azul-dark); font-size:1.35rem;">2. Finalidad del tratamiento</h3>
-            <p style="color:#55524b; line-height:1.75;">Tus datos se utilizan exclusivamente para gestionar tu cuenta, enviar códigos de verificación temporal (OTP) o recuperación de acceso cuando los solicites, mostrar tu nombre en tus reseñas, enviarte alertas de lugares si te suscribes y operar las funcionalidades interactivas de la guía.</p>
+            <p style="color:#55524b; line-height:1.75;">Tus datos se utilizan exclusivamente para autenticar tu cuenta, enviarte códigos temporales de verificación (OTP) cuando los solicites, mostrar tu nombre en tus reseñas, enviarte alertas culturales por correo o Web Push de los lugares a los que te suscribas y operar de forma segura la guía turística. Jamás vendemos ni cedemos bases de datos con fines publicitarios.</p>
 
-            <h3 class="mt-4 mb-2" style="color:var(--azul-dark); font-size:1.35rem;">3. Cookies y terceros</h3>
-            <p style="color:#55524b; line-height:1.75;">La plataforma utiliza cookies técnicas esenciales para la sesión (<code>JSESSIONID</code>) y preferencia de idioma. Cuando interactúas con el asistente IA (si está configurada la clave de Google Gemini) o el widget de clima/mapas, las solicitudes técnicas correspondientes pueden procesarse a través de esos proveedores externos bajo sus propias políticas. No envíes información sensible ni datos bancarios en el chat.</p>
+            <h3 class="mt-4 mb-2" style="color:var(--azul-dark); font-size:1.35rem;">3. Cookies técnicas y servicios externos</h3>
+            <p style="color:#55524b; line-height:1.75;">ODYSSEY emplea únicamente cookies técnicas esenciales de sesión (<code>JSESSIONID</code>) e idioma, sin rastreadores publicitarios de terceros. Al usar el Concierge IA (Google Gemini), el pronóstico costero (Open-Meteo) o la cartografía (OpenStreetMap / OSRM), las peticiones técnicas necesarias se procesan bajo las políticas de dichos proveedores. No ingreses datos financieros, médicos ni contraseñas en el chat.</p>
 
-            <h3 id="contacto" class="mt-4 mb-2" style="color:var(--azul-dark); font-size:1.35rem;">4. Derechos del titular (ARCO) y retiro de contenido</h3>
-            <p style="color:#55524b; line-height:1.75;">Como titular de los datos puedes conocer, actualizar, rectificar y solicitar la supresión de tu información, así como revocar la autorización otorgada o solicitar el retiro de contenido que vulnere derechos de autor, escribiendo a <strong>soporte@odyssey.com</strong>.</p>
+            <h3 id="contacto" class="mt-4 mb-2" style="color:var(--azul-dark); font-size:1.35rem;">4. Ejercicio inmediato de Derechos ARCO (Autoservicio y Contacto)</h3>
+            <p style="color:#55524b; line-height:1.75;">Como titular puedes ejercer tus derechos de <strong>Conocer, Actualizar, Rectificar, Suprimir y Revocar</strong> directamente desde tu panel personal (<a href="/menu"><code>/menu</code></a>), donde cuentas con descarga inmediata de tu expediente personal en formato JSON y botón de <strong>supresión definitiva de cuenta y datos asociados</strong>, o escribiendo al canal del responsable del proyecto (<a href="mailto:josedaniellunamarimon@gmail.com">josedaniellunamarimon@gmail.com</a>).</p>
 
             <div class="mt-4 pt-4 d-flex justify-content-between flex-wrap gap-2" style="border-top:1px solid #ece3d1;">
                 <a href="/terminos" class="ed-pill">Ver Términos y Condiciones</a>

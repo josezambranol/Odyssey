@@ -21,4 +21,6 @@ public interface SuscripcionLugarRepository extends JpaRepository<SuscripcionLug
     long countByLugarIdAndActivoTrue(Long lugarId);
 
     void deleteByLugarId(Long lugarId);
+
+    void deleteByUsuarioId(Long usuarioId);
 }

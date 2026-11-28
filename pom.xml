@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.odyxs</groupId>
 	<artifactId>odyssey</artifactId>
-	<version>4.0.0</version>
+	<version>4.0.1</version>
 	<name>odyssey</name>
 	<description>ODYSSEY - Guía turística inteligente de Cartagena de Indias</description>
 

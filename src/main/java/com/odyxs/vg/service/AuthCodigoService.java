@@ -84,6 +84,8 @@ public class AuthCodigoService {
             usuario.setContrasena(passwordEncoder.encode(UUID.randomUUID().toString()));
             usuario.setCountry("Colombia");
             usuario.setRol(Usuario.Rol.USUARIO);
+            usuario.setFechaConsentimiento(java.time.LocalDateTime.now());
+            usuario.setVersionPolitica(Usuario.VERSION_POLITICA_ACTUAL);
             usuario = usuarioRepository.save(usuario);
         } else {
             usuario = userOpt.get();

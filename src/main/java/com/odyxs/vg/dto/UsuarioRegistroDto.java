@@ -17,7 +17,7 @@ public class UsuarioRegistroDto {
     private String correo;
 
     @NotBlank(message = "La contraseña es obligatoria")
-    @Size(min = 4, max = 100, message = "La contraseña debe tener al menos 4 caracteres")
+    @Size(min = 6, max = 100, message = "La contraseña debe tener al menos 6 caracteres")
     private String contrasena;
 
     private String country;
