@@ -190,6 +190,13 @@ public class TurismoController {
         return "mapa";
     }
 
+    // ── Escáner Multimodal IA, Precios Justos & Pase QR v5.0 ──
+
+    @GetMapping("/escaner")
+    public String escanerMultimodal() {
+        return "escaner";
+    }
+
     // ── Chatbot ODYSSEY con Google Gemini & Telemetría en MySQL ──
 
     @GetMapping("/chatbot")

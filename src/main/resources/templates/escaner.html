@@ -1,0 +1,359 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escáner Multimodal IA &amp; Pases QR — ODYSSEY v5.0</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;family=Jost:wght@500;600;700&amp;family=Playfair+Display:ital,wght@0,600;0,700;1,500;1,600&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/odyssey-travela.css}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/favicon.svg}">
+    <style>
+        .mode-switch-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        .mode-switch-btn {
+            border: 1.5px solid #e4dccb;
+            background: #fffdf9;
+            color: var(--azul-dark);
+            border-radius: 12px;
+            padding: 12px;
+            font-weight: 700;
+            font-size: .85rem;
+            cursor: pointer;
+            transition: all .2s ease;
+            text-align: left;
+        }
+        .mode-switch-btn.active {
+            background: var(--azul);
+            color: #fff;
+            border-color: var(--azul);
+            box-shadow: 0 8px 22px rgba(11,45,107,.2);
+        }
+        .upload-dropzone {
+            border: 2px dashed rgba(200,150,62,.55);
+            background: rgba(255,253,249,.9);
+            border-radius: 14px;
+            padding: 18px;
+            text-align: center;
+            cursor: pointer;
+            transition: border-color .2s;
+        }
+        .upload-dropzone:hover { border-color: var(--azul); }
+        .veredicto-box {
+            border-radius: 14px;
+            padding: 18px 20px;
+            border-left: 5px solid var(--azul);
+            background: #f8fafc;
+        }
+        .qr-ticket-card {
+            background: linear-gradient(145deg, #071630 0%, #0b2d6b 100%);
+            color: #fff;
+            border-radius: 18px;
+            padding: 22px;
+            border: 1px solid rgba(212,166,74,.45);
+        }
+        .token-mono {
+            font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+            font-size: .72rem;
+            word-break: break-all;
+            background: rgba(0,0,0,.28);
+            color: #f3c86b;
+            padding: 8px 10px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body class="odyssey-inner">
+<div th:replace="~{fragments :: topbar}"></div>
+<div th:replace="~{fragments :: navbar-interno}"></div>
+
+<section class="editorial-subhero has-float-bar" style="--subhero-img: url('/img/hero-castillo.jpg');">
+    <div class="editorial-subhero-bg"></div>
+    <div class="container editorial-subhero-inner">
+        <nav class="ed-breadcrumb" aria-label="breadcrumb">
+            <a href="/" th:text="#{nav.inicio}">Inicio</a>
+            <span class="sep">/</span>
+            <span class="current">Escáner IA &amp; Pases QR v5.0</span>
+        </nav>
+        <span class="eyebrow eyebrow-light">
+            <i class="fas fa-camera-retro"></i> Smart Destination · Odyssey v5.0
+        </span>
+        <h1>Visión <em>Multimodal</em> &amp; Escudo Turístico</h1>
+        <p class="editorial-subhero-lead">Reconoce monumentos por fotografía, audita cartas/facturas contra sobrecobros y emite pases QR con firma criptográfica HMAC-SHA256.</p>
+    </div>
+</section>
+
+<main class="ed-band-compact pb-5">
+    <div class="container">
+        <div class="row g-4">
+            <!-- COLUMNA 1: ESCÁNER MULTIMODAL + AUDITOR ANTI-SOBRECOBRO -->
+            <div class="col-lg-7">
+                <div class="ed-surface h-100">
+                    <span class="eyebrow"><i class="fas fa-eye"></i> Gemini Multimodal Vision + Ley 1480 Art. 26</span>
+                    <h2 class="mt-1 mb-3" style="color:var(--azul-dark); font-size:1.65rem;">Apunta, Descubre y Verifica Precios</h2>
+
+                    <div class="mode-switch-grid">
+                        <button type="button" class="mode-switch-btn active" id="btnModoPrecios" onclick="seleccionarModoVision('PRECIOS')">
+                            <i class="fas fa-shield-alt me-1" style="color:var(--gold);"></i> Verificar Precios / Cuenta
+                            <small class="d-block fw-normal opacity-75 mt-1">Detecta sobrecobros en playa, restaurante o taxi</small>
+                        </button>
+                        <button type="button" class="mode-switch-btn" id="btnModoPatrimonio" onclick="seleccionarModoVision('PATRIMONIO')">
+                            <i class="fas fa-landmark me-1" style="color:var(--gold);"></i> Reconocer Patrimonio
+                            <small class="d-block fw-normal opacity-75 mt-1">Identifica baluartes, monumentos y platos típicos</small>
+                        </button>
+                    </div>
+
+                    <form id="formVisionScan" onsubmit="ejecutarAnalisisVision(event)">
+                        <input type="hidden" id="visionModoInput" value="PRECIOS">
+
+                        <label class="upload-dropzone w-100 mb-3" for="visionFileInput">
+                            <i class="fas fa-camera fa-2x mb-2" style="color:#936615;"></i>
+                            <div class="fw-bold" style="color:var(--azul-dark);">Toma una foto o adjunta imagen (JPG / PNG / WEBP · máx. 5 MB)</div>
+                            <small class="text-muted d-block">Privacidad por diseño: se procesa en memoria RAM y jamás se guarda en disco</small>
+                            <input type="file" id="visionFileInput" accept="image/jpeg,image/png,image/webp" capture="environment" class="d-none" onchange="previsualizarFoto(this)">
+                            <img id="visionPreviewImg" alt="Vista previa" style="display:none;max-height:165px;border-radius:10px;margin:12px auto 0;">
+                        </label>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-semibold small" style="color:var(--azul-dark);">Detalle opcional o consulta rápida sin foto</label>
+                            <textarea id="visionTextoInput" class="form-control" rows="2"
+                                      placeholder="Ej: Mojarra frita 185.000, 2 cervezas nacionales 70.000 en playa..."></textarea>
+                            <div class="d-flex flex-wrap gap-1 mt-2">
+                                <button type="button" class="ed-pill" style="font-size:.72rem;" onclick="cargarEjemploVision('PRECIOS','Mojarra frita 210.000, cerveza nacional 40.000')">🚨 Simular sobrecobro</button>
+                                <button type="button" class="ed-pill" style="font-size:.72rem;" onclick="cargarEjemploVision('PRECIOS','Mojarra frita 68.000, limonada de coco 16.000')">✅ Simular precio justo</button>
+                                <button type="button" class="ed-pill" style="font-size:.72rem;" onclick="cargarEjemploVision('PATRIMONIO','Castillo San Felipe tuneles y canones')">🏰 Simular monumento</button>
+                            </div>
+                        </div>
+
+                        <button type="submit" id="btnSubmitVision" class="button button-primary w-100">
+                            <i class="fas fa-magic"></i>
+                            <span>Analizar con Inteligencia Multimodal</span>
+                        </button>
+                    </form>
+
+                    <div id="visionResultadoWrap" class="mt-4" style="display:none;"></div>
+
+                    <!-- Tabla rápida de referencia -->
+                    <div class="mt-4 pt-3" style="border-top:1px solid #eee5d3;">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <strong class="small" style="color:var(--azul-dark);"><i class="fas fa-balance-scale me-1" style="color:var(--gold);"></i> Tabla de Precios Justos de Referencia (Cartagena 2026)</strong>
+                            <span class="badge bg-light text-dark border">COP</span>
+                        </div>
+                        <div class="table-responsive">
+                            <table class="table table-sm small mb-0" id="tablaPreciosRef">
+                                <thead>
+                                    <tr style="color:var(--azul-dark);">
+                                        <th>Producto / Servicio</th>
+                                        <th class="text-end">Rango Justo</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- COLUMNA 2: PASES QR FIRMADOS CON HMAC-SHA256 + VERIFICACIÓN RNT -->
+            <div class="col-lg-5">
+                <div class="ed-surface mb-4">
+                    <span class="eyebrow"><i class="fas fa-qrcode"></i> Criptografía HMAC-SHA256 + Ley 2068 RNT</span>
+                    <h3 class="mt-1 mb-2" style="color:var(--azul-dark); font-size:1.45rem;">Emitir Pase QR Antifraude</h3>
+                    <p class="small text-muted mb-3">Genera un comprobante de itinerario o acuerdo de tarifa firmado digitalmente para evitar cambios de precio al llegar al muelle o sitio.</p>
+
+                    <form onsubmit="emitirPaseQr(event)">
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold mb-1">Nombre del viajero</label>
+                            <input type="text" id="qrViajero" class="form-control form-control-sm" placeholder="Ej: Jose Zambrano" required>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label small fw-semibold mb-1">Destino / Actividad</label>
+                            <input type="text" id="qrDestino" class="form-control form-control-sm" value="Pasadía Islas del Rosario (Muelle Bodeguita)" required>
+                        </div>
+                        <div class="row g-2 mb-2">
+                            <div class="col-4">
+                                <label class="form-label small fw-semibold mb-1">Personas</label>
+                                <input type="number" id="qrPax" class="form-control form-control-sm" min="1" max="25" value="2">
+                            </div>
+                            <div class="col-8">
+                                <label class="form-label small fw-semibold mb-1">Tarifa pactada (COP)</label>
+                                <input type="number" id="qrPrecio" class="form-control form-control-sm" min="0" step="1000" value="120000">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small fw-semibold mb-1">RNT del Operador (Ley 2068 · 5 a 8 dígitos, opcional)</label>
+                            <input type="text" id="qrRnt" class="form-control form-control-sm" placeholder="Ej: 48291 (dejar vacío si es paseo libre)">
+                        </div>
+                        <button type="submit" class="button button-gold w-100">
+                            <i class="fas fa-file-signature"></i>
+                            <span>Firmar y Generar Pase QR</span>
+                        </button>
+                    </form>
+
+                    <div id="qrTicketOutput" class="mt-3" style="display:none;"></div>
+                </div>
+
+                <!-- Verificador sin estado -->
+                <div class="ed-surface">
+                    <span class="eyebrow"><i class="fas fa-check-double"></i> Validación Criptográfica Sin Estado</span>
+                    <h4 class="mt-1 mb-2" style="color:var(--azul-dark); font-size:1.2rem;">Verificar Autenticidad de Pase</h4>
+                    <div class="mb-2">
+                        <textarea id="qrVerifyInput" class="form-control form-control-sm" rows="2" placeholder="Pega aquí un token ODY5... para comprobar su firma HMAC-SHA256"></textarea>
+                    </div>
+                    <button type="button" onclick="verificarTokenQr()" class="button button-primary w-100" style="font-size:.82rem;">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Comprobar Firma Digital</span>
+                    </button>
+                    <div id="qrVerifyResult" class="mt-2"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+
+<div th:replace="~{fragments :: footer-interno}"></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+function seleccionarModoVision(modo) {
+    document.getElementById('visionModoInput').value = modo;
+    document.getElementById('btnModoPrecios').classList.toggle('active', modo === 'PRECIOS');
+    document.getElementById('btnModoPatrimonio').classList.toggle('active', modo === 'PATRIMONIO');
+}
+
+function previsualizarFoto(input) {
+    const img = document.getElementById('visionPreviewImg');
+    if (input.files && input.files[0]) {
+        img.src = URL.createObjectURL(input.files[0]);
+        img.style.display = 'block';
+    } else {
+        img.style.display = 'none';
+    }
+}
+
+function cargarEjemploVision(modo, texto) {
+    seleccionarModoVision(modo);
+    document.getElementById('visionTextoInput').value = texto;
+}
+
+async function ejecutarAnalisisVision(ev) {
+    ev.preventDefault();
+    const btn = document.getElementById('btnSubmitVision');
+    const out = document.getElementById('visionResultadoWrap');
+    const fd = new FormData();
+    const fileInput = document.getElementById('visionFileInput');
+    if (fileInput.files && fileInput.files[0]) {
+        fd.append('imagen', fileInput.files[0]);
+    }
+    fd.append('modo', document.getElementById('visionModoInput').value);
+    fd.append('descripcion', document.getElementById('visionTextoInput').value);
+
+    btn.disabled = true;
+    out.style.display = 'block';
+    out.innerHTML = '<div class="text-muted small"><i class="fas fa-spinner fa-spin me-2"></i>Analizando con Odyssey Vision v5.0...</div>';
+
+    try {
+        const res = await fetch('/api/v1/vision/analizar', { method: 'POST', body: fd });
+        const json = await res.json();
+        btn.disabled = false;
+        if (!json.success || !json.data) {
+            out.innerHTML = `<div class="alert alert-warning small mb-0">${json.message || 'Verifica los datos enviados.'}</div>`;
+            return;
+        }
+        const d = json.data;
+        const colores = {
+            ALERTA_SOBRECOBRO: '#dc2626',
+            REVISAR_DETALLE: '#d97706',
+            PRECIO_JUSTO: '#059669',
+            PATRIMONIO_IDENTIFICADO: '#0b2d6b'
+        };
+        const borde = colores[d.nivelAlerta] || '#0b2d6b';
+        const recs = (d.recomendacionesAccionables || []).map(r => `<li>${r}</li>`).join('');
+        const bloqueMonto = d.montoDetectadoCop > 0
+            ? `<div class="small fw-bold mt-1" style="color:${borde};">Monto evaluado: $${d.montoDetectadoCop.toLocaleString('es-CO')} COP (~$${d.equivalenteUsd} USD)</div>`
+            : '';
+
+        out.innerHTML = `
+            <div class="veredicto-box" style="border-left-color:${borde};">
+                <div class="d-flex justify-content-between align-items-start flex-wrap gap-2">
+                    <strong style="color:${borde};font-size:1.05rem;">${d.veredictoTitulo}</strong>
+                    <span class="badge bg-dark">${d.motorUtilizado}</span>
+                </div>
+                ${bloqueMonto}
+                <p class="small mb-2 mt-2" style="white-space:pre-line;color:#334155;">${d.analisisDetallado}</p>
+                <ul class="small mb-0 ps-3 text-muted">${recs}</ul>
+            </div>`;
+    } catch (err) {
+        btn.disabled = false;
+        out.innerHTML = '<div class="alert alert-danger small mb-0">Error de red al procesar el análisis.</div>';
+    }
+}
+
+async function emitirPaseQr(ev) {
+    ev.preventDefault();
+    const out = document.getElementById('qrTicketOutput');
+    const body = {
+        nombreViajero: document.getElementById('qrViajero').value,
+        destinoActividad: document.getElementById('qrDestino').value,
+        personas: Number(document.getElementById('qrPax').value || 1),
+        precioAcordadoCop: Number(document.getElementById('qrPrecio').value || 0),
+        numeroRnt: document.getElementById('qrRnt').value
+    };
+    const res = await fetch('/api/v1/pases/emitir', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json; charset=utf-8' },
+        body: JSON.stringify(body)
+    });
+    const json = await res.json();
+    if (!json.success || !json.data) return;
+    const p = json.data;
+    document.getElementById('qrVerifyInput').value = p.tokenFirmado;
+    out.style.display = 'block';
+    out.innerHTML = `
+        <div class="qr-ticket-card">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <span class="badge" style="background:#d4a64a;color:#071630;">PASE FIRMADO v5.0</span>
+                <small style="color:#f3c86b;">HMAC: ${p.firmaHexCorta}</small>
+            </div>
+            <div class="text-center my-2">${p.svgVisualQr}</div>
+            <div class="small mb-1"><strong>Titular:</strong> ${p.nombreViajero} (${p.personas} pax)</div>
+            <div class="small mb-1"><strong>Destino:</strong> ${p.destinoActividad}</div>
+            <div class="small mb-1"><strong>Acuerdo:</strong> $${p.precioAcordadoCop.toLocaleString('es-CO')} COP</div>
+            <div class="small mb-2"><strong>Estado RNT:</strong> ${p.estadoRnt}</div>
+            <div class="token-mono">${p.tokenFirmado}</div>
+        </div>`;
+}
+
+async function verificarTokenQr() {
+    const token = document.getElementById('qrVerifyInput').value.trim();
+    const box = document.getElementById('qrVerifyResult');
+    if (!token) return;
+    const res = await fetch('/api/v1/pases/verificar?token=' + encodeURIComponent(token));
+    const json = await res.json();
+    if (!json.data) return;
+    const v = json.data;
+    const cls = (v.autentico && v.vigente) ? 'alert-success' : 'alert-danger';
+    box.innerHTML = `<div class="alert ${cls} py-2 small mb-0">${v.mensajeVeredicto}</div>`;
+}
+
+(function cargarTablaReferencia() {
+    fetch('/api/v1/vision/tarifas-referencia')
+        .then(r => r.json())
+        .then(json => {
+            if (!json || !json.data) return;
+            const tbody = document.querySelector('#tablaPreciosRef tbody');
+            tbody.innerHTML = json.data.slice(0, 6).map(t =>
+                `<tr><td>${t.item}</td><td class="text-end fw-semibold text-nowrap">$${t.minimoJustoCop.toLocaleString('es-CO')} – $${t.maximoJustoCop.toLocaleString('es-CO')}</td></tr>`
+            ).join('');
+        })
+        .catch(() => {});
+})();
+</script>
+</body>
+</html>

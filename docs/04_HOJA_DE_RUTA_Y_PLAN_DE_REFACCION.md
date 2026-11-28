@@ -1,6 +1,6 @@
 # 🚀 ODYSSEY — Hoja de Ruta Oficial (Plan Maestro de 5 Versiones)
 
-El ciclo de vida de **ODYSSEY (Guía Turística Inteligente & Concierge IA para Cartagena de Indias)** se gobierna mediante **Versionado Semántico (`SemVer`)** en un único repositorio oficial (`josezambranol/Odyssey`), organizado en **5 macro-versiones evolutivas**:
+El ciclo de vida de **ODYSSEY (Smart Destination Platform & Concierge IA para Cartagena de Indias)** se gobierna mediante **Versionado Semántico (`SemVer`)** en un único repositorio oficial (`josezambranol/Odyssey`), completando sus **5 macro-versiones evolutivas**:
 
 ---
 
@@ -28,17 +28,16 @@ El ciclo de vida de **ODYSSEY (Guía Turística Inteligente & Concierge IA para 
 
 ---
 
-## ✅ Versión `v4.0.0` — Inteligencia Vectorial Semántica, Clima Marino & Web Push *(Completada)*
-- [x] **Búsqueda Híbrida SQL + Semántica Vectorial (`/buscar` + `/api/v1/lugares/semantico`):** Vectores densos L2-normalizados de 256 dimensiones + integración con *Google Gemini Embeddings (`text-embedding-004`)* y **Similitud del Coseno** ($\cos\theta$) integrada directamente en la interfaz de búsqueda.
-- [x] **Inteligencia Meteorológica y Marina Costera (`MarineWeatherService` + `/api/v1/clima/marino`):** Semáforo náutico (`VERDE`/`AMARILLO`/`ROJO`) para zarpe a Islas del Rosario, velocidad de viento en nudos, alerta de radiación UV y caché TTL en memoria de 15 minutos con respaldo resiliente.
-- [x] **Rutas Peatonales y Náuticas en Vivo (`/mapa`):** Trazado interactivo sobre Leaflet con cálculo OSRM peatonal y rutas marítimas desde el Muelle de la Bodeguita.
-- [x] **Notificaciones Web Push PWA (Estándar W3C + VAPID `P-256`):** Generación criptográfica EC `secp256r1` (`WebPushNotificationService`), persistencia JPA (`suscripciones_push`), listeners nativos en `sw.js` y emisión automática al publicar/aprobar eventos culturales.
-- [x] **Infraestructura Cloud Pública \$0.00 sin Suspensión (`render.yaml` + `Dockerfile`):** Blueprint Docker optimizado en memoria (`-XX:+UseSerialGC`, `MaxRAMPercentage=70.0`) y libre de auto-pings para preservar las 750 h/mes gratuitas junto a MySQL Serverless (TiDB Cloud / Aiven).
+## ✅ Versión `v4.0.0` / `v4.0.1` — Inteligencia Vectorial, Clima Marino, Web Push & Blindaje Legal *(Completada)*
+- [x] **Búsqueda Híbrida SQL + Semántica Vectorial (`/buscar` + `/api/v1/lugares/semantico`):** Vectores densos L2-normalizados (`256d` + *Gemini `text-embedding-004`*) y similitud del coseno ($\cos\theta$).
+- [x] **Inteligencia Climática Marina & UV (`MarineWeatherService` + `/api/v1/clima/marino`):** Semáforo náutico para Islas del Rosario, viento en nudos y caché TTL de 15 minutos.
+- [x] **Notificaciones Web Push PWA (VAPID `P-256`):** Claves criptográficas EC `secp256r1` nativas, persistencia JPA y alertas automáticas de eventos culturales.
+- [x] **Blindaje Legal Colombiano (`v4.0.1`):** Prueba de consentimiento Decreto 1377, bloqueo `<18` años, autoservicio **ARCO** (portabilidad JSON + eliminación de cuenta en `/menu`), cláusula **ESCNNA (`Ley 679 de 2001`)** y `MIT License`.
+- [x] **Blueprint Cloud \$0.00 sin Suspensión (`render.yaml`):** Hibernación bajo demanda con `-XX:+UseSerialGC` optimizado para 512 MB RAM.
 
 ---
 
-## 🌟 Versión `v5.0.0` — Smart Destination & Visión Multimodal *(Proyección Futura)*
-- [ ] **Cámara Inteligente con *Gemini Multimodal Vision* ("Apunta y Descubre"):** Reconocimiento fotográfico de baluartes, monumentos, gastronomía y verificación instantánea de cobros frente a tarifas oficiales DATT.
-- [ ] **Ecosistema para Emprendedores Verificados (`ROLE_EMPRENDEDOR`) & Pases QR:** Gestión autónoma de cupos, horarios y reservas verificables por código QR anti-sobrecobros.
-- [ ] **Autenticación Biométrica sin Fricción:** Integración de *Google OAuth2* y *Passkeys (WebAuthn)*.
-- [ ] **Observatorio Abierto de Turismo Inteligente:** Mapas de calor anonimizados y analítica estacional para planeación turística de Cartagena de Indias.
+## ✅ Versión `v5.0.0` — Smart Destination, Visión Multimodal & Pases QR Criptográficos *(Completada)*
+- [x] **Escáner Inteligente con *Gemini Multimodal Vision* (`/escaner` + `/api/v1/vision/analizar`):** Reconocimiento fotográfico patrimonial en memoria RAM y **Escudo Anti-Sobrecobros** frente a tarifas oficiales de referencia (Ley 1480 Art. 26).
+- [x] **Pases Turísticos QR Firmados con `HMAC-SHA256` & Control RNT (`/api/v1/pases/emitir` + `/verificar`):** Verificación criptográfica sin estado en tiempo constante (`MessageDigest.isEqual`), sello QR vectorial SVG y validación de formato **RNT (`Ley 2068 de 2020`)**.
+- [x] **Pipeline DevSecOps Completo (`ci.yml` + `JaCoCo`):** Reporte automático de cobertura de código y verificación de construcción multi-etapa Docker en GitHub Actions.

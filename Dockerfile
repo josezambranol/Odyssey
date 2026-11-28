@@ -16,7 +16,7 @@ RUN mvn clean package -DskipTests -B
 FROM eclipse-temurin:21-jre-alpine AS runner
 
 LABEL maintainer="Equipo Odyssey <soporte@odyssey.com>"
-LABEL description="Odyssey 4.0.0 - Guía Turística Inteligente, RAG Vectorial, Clima Marino & PWA Web Push"
+LABEL description="Odyssey 5.0.0 - Smart Destination: Visión Multimodal, RAG Vectorial, Pases QR HMAC & PWA"
 
 RUN apk add --no-cache curl tzdata
 

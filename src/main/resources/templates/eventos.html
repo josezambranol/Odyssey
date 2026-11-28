@@ -143,8 +143,8 @@
     </style>
 </head>
 <body class="odyssey-inner">
-<div th:replace="fragments :: topbar"></div>
-<div th:replace="fragments :: navbar-interno"></div>
+<div th:replace="~{fragments :: topbar}"></div>
+<div th:replace="~{fragments :: navbar-interno}"></div>
 
 <section class="editorial-subhero has-float-bar" style="--subhero-img: url('/img/pf-eventos.jpg');">
     <div class="editorial-subhero-bg"></div>
@@ -385,7 +385,7 @@
     </section>
 </main>
 
-<div th:replace="fragments :: footer-interno"></div>
+<div th:replace="~{fragments :: footer-interno}"></div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

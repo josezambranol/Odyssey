@@ -84,7 +84,7 @@ public class SecurityConfig {
                 // Rutas públicas de exploración abierta, auth por código y recuperación
                 .requestMatchers(
                     "/", "/guia", "/eventos", "/eventos/**", "/actividades", "/transporte",
-                    "/mapa", "/buscar", "/lugares/**", "/idioma", "/terminos", "/privacidad",
+                    "/mapa", "/escaner", "/buscar", "/lugares/**", "/idioma", "/terminos", "/privacidad",
                     "/proponer-lugar", "/proponer-actividad", "/proponer-evento",
                     "/login", "/registro", "/recuperar-password", "/auth/codigo/**",
                     "/suscripciones/**", "/chatbot", "/chatbot/respuesta",

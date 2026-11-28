@@ -16,8 +16,8 @@
     <link rel="apple-touch-icon" sizes="180x180" th:href="@{/img/apple-touch-icon.png}">
 </head>
 <body class="odyssey-inner">
-<div th:replace="fragments :: topbar"></div>
-<div th:replace="fragments :: navbar-interno"></div>
+<div th:replace="~{fragments :: topbar}"></div>
+<div th:replace="~{fragments :: navbar-interno}"></div>
 
 <!-- ═══ PAGE HEADER ═══ -->
 <section class="editorial-subhero" style="--subhero-img: url('/img/hero-murallas.jpg'); padding: 48px 0 54px;">

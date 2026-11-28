@@ -7,7 +7,7 @@ on:
     branches: [ main ]
 
 jobs:
-  build-and-test:
+  build-test-and-docker:
     runs-on: ubuntu-latest
 
     steps:
@@ -25,12 +25,21 @@ jobs:
             exit 1
           fi
 
-      - name: Set up JDK 21
+      - name: Set up JDK 21 LTS
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
           cache: maven
 
-      - name: Run Maven tests
+      - name: Run Maven Test Suite & JaCoCo Coverage
         run: mvn -B test
+
+      - name: Upload JaCoCo Coverage Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: jacoco-coverage-report
+          path: target/site/jacoco/
+
+      - name: Verify Multi-Stage Docker Image Build
+        run: docker build -t odyssey:5.0.0 .
